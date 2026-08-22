@@ -1,5 +1,6 @@
 import HoverVideo from "./HoverVideo";
 import PlaneTrail from "./PlaneTrail";
+import TerrainMotif from "./TerrainMotif";
 
 type Card = {
   slug: string;
@@ -8,6 +9,8 @@ type Card = {
   eyebrow: string;
   title: [string, string];
   copy: string;
+  biome: "mountain" | "coast" | "desert" | "city";
+  coords: string;
 };
 
 const CARDS: Card[] = [
@@ -17,7 +20,9 @@ const CARDS: Card[] = [
     caption: "image · alpine ridge · hover to play",
     eyebrow: "Mountain & ice",
     title: ["High and", "quiet"],
-    copy: "Alpine chalets, Patagonian lodges, and the far south when the season allows."
+    copy: "Alpine chalets, Patagonian lodges, and the far south when the season allows.",
+    biome: "mountain",
+    coords: "46.8°N 9.8°E"
   },
   {
     slug: "bali-coast",
@@ -25,7 +30,9 @@ const CARDS: Card[] = [
     caption: "image · cliff villa, evening",
     eyebrow: "Coast & islands",
     title: ["The warm", "edge"],
-    copy: "Private houses on quiet water, from the Aegean to the Andaman Sea."
+    copy: "Private houses on quiet water, from the Aegean to the Andaman Sea.",
+    biome: "coast",
+    coords: "8.5°S 115.2°E"
   },
   {
     slug: "desert-ruins",
@@ -33,7 +40,9 @@ const CARDS: Card[] = [
     caption: "image · desert camp, dusk",
     eyebrow: "Desert & plain",
     title: ["Open", "country"],
-    copy: "Mobile camps and long horizons — Namibia, Oman, the Serengeti in green season."
+    copy: "Mobile camps and long horizons — Namibia, Oman, the Serengeti in green season.",
+    biome: "desert",
+    coords: "23.4°N 25.7°E"
   },
   {
     slug: "reef-dive",
@@ -41,7 +50,9 @@ const CARDS: Card[] = [
     caption: "image · courtyard, old quarter",
     eyebrow: "Cities & culture",
     title: ["Doors that", "open"],
-    copy: "Kyoto, Seville, Jaipur — with the rooms, tables and hours other travellers don't get."
+    copy: "Kyoto, Seville, Jaipur — with the rooms, tables and hours other travellers don't get.",
+    biome: "city",
+    coords: "35.0°N 135.8°E"
   }
 ];
 
@@ -82,7 +93,12 @@ export default function Destinations() {
               <div data-parallax="0.07" data-zoom className="absolute -inset-x-0 -inset-y-[8%] anim-drift" style={{ background: card.pattern }} />
               <HoverVideo slug={card.slug} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(255,255,255,.05),rgba(22,36,60,.58))" }} />
+              <TerrainMotif
+                biome={card.biome}
+                className="absolute top-4 right-4 w-[120px] sm:w-[150px] h-auto text-gold-light/45 pointer-events-none mix-blend-screen"
+              />
               <div className="absolute top-5 left-6 font-mono text-[9.5px] tracking-[0.26em] uppercase text-navy/40 hidden sm:block">{card.caption}</div>
+              <div className="absolute top-5 right-6 font-mono text-[9px] tracking-[0.2em] uppercase text-white/55 hidden sm:block">{card.coords}</div>
               <div className="absolute left-0 right-0 bottom-0 p-7 sm:p-9 text-white">
                 <div className="text-[10px] tracking-[0.36em] uppercase text-gold-light">{card.eyebrow}</div>
                 <h3 className="mt-3.5 font-serif font-light text-[clamp(28px,4vw,52px)] leading-[1.04]">
