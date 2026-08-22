@@ -74,13 +74,15 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
       viewBox={`0 0 ${geometry.w} ${geometry.h}`}
       aria-hidden="true"
     >
-      <defs>
-        <filter id="tier2-flight-glow" x="-80%" y="-80%" width="260%" height="260%">
-          <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#e3c682" floodOpacity="0.6" />
-        </filter>
-      </defs>
-
-      <path id="tier2-flight-path" d={geometry.d} stroke="#e3c682" strokeWidth="1.4" fill="none" filter="url(#tier2-flight-glow)" />
+      <path
+        id="tier2-flight-path"
+        d={geometry.d}
+        stroke="#e3c682"
+        strokeWidth="1.6"
+        fill="none"
+        vectorEffect="non-scaling-stroke"
+        strokeLinecap="round"
+      />
 
       {stops.map((s, i) => (
         <g key={s.id} id={`tier2-landing-${s.id}`} data-landing transform={`translate(${geometry.stopPoints[i].x} ${geometry.stopPoints[i].y})`}>
