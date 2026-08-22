@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+tsconfig.tsbuildinfo
+work/
+
+# Raw source video/photo — not shipped; transcoded copies live in public/media.
+# Kept locally only, not versioned (large binaries, no LFS configured).
+/*.mp4
+/WhatsApp Image*.jpeg
