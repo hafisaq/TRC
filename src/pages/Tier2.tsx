@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import DotMap, { type DotMapHandle } from "../components/tier2/DotMap";
 import Tier2Hero from "../components/tier2/Tier2Hero";
-import Tier2Plane from "../components/tier2/Tier2Plane";
+import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Stop, { type StopTheme } from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
@@ -75,11 +75,6 @@ export default function Tier2() {
   return (
     <div className="relative bg-ink min-h-screen text-white font-sans overflow-hidden">
       <DotMap ref={dotMapRef} className="fixed inset-0 z-0" />
-      <div
-        className="fixed inset-0 z-[1] pointer-events-none"
-        style={{ background: "radial-gradient(circle at 50% 42%, rgba(14,13,12,0), rgba(14,13,12,.75) 78%)" }}
-      />
-      <Tier2Plane />
 
       <a
         href="/"
@@ -88,7 +83,8 @@ export default function Tier2() {
         ← Main site
       </a>
 
-      <main className="relative z-10">
+      <main id="tier2-journey" className="relative z-10">
+        <Tier2FlightPath stops={STOPS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }))} />
         <Tier2Hero />
         {STOPS.map((s, i) => (
           <Stop
@@ -105,8 +101,8 @@ export default function Tier2() {
             theme={s.theme}
           />
         ))}
-        <Tier2Enquire />
       </main>
+      <Tier2Enquire />
     </div>
   );
 }

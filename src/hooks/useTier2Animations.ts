@@ -2,13 +2,12 @@ import { useEffect, type RefObject } from "react";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import type { DotMapHandle } from "../components/tier2/DotMap";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
 const $ = <T extends Element>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
-const $$ = <T extends Element>(selector: string, root: ParentNode = document) =>
-  Array.from(root.querySelectorAll<T>(selector));
 
 const safePlay = (video: HTMLVideoElement) => {
   const source = video.querySelector<HTMLSourceElement>("source[data-src]");
@@ -29,6 +28,32 @@ export type Tier2Stop = {
 };
 
 const ACCENT_FOR_THEME = { gold: "#ffffff", white: "#c8a24c" } as const;
+const DEFAULT_ACCENT = "#e3c682";
+
+/**
+ * Tier2FlightPath measures the journey's real pixel height in its own
+ * effect and only then renders the SVG (path/plane start as null). That
+ * commit can land in a separate React flush than this hook's — even with
+ * useLayoutEffect on both sides, in practice the SVG isn't guaranteed to
+ * exist yet when this runs. MutationObserver sidesteps the race entirely
+ * (and isn't rAF-gated, so it isn't affected by tab-visibility throttling
+ * either): fire once the elements genuinely exist in the DOM.
+ */
+function whenElementsExist(ids: string[], callback: () => void): () => void {
+  const ready = () => ids.every((id) => document.getElementById(id));
+  if (ready()) {
+    callback();
+    return () => {};
+  }
+  const observer = new MutationObserver(() => {
+    if (ready()) {
+      observer.disconnect();
+      callback();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  return () => observer.disconnect();
+}
 
 export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, stops: Tier2Stop[]) {
   useEffect(() => {
@@ -50,101 +75,22 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
     }
 
     const ctx = gsap.context(() => {
-      // ---- hero entrance ----
+      // ---- hero entrance (text only — the plane belongs to the flight path now) ----
       const tl = gsap.timeline({ delay: 0.2 });
       tl.to("#tier2-emblem", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
-      tl.to(
-        "#tier2-title",
-        { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1.1, ease: "power3.out" },
-        "-=0.5"
-      );
+      tl.to("#tier2-title", { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1.1, ease: "power3.out" }, "-=0.5");
       tl.to("#tier2-subtitle", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.8 }, "-=0.6");
       tl.to("#tier2-kicker", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.8 }, "-=0.5");
-
-      if (!prefersReducedMotion) {
-        const path = $<SVGPathElement>("#tier2-hero-trail-path");
-        const plane = $<SVGGElement>("#tier2-hero-trail-plane");
-        const wrap = path?.closest("svg");
-        if (path && plane && wrap) {
-          const length = path.getTotalLength();
-          gsap.set(path, { strokeDasharray: length, strokeDashoffset: length });
-          gsap.set(wrap, { opacity: 1 });
-          const trailTl = gsap.timeline();
-          trailTl.to(path, { strokeDashoffset: 0, duration: 2, ease: "power1.inOut" }, 0);
-          trailTl.to(
-            plane,
-            { motionPath: { path, align: path, autoRotate: true, alignOrigin: [0.5, 0.5] }, duration: 2, ease: "power1.inOut" },
-            0
-          );
-          tl.add(trailTl, "-=1.4");
-        }
-      } else {
+      if (prefersReducedMotion) {
         gsap.set("#tier2-emblem, #tier2-title, #tier2-subtitle, #tier2-kicker", { opacity: 1 });
       }
 
-      // ---- persistent center plane: idle drift, retints per landing, and a "landing" beat ----
-      const centerPlane = $<HTMLElement>("#tier2-center-plane");
-      const planeIcon = $<SVGPathElement>("#tier2-plane-icon");
-      const planeSquiggle = $<SVGPathElement>("#tier2-plane-squiggle");
-      const pulse = $<HTMLElement>("#tier2-plane-pulse");
-      const pulseGlow = $<HTMLElement>("#tier2-plane-pulse-glow");
-      const pulseRing = $<HTMLElement>("#tier2-plane-pulse-ring");
-      const pulseCoords = $<HTMLElement>("#tier2-plane-pulse-coords");
-      if (centerPlane) gsap.set(centerPlane, { xPercent: -50, yPercent: -50 });
-
-      let idleDrift: gsap.core.Tween | null = null;
-      const landPlane = (accent: string, coords: string) => {
-        if (!centerPlane) return;
-        if (prefersReducedMotion) {
-          if (planeIcon) gsap.set(planeIcon, { fill: accent });
-          if (planeSquiggle) gsap.set(planeSquiggle, { stroke: accent });
-          if (pulseCoords) pulseCoords.textContent = coords;
-          return;
-        }
-
-        idleDrift?.pause();
-        const beat = gsap.timeline({ onComplete: () => idleDrift?.play() });
-        beat
-          .to(centerPlane, { x: 0, y: 0, rotation: 0, scale: 1.3, duration: 0.4, ease: "power2.out" })
-          .to([planeIcon, planeSquiggle].filter(Boolean), { fill: accent, stroke: accent, duration: 0.3 }, "<")
-          .to(centerPlane, { scale: 0.85, opacity: 0.35, duration: 0.35, ease: "power2.in" })
-          .to(centerPlane, { scale: 1, opacity: 1, rotation: 6, duration: 0.55, ease: "power2.out" });
-
-        if (pulse && pulseGlow && pulseRing && pulseCoords) {
-          pulseCoords.textContent = coords;
-          gsap.set([pulseGlow, pulseRing], { backgroundColor: accent, borderColor: accent });
-          gsap.set(pulseCoords, { color: accent });
-          beat.set(pulse, { opacity: 1 }, "-=0.5");
-          beat.fromTo(pulseGlow, { scale: 0.6, opacity: 0.9 }, { scale: 2.6, opacity: 0, duration: 1.1, ease: "power2.out" }, "<");
-          beat.fromTo(pulseRing, { scale: 0.6, opacity: 1 }, { scale: 1.8, opacity: 0, duration: 1.1, ease: "power2.out" }, "<0.15");
-          beat.to(pulse, { opacity: 0, duration: 0.6, delay: 1.2 });
-        }
-      };
-
-      if (centerPlane) {
-        if (prefersReducedMotion) {
-          gsap.set(centerPlane, { opacity: 0 });
-        } else {
-          tl.to(centerPlane, { opacity: 1, duration: 0.8 }, "-=0.3");
-          tl.call(() => {
-            idleDrift = gsap.to(centerPlane, {
-              x: 22,
-              y: -16,
-              rotation: 10,
-              duration: 3.4,
-              yoyo: true,
-              repeat: -1,
-              ease: "sine.inOut"
-            });
-          });
-        }
-      }
-
-      // ---- each stop: land the plane (retinted + pulsing coords), then text + video, burst the dot map ----
+      // ---- each stop: landing pulse (at its exact path point) + text/video reveal ----
       stops.forEach((stop) => {
         const section = $<HTMLElement>(`#${stop.id}`);
         if (!section) return;
         const text = $<HTMLElement>("[data-stop-text]", section);
+        const wash = $<HTMLElement>("[data-stop-wash]", section);
         const videoWrap = $<HTMLElement>("[data-stop-video]", section);
         const video = videoWrap?.querySelector<HTMLVideoElement>("video") ?? null;
         const accent = ACCENT_FOR_THEME[stop.theme];
@@ -154,9 +100,19 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           start: "top 55%",
           once: true,
           onEnter: () => {
-            landPlane(accent, stop.coords);
-            const revealDelay = prefersReducedMotion ? 0 : 0.35;
+            const revealDelay = prefersReducedMotion ? 0 : 0.2;
 
+            const landing = $<SVGGElement>(`#tier2-landing-${stop.id}`);
+            const glow = landing?.querySelector<SVGCircleElement>("[data-landing-glow]");
+            const ring = landing?.querySelector<SVGCircleElement>("[data-landing-ring]");
+            if (glow && ring) {
+              gsap.set([glow, ring], { fill: accent, stroke: accent });
+              gsap.fromTo(glow, { attr: { r: 4 }, opacity: 0.9 }, { attr: { r: 46 }, opacity: 0, duration: 1.2, ease: "power2.out" });
+              gsap.fromTo(ring, { attr: { r: 4 }, opacity: 1 }, { attr: { r: 30 }, opacity: 0, duration: 1.2, ease: "power2.out", delay: 0.1 });
+            }
+            if (wash) {
+              gsap.to(wash, { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
+            }
             if (text) {
               gsap.fromTo(
                 text,
@@ -172,7 +128,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
               );
             }
             if (video) safePlay(video);
-            dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent === "#ffffff" ? "#ffffff" : "#c8a24c");
+            dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
           }
         });
       });
@@ -193,6 +149,78 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         });
       }
     });
+
+    // ---- the flight path: one continuous scroll-scrubbed line + plane ----
+    // Set up separately once its SVG genuinely exists in the DOM (see
+    // whenElementsExist above) rather than assuming effect-ordering timing.
+    const stopFlightWatch = whenElementsExist(["tier2-journey", "tier2-flight-path", "tier2-flight-plane"], () => {
+      const flightCtx = gsap.context(() => {
+        const journey = $<HTMLElement>("#tier2-journey")!;
+        const path = $<SVGPathElement>("#tier2-flight-path")!;
+        const plane = $<SVGGElement>("#tier2-flight-plane")!;
+        const planeIcon = $<SVGPathElement>("#tier2-flight-plane-icon");
+
+        const length = path.getTotalLength();
+        gsap.set(path, { strokeDasharray: length, strokeDashoffset: prefersReducedMotion ? 0 : length, opacity: 1 });
+        gsap.set(plane, { opacity: 1 });
+
+        const planeTween = gsap.to(plane, {
+          motionPath: { path, align: path, autoRotate: true, alignOrigin: [0.5, 0.5] },
+          duration: 1,
+          ease: "none",
+          paused: true
+        });
+
+        // Each stop owns a vertical band of scroll progress; while inside
+        // it, the path/plane wear that stop's accent color.
+        const journeyHeight = journey.scrollHeight;
+        const zones = stops.map((s) => {
+          const el = document.getElementById(s.id);
+          const center = el ? el.offsetTop + el.offsetHeight / 2 : 0;
+          return { progress: journeyHeight ? center / journeyHeight : 0, accent: ACCENT_FOR_THEME[s.theme] };
+        });
+
+        let currentAccent = DEFAULT_ACCENT;
+        const setAccent = (accent: string) => {
+          if (accent === currentAccent) return;
+          currentAccent = accent;
+          gsap.to([path, planeIcon].filter(Boolean), { stroke: accent, fill: accent, duration: 0.5, ease: "power2.out" });
+        };
+
+        if (prefersReducedMotion) {
+          planeTween.progress(1);
+        } else {
+          const applyProgress = (progress: number) => {
+            gsap.set(path, { strokeDashoffset: length * (1 - progress) });
+            planeTween.progress(progress);
+
+            let accent = DEFAULT_ACCENT;
+            for (const zone of zones) {
+              if (progress >= zone.progress - 0.06) accent = zone.accent;
+            }
+            setAccent(accent);
+          };
+
+          const trigger = ScrollTrigger.create({
+            trigger: journey,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 0.4,
+            onUpdate: (self) => applyProgress(self.progress)
+          });
+
+          // ScrollTrigger only calls onUpdate on an actual scroll event, so
+          // without this the plane never renders its path-start position
+          // until the user first scrolls.
+          applyProgress(trigger.progress);
+        }
+
+        ScrollTrigger.refresh();
+      });
+
+      cleanups.push(() => flightCtx.revert());
+    });
+    cleanups.push(stopFlightWatch);
 
     return () => {
       cleanups.forEach((fn) => fn());

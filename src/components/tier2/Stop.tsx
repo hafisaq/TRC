@@ -15,27 +15,27 @@ type StopProps = {
 
 const THEME_STYLES: Record<
   StopTheme,
-  { section: string; heading: string; copy: string; eyebrow: string; seasonText: string; tagBorder: string; tagText: string; frame: string; link: string }
+  { wash: string; heading: string; copy: string; eyebrow: string; seasonText: string; tagBorder: string; tagText: string; frame: string; link: string }
 > = {
   gold: {
-    section: "bg-[linear-gradient(155deg,#c8a24c_0%,#b08d3f_100%)]",
+    wash: "linear-gradient(155deg,rgba(200,162,76,.72) 0%,rgba(176,141,63,.72) 100%)",
     heading: "text-white",
-    copy: "text-white/78",
+    copy: "text-white/80",
     eyebrow: "text-white/85",
-    seasonText: "text-white/70",
+    seasonText: "text-white/75",
     tagBorder: "border-white/30",
-    tagText: "text-white/75",
+    tagText: "text-white/80",
     frame: "border-white/35",
     link: "text-white border-white/40"
   },
   white: {
-    section: "bg-cream",
+    wash: "rgba(250,248,244,.72)",
     heading: "text-navy",
-    copy: "text-navy/65",
+    copy: "text-navy/70",
     eyebrow: "text-gold-deep",
     seasonText: "text-gold-deep",
     tagBorder: "border-navy/15",
-    tagText: "text-navy/55",
+    tagText: "text-navy/60",
     frame: "border-gold/45",
     link: "text-gold-deep border-gold-deep/40"
   }
@@ -45,12 +45,13 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
   const t = THEME_STYLES[theme];
 
   return (
-    <section
-      id={id}
-      data-tier2-stop={id}
-      data-stop-theme={theme}
-      className={`relative h-[100svh] w-full flex items-center justify-center px-6 overflow-hidden ${t.section}`}
-    >
+    <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative h-[100svh] w-full flex items-center justify-center px-6 overflow-hidden">
+      <div
+        data-stop-wash
+        className="absolute inset-0 opacity-0 backdrop-blur-[2px]"
+        style={{ background: t.wash }}
+      />
+
       <div className="relative max-w-[1100px] w-full grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
         <div data-stop-text className="text-center lg:text-left opacity-0">
           <div className={`font-mono text-[10px] tracking-[0.3em] ${t.seasonText}`}>

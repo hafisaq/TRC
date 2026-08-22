@@ -1,17 +1,6 @@
-import PlaneTrail from "../PlaneTrail";
-
 export default function Tier2Hero() {
   return (
-    <section className="relative h-[100svh] w-full flex flex-col items-center justify-center text-center px-6">
-      <PlaneTrail
-        id="tier2-hero-trail"
-        viewBox="0 0 900 500"
-        pathD="M40,420 C260,340 340,140 460,180 C600,225 680,110 860,60"
-        color="#e3c682"
-        planeSize={28}
-        className="absolute inset-0 w-full h-full z-[1] pointer-events-none opacity-0"
-      />
-
+    <section id="tier2-hero" className="relative h-[100svh] w-full flex flex-col items-center justify-center text-center px-6">
       <div id="tier2-emblem" className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-gold/70 grid place-items-center opacity-0">
         <div className="absolute inset-2 rounded-full border border-gold/25 anim-ring" />
         <div className="w-2.5 h-2.5 rounded-full bg-gold" />
