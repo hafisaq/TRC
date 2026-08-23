@@ -184,7 +184,11 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         const setAccent = (accent: string) => {
           if (accent === currentAccent) return;
           currentAccent = accent;
-          gsap.to([path, planeIcon].filter(Boolean), { stroke: accent, fill: accent, duration: 0.5, ease: "power2.out" });
+          // path must never get a fill — it's an open, curvy stroke-only
+          // line; setting fill on it makes SVG render the enclosed area as
+          // a solid shape (the wedge). Only its stroke color should change.
+          gsap.to(path, { stroke: accent, duration: 0.5, ease: "power2.out" });
+          if (planeIcon) gsap.to(planeIcon, { fill: accent, duration: 0.5, ease: "power2.out" });
         };
 
         if (prefersReducedMotion) {
