@@ -68,6 +68,12 @@ const STOPS: StopData[] = [
   }
 ];
 
+// Computed once at module load — passing a freshly-mapped array as a prop
+// on every render would re-trigger Tier2FlightPath's measurement effect
+// (its useLayoutEffect depends on this array's identity) on every Tier2
+// re-render, which destroys and recreates the GSAP-bound SVG elements.
+const FLIGHT_STOPS = STOPS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }));
+
 export default function Tier2() {
   const dotMapRef = useRef<DotMapHandle>(null);
   useTier2Animations(dotMapRef, STOPS);
@@ -84,7 +90,7 @@ export default function Tier2() {
       </a>
 
       <main id="tier2-journey" className="relative z-10">
-        <Tier2FlightPath stops={STOPS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }))} />
+        <Tier2FlightPath stops={FLIGHT_STOPS} />
         <Tier2Hero />
         {STOPS.map((s, i) => (
           <Stop

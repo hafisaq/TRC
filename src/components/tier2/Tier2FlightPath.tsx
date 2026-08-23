@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export type FlightStop = { id: string; theme: "gold" | "white"; coords: string };
 
@@ -24,6 +24,7 @@ function buildPath(points: Point[]): string {
  */
 export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
   const [geometry, setGeometry] = useState<{ w: number; h: number; d: string; stopPoints: Point[] } | null>(null);
+  const lastWidth = useRef(0);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -36,6 +37,13 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
       // degenerate zero-length path in permanently, since nothing else
       // forces a re-measure once it's set. Skip and wait for a real size.
       if (w === 0 || h === 0) return;
+      // Re-measuring replaces the SVG (new path/plane elements), which
+      // destroys whatever GSAP had already bound to the old ones — only
+      // worth doing for a genuine viewport-width change, not for content
+      // reflow (a wash fading in, a video's natural size resolving, a
+      // ScrollTrigger-driven transform) that ResizeObserver also reports.
+      if (w === lastWidth.current) return;
+      lastWidth.current = w;
 
       const heroPoint: Point = { x: w / 2, y: hero.offsetTop + hero.offsetHeight * 0.42 };
       const stopPoints: Point[] = stops.map((s, i) => {
