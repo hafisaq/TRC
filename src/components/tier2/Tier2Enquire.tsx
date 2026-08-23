@@ -1,9 +1,58 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import gsap from "gsap";
 
 const CABINS = ["Coast & islands", "Mountain & ice", "Desert & plain", "Cities & culture"];
 
+// A jagged torn-paper edge, built as a clip-path polygon.
+const TEETH = 14;
+const TORN_EDGE_CLIP = (() => {
+  const points: string[] = [];
+  for (let i = 0; i <= TEETH; i++) {
+    const y = (i / TEETH) * 100;
+    const x = i % 2 === 0 ? "0%" : "55%";
+    points.push(`${x} ${y}%`);
+  }
+  return `polygon(${points.join(", ")})`;
+})();
+
 export default function Tier2Enquire() {
   const [cabin, setCabin] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "tearing" | "sent">("idle");
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const stubRef = useRef<HTMLDivElement>(null);
+  const tornEdgeRef = useRef<HTMLDivElement>(null);
+  const buttonTextRef = useRef<HTMLSpanElement>(null);
+  const confirmedRef = useRef<HTMLDivElement>(null);
+
+  const handleSubmit = () => {
+    if (status !== "idle") return;
+    setStatus("tearing");
+
+    const tl = gsap.timeline();
+    if (cardRef.current) {
+      tl.to(cardRef.current, { rotation: -0.6, duration: 0.08, ease: "power1.inOut" })
+        .to(cardRef.current, { rotation: 0.6, duration: 0.08, ease: "power1.inOut" })
+        .to(cardRef.current, { rotation: 0, duration: 0.08, ease: "power1.inOut" });
+    }
+    if (stubRef.current) {
+      tl.to(
+        stubRef.current,
+        { x: 90, y: 46, rotation: 16, opacity: 0, duration: 0.65, ease: "power2.in" },
+        "-=0.05"
+      );
+    }
+    if (tornEdgeRef.current) {
+      tl.to(tornEdgeRef.current, { opacity: 1, duration: 0.3 }, "-=0.4");
+    }
+    if (buttonTextRef.current) {
+      tl.to(buttonTextRef.current, { opacity: 0, y: -8, duration: 0.25 }, "-=0.5");
+    }
+    tl.call(() => setStatus("sent"));
+    if (confirmedRef.current) {
+      tl.fromTo(confirmedRef.current, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
+    }
+  };
 
   return (
     <section id="tier2-enquire" data-tier2-stop="tier2-enquire" className="relative min-h-[100svh] w-full flex items-center justify-center px-5 sm:px-6 py-24">
@@ -16,9 +65,15 @@ export default function Tier2Enquire() {
         </div>
 
         {/* boarding pass */}
-        <div className="relative flex flex-col sm:flex-row rounded-2xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,.55)]">
+        <div ref={cardRef} className="relative flex flex-col sm:flex-row rounded-2xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,.55)]">
           {/* main stub */}
-          <div className="relative flex-1 bg-cream px-6 sm:px-9 py-8 sm:py-9" style={{ fontFamily: "var(--font-type)" }}>
+          <div ref={mainRef} className="relative flex-1 bg-cream px-6 sm:px-9 py-8 sm:py-9" style={{ fontFamily: "var(--font-type)" }}>
+            <div
+              ref={tornEdgeRef}
+              aria-hidden="true"
+              className="hidden sm:block absolute top-0 right-0 bottom-0 w-4 bg-cream opacity-0"
+              style={{ clipPath: TORN_EDGE_CLIP, transform: "translateX(2px)" }}
+            />
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-navy/50">The Retreat Collection</div>
@@ -51,7 +106,8 @@ export default function Tier2Enquire() {
               <input
                 type="text"
                 placeholder="YOUR NAME"
-                className="w-full box-border mt-2 bg-transparent border-0 border-b border-navy/25 text-navy uppercase tracking-[0.08em] text-[15px] sm:text-[16px] py-2 outline-none transition-colors duration-300 focus:border-gold placeholder:text-navy/30"
+                disabled={status !== "idle"}
+                className="w-full box-border mt-2 bg-transparent border-0 border-b border-navy/25 text-navy uppercase tracking-[0.08em] text-[15px] sm:text-[16px] py-2 outline-none transition-colors duration-300 focus:border-gold placeholder:text-navy/30 disabled:opacity-50"
                 style={{ fontFamily: "var(--font-type)" }}
               />
             </label>
@@ -61,7 +117,8 @@ export default function Tier2Enquire() {
               <input
                 type="email"
                 placeholder="you@address.com"
-                className="w-full box-border mt-2 bg-transparent border-0 border-b border-navy/25 text-navy tracking-[0.03em] text-[15px] sm:text-[16px] py-2 outline-none transition-colors duration-300 focus:border-gold placeholder:text-navy/30"
+                disabled={status !== "idle"}
+                className="w-full box-border mt-2 bg-transparent border-0 border-b border-navy/25 text-navy tracking-[0.03em] text-[15px] sm:text-[16px] py-2 outline-none transition-colors duration-300 focus:border-gold placeholder:text-navy/30 disabled:opacity-50"
                 style={{ fontFamily: "var(--font-type)" }}
               />
             </label>
@@ -72,8 +129,9 @@ export default function Tier2Enquire() {
                 <button
                   key={c}
                   type="button"
+                  disabled={status !== "idle"}
                   onClick={() => setCabin(c === cabin ? null : c)}
-                  className={`text-[9.5px] tracking-[0.15em] uppercase px-3.5 py-2 border transition-colors duration-200 ${
+                  className={`text-[9.5px] tracking-[0.15em] uppercase px-3.5 py-2 border transition-colors duration-200 disabled:opacity-50 ${
                     cabin === c ? "border-gold bg-gold/10 text-navy" : "border-navy/20 text-navy/60 hover:border-navy/40"
                   }`}
                   style={{ fontFamily: "var(--font-type)" }}
@@ -97,7 +155,7 @@ export default function Tier2Enquire() {
           </div>
 
           {/* stub */}
-          <div className="relative w-full sm:w-[210px] bg-cream-deep px-6 sm:px-6 py-8 sm:py-9 flex flex-col justify-between" style={{ fontFamily: "var(--font-type)" }}>
+          <div ref={stubRef} className="relative w-full sm:w-[210px] bg-cream-deep px-6 sm:px-6 py-8 sm:py-9 flex flex-col justify-between" style={{ fontFamily: "var(--font-type)" }}>
             <div>
               <div className="text-[9px] tracking-[0.25em] uppercase text-navy/45">Flight</div>
               <div className="mt-1 text-[15px] tracking-[0.08em] text-navy">TRC · 001</div>
@@ -131,9 +189,14 @@ export default function Tier2Enquire() {
 
         <button
           type="button"
-          className="magnetic mt-6 w-full bg-gold border-0 text-white text-[11px] tracking-[0.3em] uppercase py-5 cursor-pointer transition-colors duration-400 hover:bg-[#b08d3f]"
+          onClick={handleSubmit}
+          disabled={status !== "idle"}
+          className="relative magnetic mt-6 w-full bg-gold border-0 text-white text-[11px] tracking-[0.3em] uppercase py-5 cursor-pointer transition-colors duration-400 hover:bg-[#b08d3f] disabled:cursor-default overflow-hidden"
         >
-          ✂ Confirm enquiry
+          <span ref={buttonTextRef} className="inline-block">✂ Confirm enquiry</span>
+          <div ref={confirmedRef} className="absolute inset-0 flex items-center justify-center opacity-0">
+            Sent — we'll be in touch within 24 hours
+          </div>
         </button>
 
         <div className="mt-8 pt-6 border-t border-white/12 text-center text-[10px] tracking-[0.26em] uppercase text-white/35">

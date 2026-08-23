@@ -8,6 +8,7 @@ import type { DotMapHandle } from "../components/tier2/DotMap";
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
 const $ = <T extends Element>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
+const $$ = <T extends Element>(selector: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(selector));
 
 const safePlay = (video: HTMLVideoElement) => {
   const source = video.querySelector<HTMLSourceElement>("source[data-src]");
@@ -89,7 +90,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
       stops.forEach((stop) => {
         const section = $<HTMLElement>(`#${stop.id}`);
         if (!section) return;
-        const text = $<HTMLElement>("[data-stop-text]", section);
+        const texts = $$<HTMLElement>("[data-stop-text]", section);
         const wash = $<HTMLElement>("[data-stop-wash]", section);
         const videoWrap = $<HTMLElement>("[data-stop-video]", section);
         const video = videoWrap?.querySelector<HTMLVideoElement>("video") ?? null;
@@ -113,11 +114,11 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             if (wash) {
               gsap.to(wash, { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
             }
-            if (text) {
+            if (texts.length) {
               gsap.fromTo(
-                text,
+                texts,
                 { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
-                { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, delay: revealDelay, ease: "power3.out" }
+                { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, delay: revealDelay, ease: "power3.out", stagger: 0.08 }
               );
             }
             if (videoWrap) {

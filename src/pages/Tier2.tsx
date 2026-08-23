@@ -2,7 +2,7 @@ import { useRef } from "react";
 import DotMap, { type DotMapHandle } from "../components/tier2/DotMap";
 import Tier2Hero from "../components/tier2/Tier2Hero";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
-import Stop, { type StopTheme } from "../components/tier2/Stop";
+import Stop, { type StopTheme, type StopLayout } from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
 
@@ -15,6 +15,7 @@ type StopData = Tier2Stop & {
   season: string;
   highlights: string[];
   theme: StopTheme;
+  layout: StopLayout;
 };
 
 const STOPS: StopData[] = [
@@ -28,7 +29,8 @@ const STOPS: StopData[] = [
     slug: "alpine-ridge",
     season: "Dec – Mar",
     highlights: ["Private guide", "Heli access", "3-night minimum"],
-    theme: "white"
+    theme: "white",
+    layout: "split"
   },
   {
     id: "tier2-bali",
@@ -40,7 +42,8 @@ const STOPS: StopData[] = [
     slug: "bali-coast",
     season: "Apr – Oct",
     highlights: ["Private villa", "Boat included", "Chef on call"],
-    theme: "gold"
+    theme: "gold",
+    layout: "cinematic"
   },
   {
     id: "tier2-desert",
@@ -52,7 +55,8 @@ const STOPS: StopData[] = [
     slug: "desert-ruins",
     season: "Jun – Sep",
     highlights: ["Mobile camp", "Star-bed nights", "4x4 included"],
-    theme: "white"
+    theme: "white",
+    layout: "portal"
   },
   {
     id: "tier2-cities",
@@ -64,7 +68,8 @@ const STOPS: StopData[] = [
     slug: "reef-dive",
     season: "Year-round",
     highlights: ["Private access", "Local designer", "No fixed hours"],
-    theme: "gold"
+    theme: "gold",
+    layout: "editorial"
   }
 ];
 
@@ -105,6 +110,7 @@ export default function Tier2() {
             season={s.season}
             highlights={s.highlights}
             theme={s.theme}
+            layout={s.layout}
           />
         ))}
       </main>
