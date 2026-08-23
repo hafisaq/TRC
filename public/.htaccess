@@ -1,0 +1,20 @@
+# SPA fallback: this site does its own routing in JS (see src/main.tsx,
+# which switches between the main site and /tier2 based on the URL path).
+# A plain Apache static host has no idea /tier2 is a valid route — without
+# this, a direct visit or refresh on /tier2 returns a 404 instead of
+# loading index.html and letting the app take over.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Let real files and directories (JS, CSS, media, etc.) serve normally.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else (including /tier2) falls back to index.html.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Don't let visitors browse folder contents directly.
+Options -Indexes
