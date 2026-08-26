@@ -1,14 +1,14 @@
 export default function Tier2Hero() {
   return (
-    <section id="tier2-hero" className="relative h-[92svh] min-h-[640px] sm:h-[100svh] sm:min-h-0 w-full flex flex-col items-center justify-center text-center px-5">
-      <div id="tier2-emblem" className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-full border border-gold/70 grid place-items-center opacity-0">
+    <section id="tier2-hero" className="relative h-[92svh] min-h-[640px] sm:h-[100svh] sm:min-h-0 w-full flex flex-col items-center justify-center text-center px-5 pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+84px)] sm:pt-0 sm:pb-0">
+      <div id="tier2-emblem" className="relative w-20 h-20 sm:w-28 sm:h-28 scale-90 rounded-full border border-gold/70 grid place-items-center opacity-0">
         <div className="absolute inset-2 rounded-full border border-gold/25 anim-ring" />
         <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-gold" />
       </div>
 
       <h1
         id="tier2-title"
-        className="mt-7 sm:mt-8 font-serif font-light text-white text-[clamp(44px,16vw,120px)] leading-[0.95] tracking-[0.02em] opacity-0"
+        className="mt-7 sm:mt-8 translate-y-4 font-serif font-light text-white text-[clamp(44px,16vw,120px)] leading-[0.95] tracking-[0.02em] opacity-0"
       >
         The Retreat
       </h1>

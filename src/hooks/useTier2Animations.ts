@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import type { DotMapHandle } from "../components/tier2/DotMap";
+import { setActiveLenis } from "../lib/scroll";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
@@ -26,6 +27,12 @@ export type Tier2Stop = {
   mapPos: [number, number];
   theme: "gold" | "white";
   coords: string;
+};
+
+type Tier2AnimationOptions = {
+  onActiveStopChange?: (id: string) => void;
+  onProgressChange?: (progress: number) => void;
+  heroReady?: boolean;
 };
 
 const ACCENT_FOR_THEME = { gold: "#ffffff", white: "#c8a24c" } as const;
@@ -56,14 +63,17 @@ function whenElementsExist(ids: string[], callback: () => void): () => void {
   return () => observer.disconnect();
 }
 
-export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, stops: Tier2Stop[]) {
+export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, stops: Tier2Stop[], options: Tier2AnimationOptions = {}) {
   useEffect(() => {
+    if (!options.heroReady) return;
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const cleanups: Array<() => void> = [];
     let lenis: Lenis | null = null;
 
     if (!prefersReducedMotion) {
       lenis = new Lenis({ duration: 1.15, smoothWheel: true, wheelMultiplier: 0.85, touchMultiplier: 1.15 });
+      setActiveLenis(lenis);
       const onScroll = () => ScrollTrigger.update();
       lenis.on("scroll", onScroll);
       const tick = (time: number) => lenis?.raf(time * 1000);
@@ -71,17 +81,18 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
       gsap.ticker.lagSmoothing(0);
       cleanups.push(() => {
         gsap.ticker.remove(tick);
+        setActiveLenis(null);
         lenis?.destroy();
       });
     }
 
     const ctx = gsap.context(() => {
-      // ---- hero entrance (text only — the plane belongs to the flight path now) ----
-      const tl = gsap.timeline({ delay: 0.2 });
-      tl.to("#tier2-emblem", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
-      tl.to("#tier2-title", { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1.1, ease: "power3.out" }, "-=0.5");
-      tl.to("#tier2-subtitle", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.8 }, "-=0.6");
-      tl.to("#tier2-kicker", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.8 }, "-=0.5");
+      // ---- hero entrance (the flight path/plane wake up in the SVG block below) ----
+      const tl = gsap.timeline({ delay: prefersReducedMotion ? 0 : 0.1 });
+      tl.to("#tier2-emblem", { opacity: 1, scale: 1, duration: prefersReducedMotion ? 0 : 0.8, ease: "power2.out" });
+      tl.to("#tier2-title", { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 1.1, ease: "power3.out" }, "-=0.35");
+      tl.to("#tier2-subtitle", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.75 }, "-=0.6");
+      tl.to("#tier2-kicker", { opacity: 1, duration: prefersReducedMotion ? 0 : 0.75 }, "-=0.45");
       if (prefersReducedMotion) {
         gsap.set("#tier2-emblem, #tier2-title, #tier2-subtitle, #tier2-kicker", { opacity: 1 });
       }
@@ -91,6 +102,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         const section = $<HTMLElement>(`#${stop.id}`);
         if (!section) return;
         const texts = $$<HTMLElement>("[data-stop-text]", section);
+        const titles = $$<HTMLElement>("[data-stop-title]", section);
         const wash = $<HTMLElement>("[data-stop-wash]", section);
         const videoWrap = $<HTMLElement>("[data-stop-video]", section);
         const video = videoWrap?.querySelector<HTMLVideoElement>("video") ?? null;
@@ -121,6 +133,13 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
                 { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, delay: revealDelay, ease: "power3.out", stagger: 0.08 }
               );
             }
+            if (titles.length) {
+              gsap.fromTo(
+                titles,
+                { opacity: 0, y: prefersReducedMotion ? 0 : 16 },
+                { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.95, delay: revealDelay + 0.16, ease: "power3.out", stagger: 0.04 }
+              );
+            }
             if (videoWrap) {
               gsap.fromTo(
                 videoWrap,
@@ -131,6 +150,14 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             if (video) safePlay(video);
             dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
           }
+        });
+
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 58%",
+          end: "bottom 42%",
+          onEnter: () => options.onActiveStopChange?.(stop.id),
+          onEnterBack: () => options.onActiveStopChange?.(stop.id)
         });
       });
 
@@ -206,10 +233,12 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
 
         if (prefersReducedMotion) {
           planeTween.progress(1);
+          options.onProgressChange?.(1);
         } else {
           const applyProgress = (progress: number) => {
             gsap.set(path, { strokeDashoffset: length * (1 - progress) });
             planeTween.progress(progress);
+            options.onProgressChange?.(progress);
 
             let accent = DEFAULT_ACCENT;
             for (const zone of zones) {
@@ -243,5 +272,5 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
       cleanups.forEach((fn) => fn());
       ctx.revert();
     };
-  }, []);
+  }, [options.heroReady]);
 }

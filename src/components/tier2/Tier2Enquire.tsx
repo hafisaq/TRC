@@ -1,8 +1,7 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
+import type { Destination } from "../../data/tier2Destinations";
 import { submitEnquiry } from "../../lib/enquiry";
-
-const CABINS = ["Coast & islands", "Mountain & ice", "Desert & plain", "Cities & culture"];
 
 // A jagged torn-paper edge, built as a clip-path polygon.
 const TEETH = 14;
@@ -16,8 +15,13 @@ const TORN_EDGE_CLIP = (() => {
   return `polygon(${points.join(", ")})`;
 })();
 
-export default function Tier2Enquire() {
-  const [cabin, setCabin] = useState<string | null>(null);
+type Tier2EnquireProps = {
+  selectedInterest: string | null;
+  destinations: Destination[];
+};
+
+export default function Tier2Enquire({ selectedInterest, destinations }: Tier2EnquireProps) {
+  const [cabin, setCabin] = useState<string | null>(selectedInterest);
   const [status, setStatus] = useState<"idle" | "tearing" | "sent">("idle");
   const cardRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -25,6 +29,14 @@ export default function Tier2Enquire() {
   const tornEdgeRef = useRef<HTMLDivElement>(null);
   const buttonTextRef = useRef<HTMLSpanElement>(null);
   const confirmedRef = useRef<HTMLDivElement>(null);
+  const selectedDestination = useMemo(
+    () => destinations.find((destination) => destination.interest === cabin),
+    [cabin, destinations]
+  );
+
+  useEffect(() => {
+    if (selectedInterest) setCabin(selectedInterest);
+  }, [selectedInterest]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -65,7 +77,7 @@ export default function Tier2Enquire() {
   };
 
   return (
-    <section id="tier2-enquire" data-tier2-stop="tier2-enquire" className="relative min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-6 py-16 sm:py-24">
+    <section id="tier2-enquire" data-tier2-stop="tier2-enquire" className="relative min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-6 pt-16 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:py-24">
       <div data-stop-text className="w-full max-w-[820px] opacity-0">
         <div className="text-center mb-7 sm:mb-9">
           <div className="text-[9px] sm:text-[10.5px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-gold-light">Journey's end</div>
@@ -143,18 +155,18 @@ export default function Tier2Enquire() {
 
             <div className="mt-6 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Cabin — where to</div>
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-2.5">
-              {CABINS.map((c) => (
+              {destinations.map((destination) => (
                 <button
-                  key={c}
+                  key={destination.id}
                   type="button"
                   disabled={status !== "idle"}
-                  onClick={() => setCabin(c === cabin ? null : c)}
+                  onClick={() => setCabin(destination.interest === cabin ? null : destination.interest)}
                   className={`min-h-10 text-[8.5px] sm:text-[9.5px] tracking-[0.08em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3.5 py-2 border transition-colors duration-200 disabled:opacity-50 ${
-                    cabin === c ? "border-gold bg-gold/10 text-navy" : "border-navy/20 text-navy/60 hover:border-navy/40"
+                    cabin === destination.interest ? "border-gold bg-gold/10 text-navy" : "border-navy/20 text-navy/60 hover:border-navy/40"
                   }`}
                   style={{ fontFamily: "var(--font-type)" }}
                 >
-                  {c}
+                  {destination.interest}
                 </button>
               ))}
             </div>
@@ -183,7 +195,7 @@ export default function Tier2Enquire() {
 
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Gate</div>
-                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">—</div>
+                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{selectedDestination?.gate ?? "--"}</div>
                 </div>
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Seat</div>

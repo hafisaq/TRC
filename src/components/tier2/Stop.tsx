@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react";
+
 export type StopTheme = "gold" | "white";
 export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
 
@@ -13,6 +15,8 @@ type StopProps = {
   highlights: string[];
   theme: StopTheme;
   layout: StopLayout;
+  interest: string;
+  onEnquire: (interest: string) => void;
 };
 
 const THEME_STYLES: Record<
@@ -66,8 +70,12 @@ function VideoTag({ slug, className = "" }: { slug: string; className?: string }
   );
 }
 
-export default function Stop({ id, index, eyebrow, title, copy, coords, slug, season, highlights, theme, layout }: StopProps) {
+export default function Stop({ id, index, eyebrow, title, copy, coords, slug, season, highlights, theme, layout, interest, onEnquire }: StopProps) {
   const t = THEME_STYLES[theme];
+  const handleEnquireClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    onEnquire(interest);
+  };
   const wash = (
     <div data-stop-wash className="absolute inset-0 opacity-0 backdrop-blur-[2px]" style={{ background: t.wash }} />
   );
@@ -84,7 +92,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
         <div data-stop-text className="relative min-h-[100svh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-14 sm:pb-20 opacity-0">
           <div className="font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] text-gold-light">{idx}</div>
           <div className="mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase text-gold-light">{eyebrow}</div>
-          <h2 className="mt-3 sm:mt-4 font-serif font-light text-white text-[clamp(38px,13vw,88px)] leading-[0.98] max-w-[720px]">
+          <h2 data-stop-title className="mt-3 sm:mt-4 font-serif font-light text-white text-[clamp(38px,13vw,88px)] leading-[0.98] max-w-[720px]">
             {title[0]}<br />{title[1]}
           </h2>
           <p className="mt-4 sm:mt-5 max-w-[440px] text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] text-white/78">{copy}</p>
@@ -96,7 +104,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
               </span>
             ))}
           </div>
-          <a href="#tier2-enquire" className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
+          <a href="#tier2-enquire" onClick={handleEnquireClick} className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
             Enquire about this route
           </a>
         </div>
@@ -124,7 +132,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
           </div>
 
           <div data-stop-text className="opacity-0 mt-6 sm:mt-7">
-            <h2 className={`font-serif font-light text-[clamp(34px,12vw,64px)] leading-[1.02] ${t.heading}`}>
+            <h2 data-stop-title className={`font-serif font-light text-[clamp(34px,12vw,64px)] leading-[1.02] ${t.heading}`}>
               {title[0]}<br />{title[1]}
             </h2>
             <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
@@ -136,7 +144,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
                 </span>
               ))}
             </div>
-            <a href="#tier2-enquire" className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+            <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
               Enquire about this route
             </a>
           </div>
@@ -162,7 +170,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
             <div>
               <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
               <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
-              <h2 className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(34px,11vw,58px)] leading-[1.02] ${t.heading}`}>
+              <h2 data-stop-title className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(34px,11vw,58px)] leading-[1.02] ${t.heading}`}>
                 {title[0]} {title[1]}
               </h2>
             </div>
@@ -176,7 +184,7 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
                   </span>
                 ))}
               </div>
-              <a href="#tier2-enquire" className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+              <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
                 Enquire about this route
               </a>
             </div>
@@ -194,14 +202,14 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
         <div data-stop-text className="text-center lg:text-left opacity-0">
           <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
           <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
-          <h2 className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(40px,13vw,72px)] leading-[1.02] ${t.heading}`}>
+          <h2 data-stop-title className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(40px,13vw,72px)] leading-[1.02] ${t.heading}`}>
             {title[0]}<br />{title[1]}
           </h2>
           <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto lg:mx-0 text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
           <div className="text-center lg:text-left">
             <Meta index={index} coords={coords} season={season} highlights={highlights} t={t} />
           </div>
-          <a href="#tier2-enquire" className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+          <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
             Enquire about this route
           </a>
         </div>
