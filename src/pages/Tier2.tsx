@@ -85,13 +85,13 @@ export default function Tier2() {
 
   return (
     <div className="relative bg-ink min-h-screen text-white font-sans overflow-hidden">
-      <DotMap ref={dotMapRef} className="fixed inset-0 z-0" />
-
+      <DotMap ref={dotMapRef} className="fixed inset-0 z-0 opacity-70 sm:opacity-100" />
       <a
-        href="/"
-        className="fixed top-6 left-6 z-50 text-[10px] tracking-[0.3em] uppercase text-white/45 hover:text-gold-light transition-colors"
+        id="mobile-enquire-cta"
+        href="#tier2-enquire"
+        className="fixed right-4 bottom-4 z-50 sm:hidden rounded-full border border-gold/45 bg-ink/72 px-4 py-3 text-[9px] tracking-[0.24em] uppercase text-gold-light backdrop-blur-md"
       >
-        ← Main site
+        Enquire
       </a>
 
       <main id="tier2-journey" className="relative z-10">

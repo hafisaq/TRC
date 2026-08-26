@@ -43,13 +43,13 @@ const THEME_STYLES: Record<
   }
 };
 
-function Meta({ index, coords, season, highlights, t }: { index: number; coords: string; season: string; highlights: string[]; t: typeof THEME_STYLES.gold }) {
+function Meta({ season, highlights, t }: { index: number; coords: string; season: string; highlights: string[]; t: typeof THEME_STYLES.gold }) {
   return (
     <>
-      <div className={`mt-5 text-[10px] tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+      <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
         {highlights.map((h) => (
-          <span key={h} className={`text-[9.5px] tracking-[0.15em] uppercase px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
+          <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
             {h}
           </span>
         ))}
@@ -75,28 +75,28 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
 
   if (layout === "cinematic") {
     return (
-      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative h-[100svh] w-full overflow-hidden">
+      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative min-h-[100svh] w-full overflow-hidden">
         {wash}
         <div data-stop-video className="group absolute inset-0 opacity-0">
           <VideoTag slug={slug} className="transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(0deg,rgba(0,0,0,.75) 0%,rgba(0,0,0,.15) 45%,rgba(0,0,0,.35) 100%)" }} />
         </div>
-        <div data-stop-text className="relative h-full flex flex-col justify-end px-6 sm:px-10 lg:px-16 pb-16 sm:pb-20 opacity-0">
-          <div className="font-mono text-[10px] tracking-[0.3em] text-gold-light">{idx}</div>
-          <div className="mt-3 text-[10.5px] tracking-[0.4em] uppercase text-gold-light">{eyebrow}</div>
-          <h2 className="mt-4 font-serif font-light text-white text-[clamp(38px,7vw,88px)] leading-[0.98] max-w-[720px]">
+        <div data-stop-text className="relative min-h-[100svh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-14 sm:pb-20 opacity-0">
+          <div className="font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] text-gold-light">{idx}</div>
+          <div className="mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase text-gold-light">{eyebrow}</div>
+          <h2 className="mt-3 sm:mt-4 font-serif font-light text-white text-[clamp(38px,13vw,88px)] leading-[0.98] max-w-[720px]">
             {title[0]}<br />{title[1]}
           </h2>
-          <p className="mt-5 max-w-[440px] text-[14.5px] font-light leading-[1.9] text-white/78">{copy}</p>
-          <div className="mt-5 text-[10px] tracking-[0.2em] uppercase text-white/70">Best season · {season}</div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <p className="mt-4 sm:mt-5 max-w-[440px] text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] text-white/78">{copy}</p>
+          <div className="mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-white/70">Best season · {season}</div>
+          <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
             {highlights.map((h) => (
-              <span key={h} className="text-[9.5px] tracking-[0.15em] uppercase px-3 py-1.5 border border-white/30 text-white/80">
+              <span key={h} className="text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border border-white/30 text-white/80">
                 {h}
               </span>
             ))}
           </div>
-          <a href="#tier2-enquire" className="inline-block mt-7 w-fit text-[10px] tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
+          <a href="#tier2-enquire" className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
             Enquire about this route
           </a>
         </div>
@@ -106,15 +106,15 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
 
   if (layout === "portal") {
     return (
-      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative h-[100svh] w-full flex items-center justify-center px-6 overflow-hidden">
+      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative min-h-[100svh] w-full flex items-center justify-center px-5 sm:px-6 py-16 sm:py-0 overflow-hidden">
         {wash}
         <div className="relative max-w-[620px] w-full flex flex-col items-center text-center">
           <div data-stop-text className="opacity-0 flex flex-col items-center">
-            <div className={`font-mono text-[10px] tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
-            <div className={`mt-3 text-[10.5px] tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
+            <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
+            <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
           </div>
 
-          <div data-stop-video className="group relative w-[240px] h-[240px] sm:w-[300px] sm:h-[300px] mt-7 opacity-0 scale-95">
+          <div data-stop-video className="group relative w-[210px] h-[210px] sm:w-[300px] sm:h-[300px] mt-6 sm:mt-7 opacity-0 scale-95">
             <div className={`absolute -inset-3 rounded-full border ${t.frame}`} />
             <div className={`absolute -inset-3 rounded-full border ${t.frame} opacity-40 anim-ring`} style={{ borderStyle: "dashed" }} />
             <div className="relative w-full h-full rounded-full overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.05]">
@@ -123,20 +123,20 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
             </div>
           </div>
 
-          <div data-stop-text className="opacity-0 mt-7">
-            <h2 className={`font-serif font-light text-[clamp(32px,5.5vw,64px)] leading-[1.02] ${t.heading}`}>
+          <div data-stop-text className="opacity-0 mt-6 sm:mt-7">
+            <h2 className={`font-serif font-light text-[clamp(34px,12vw,64px)] leading-[1.02] ${t.heading}`}>
               {title[0]}<br />{title[1]}
             </h2>
-            <p className={`mt-5 max-w-[420px] mx-auto text-[14.5px] font-light leading-[1.9] ${t.copy}`}>{copy}</p>
-            <div className={`mt-5 text-[10px] tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
+            <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+            <div className="mt-3 sm:mt-4 flex flex-wrap justify-center gap-2">
               {highlights.map((h) => (
-                <span key={h} className={`text-[9.5px] tracking-[0.15em] uppercase px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
+                <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
                   {h}
                 </span>
               ))}
             </div>
-            <a href="#tier2-enquire" className={`inline-block mt-7 text-[10px] tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+            <a href="#tier2-enquire" className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
               Enquire about this route
             </a>
           </div>
@@ -147,36 +147,36 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
 
   if (layout === "editorial") {
     return (
-      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative min-h-[100svh] w-full flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-16 overflow-hidden">
+      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative min-h-[100svh] w-full flex flex-col justify-center px-5 sm:px-10 lg:px-16 py-16 overflow-hidden">
         {wash}
         <div className="relative max-w-[1200px] w-full mx-auto">
-          <div data-stop-video className="group relative w-full aspect-[16/8] opacity-0 scale-95">
-            <div className={`absolute -inset-3 rounded-[24px] border pointer-events-none ${t.frame}`} />
-            <div className="relative w-full h-full rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+          <div data-stop-video className="group relative w-full aspect-[4/5] sm:aspect-[16/8] opacity-0 scale-95">
+            <div className={`absolute -inset-2 sm:-inset-3 rounded-[20px] sm:rounded-[24px] border pointer-events-none ${t.frame}`} />
+            <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.02]">
               <VideoTag slug={slug} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.3))" }} />
             </div>
           </div>
 
-          <div data-stop-text className="opacity-0 mt-9 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-8 items-end">
+          <div data-stop-text className="opacity-0 mt-7 sm:mt-9 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-5 sm:gap-8 items-end">
             <div>
-              <div className={`font-mono text-[10px] tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
-              <div className={`mt-3 text-[10.5px] tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
-              <h2 className={`mt-4 font-serif font-light text-[clamp(30px,4.5vw,58px)] leading-[1.02] ${t.heading}`}>
+              <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
+              <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
+              <h2 className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(34px,11vw,58px)] leading-[1.02] ${t.heading}`}>
                 {title[0]} {title[1]}
               </h2>
             </div>
-            <p className={`text-[14.5px] font-light leading-[1.9] ${t.copy}`}>{copy}</p>
+            <p className={`text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
             <div>
-              <div className={`text-[10px] tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+              <div className={`text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {highlights.map((h) => (
-                  <span key={h} className={`text-[9.5px] tracking-[0.15em] uppercase px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
+                  <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
                     {h}
                   </span>
                 ))}
               </div>
-              <a href="#tier2-enquire" className={`inline-block mt-5 text-[10px] tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+              <a href="#tier2-enquire" className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
                 Enquire about this route
               </a>
             </div>
@@ -188,27 +188,27 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
 
   // "split" — the original two-column layout
   return (
-    <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative h-[100svh] w-full flex items-center justify-center px-6 overflow-hidden">
+    <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="relative min-h-[100svh] w-full flex items-center justify-center px-5 sm:px-6 py-16 lg:py-0 overflow-hidden">
       {wash}
-      <div className="relative max-w-[1100px] w-full grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
+      <div className="relative max-w-[1100px] w-full grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-7 sm:gap-10 lg:gap-16 items-center">
         <div data-stop-text className="text-center lg:text-left opacity-0">
-          <div className={`font-mono text-[10px] tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
-          <div className={`mt-3 text-[10.5px] tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
-          <h2 className={`mt-4 font-serif font-light text-[clamp(34px,6vw,72px)] leading-[1.02] ${t.heading}`}>
+          <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
+          <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
+          <h2 className={`mt-3 sm:mt-4 font-serif font-light text-[clamp(40px,13vw,72px)] leading-[1.02] ${t.heading}`}>
             {title[0]}<br />{title[1]}
           </h2>
-          <p className={`mt-5 max-w-[420px] mx-auto lg:mx-0 text-[14.5px] font-light leading-[1.9] ${t.copy}`}>{copy}</p>
+          <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto lg:mx-0 text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
           <div className="text-center lg:text-left">
             <Meta index={index} coords={coords} season={season} highlights={highlights} t={t} />
           </div>
-          <a href="#tier2-enquire" className={`inline-block mt-7 text-[10px] tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+          <a href="#tier2-enquire" className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
             Enquire about this route
           </a>
         </div>
 
-        <div data-stop-video className="group relative aspect-[4/5] sm:aspect-video lg:aspect-[4/3] w-full max-w-[560px] mx-auto opacity-0 scale-95">
-          <div className={`absolute -inset-4 rounded-[28px] border pointer-events-none ${t.frame}`} />
-          <div className="relative w-full h-full rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.045]">
+        <div data-stop-video className="group relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] w-full max-w-[560px] mx-auto opacity-0 scale-95">
+          <div className={`absolute -inset-2 sm:-inset-4 rounded-[20px] sm:rounded-[28px] border pointer-events-none ${t.frame}`} />
+          <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.045]">
             <VideoTag slug={slug} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.35))" }} />
           </div>

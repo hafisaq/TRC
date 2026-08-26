@@ -136,6 +136,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
 
       // ---- final CTA reveal ----
       const enquireText = $<HTMLElement>("#tier2-enquire [data-stop-text]");
+      const mobileEnquireCta = $<HTMLElement>("#mobile-enquire-cta");
       if (enquireText) {
         ScrollTrigger.create({
           trigger: "#tier2-enquire",
@@ -147,6 +148,17 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
               { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
               { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, ease: "power3.out" }
             )
+        });
+      }
+      if (mobileEnquireCta) {
+        ScrollTrigger.create({
+          trigger: "#tier2-enquire",
+          start: "top 78%",
+          end: "bottom bottom",
+          onToggle: (self) => {
+            mobileEnquireCta.style.opacity = self.isActive ? "0" : "1";
+            mobileEnquireCta.style.pointerEvents = self.isActive ? "none" : "auto";
+          }
         });
       }
     });

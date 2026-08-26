@@ -76,7 +76,7 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
   return (
     <svg
       id="tier2-flight-svg"
-      className="absolute top-0 left-0 z-[2] pointer-events-none"
+      className="absolute top-0 left-0 z-[2] pointer-events-none opacity-55 sm:opacity-100"
       width={geometry.w}
       height={geometry.h}
       viewBox={`0 0 ${geometry.w} ${geometry.h}`}
@@ -87,7 +87,7 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
         id="tier2-flight-path"
         d={geometry.d}
         stroke="#e3c682"
-        strokeWidth="1.6"
+        strokeWidth="1.25"
         fill="none"
         vectorEffect="non-scaling-stroke"
         strokeLinecap="round"
@@ -101,7 +101,7 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
       ))}
 
       <g id="tier2-flight-plane">
-        <g transform="rotate(90 12 12) translate(-14 -14) scale(1.15)">
+        <g transform="rotate(90 12 12) translate(-14 -14) scale(1)">
           <path
             id="tier2-flight-plane-icon"
             fill="#e3c682"

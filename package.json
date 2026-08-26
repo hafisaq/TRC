@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/copy-tier2.mjs",
+    "build": "tsc -b && vite build && node scripts/copy-routes.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {
