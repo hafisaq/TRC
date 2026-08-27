@@ -14,14 +14,17 @@ import path from "node:path";
 
 const distDir = path.resolve(import.meta.dirname, "..", "dist");
 const src = path.join(distDir, "index.html");
-const destDir = path.join(distDir, "tier2");
-const dest = path.join(destDir, "index.html");
+const routes = ["tier2", "asia", "asia/maldives", "asia/thailand", "asia/sri-lanka", "asia/india"];
 
 if (!existsSync(src)) {
   console.error("[copy-routes] dist/index.html not found — did the build run first?");
   process.exit(1);
 }
 
-await mkdir(destDir, { recursive: true });
-await copyFile(src, dest);
-console.log("[copy-routes] wrote dist/tier2/index.html");
+for (const route of routes) {
+  const destDir = path.join(distDir, route);
+  const dest = path.join(destDir, "index.html");
+  await mkdir(destDir, { recursive: true });
+  await copyFile(src, dest);
+  console.log(`[copy-routes] wrote dist/${route}/index.html`);
+}

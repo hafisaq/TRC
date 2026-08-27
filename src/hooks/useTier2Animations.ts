@@ -98,58 +98,72 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
       }
 
       // ---- each stop: landing pulse (at its exact path point) + text/video reveal ----
-      stops.forEach((stop) => {
-        const section = $<HTMLElement>(`#${stop.id}`);
-        if (!section) return;
+      // Reveals fire through TWO independent triggers guarded by a Set:
+      // ScrollTrigger (normal path) and a plain scroll-listener fallback that
+      // measures live getBoundingClientRect. The fallback exists because
+      // ScrollTrigger caches trigger positions at refresh time — if a refresh
+      // ever runs with a stale scroll cache (slow load, bfcache restore,
+      // background tab), every cached position skews and sections would never
+      // reveal. Rect measurement can't skew, so the reveal always lands.
+      const revealed = new Set<string>();
+      const revealStop = (stop: Tier2Stop, section: HTMLElement) => {
+        if (revealed.has(stop.id)) return;
+        revealed.add(stop.id);
         const texts = $$<HTMLElement>("[data-stop-text]", section);
         const titles = $$<HTMLElement>("[data-stop-title]", section);
         const wash = $<HTMLElement>("[data-stop-wash]", section);
-        const videoWrap = $<HTMLElement>("[data-stop-video]", section);
-        const video = videoWrap?.querySelector<HTMLVideoElement>("video") ?? null;
+        const videoWraps = $$<HTMLElement>("[data-stop-video]", section);
         const accent = ACCENT_FOR_THEME[stop.theme];
+        const revealDelay = prefersReducedMotion ? 0 : 0.2;
+
+        const landing = $<SVGGElement>(`#tier2-landing-${stop.id}`);
+        const glow = landing?.querySelector<SVGCircleElement>("[data-landing-glow]");
+        const ring = landing?.querySelector<SVGCircleElement>("[data-landing-ring]");
+        if (glow && ring) {
+          gsap.set([glow, ring], { fill: accent, stroke: accent });
+          gsap.fromTo(glow, { attr: { r: 4 }, opacity: 0.9 }, { attr: { r: 46 }, opacity: 0, duration: 1.2, ease: "power2.out" });
+          gsap.fromTo(ring, { attr: { r: 4 }, opacity: 1 }, { attr: { r: 30 }, opacity: 0, duration: 1.2, ease: "power2.out", delay: 0.1 });
+        }
+        if (wash) {
+          gsap.to(wash, { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
+        }
+        if (texts.length) {
+          gsap.fromTo(
+            texts,
+            { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
+            { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, delay: revealDelay, ease: "power3.out", stagger: 0.08 }
+          );
+        }
+        if (titles.length) {
+          gsap.fromTo(
+            titles,
+            { opacity: 0, y: prefersReducedMotion ? 0 : 16 },
+            { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.95, delay: revealDelay + 0.16, ease: "power3.out", stagger: 0.04 }
+          );
+        }
+        videoWraps.forEach((videoWrap) => {
+          gsap.fromTo(
+            videoWrap,
+            { opacity: 0, scale: prefersReducedMotion ? 1 : 0.92 },
+            { opacity: 1, scale: 1, duration: prefersReducedMotion ? 0 : 1, delay: revealDelay, ease: "power3.out" }
+          );
+          const video = videoWrap.querySelector<HTMLVideoElement>("video");
+          if (video) safePlay(video);
+        });
+        dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
+      };
+
+      const watched: Array<{ stop: Tier2Stop; section: HTMLElement }> = [];
+      stops.forEach((stop) => {
+        const section = $<HTMLElement>(`#${stop.id}`);
+        if (!section) return;
+        watched.push({ stop, section });
 
         ScrollTrigger.create({
           trigger: section,
           start: "top 55%",
           once: true,
-          onEnter: () => {
-            const revealDelay = prefersReducedMotion ? 0 : 0.2;
-
-            const landing = $<SVGGElement>(`#tier2-landing-${stop.id}`);
-            const glow = landing?.querySelector<SVGCircleElement>("[data-landing-glow]");
-            const ring = landing?.querySelector<SVGCircleElement>("[data-landing-ring]");
-            if (glow && ring) {
-              gsap.set([glow, ring], { fill: accent, stroke: accent });
-              gsap.fromTo(glow, { attr: { r: 4 }, opacity: 0.9 }, { attr: { r: 46 }, opacity: 0, duration: 1.2, ease: "power2.out" });
-              gsap.fromTo(ring, { attr: { r: 4 }, opacity: 1 }, { attr: { r: 30 }, opacity: 0, duration: 1.2, ease: "power2.out", delay: 0.1 });
-            }
-            if (wash) {
-              gsap.to(wash, { opacity: 1, duration: prefersReducedMotion ? 0 : 0.9, ease: "power2.out" });
-            }
-            if (texts.length) {
-              gsap.fromTo(
-                texts,
-                { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
-                { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, delay: revealDelay, ease: "power3.out", stagger: 0.08 }
-              );
-            }
-            if (titles.length) {
-              gsap.fromTo(
-                titles,
-                { opacity: 0, y: prefersReducedMotion ? 0 : 16 },
-                { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.95, delay: revealDelay + 0.16, ease: "power3.out", stagger: 0.04 }
-              );
-            }
-            if (videoWrap) {
-              gsap.fromTo(
-                videoWrap,
-                { opacity: 0, scale: prefersReducedMotion ? 1 : 0.92 },
-                { opacity: 1, scale: 1, duration: prefersReducedMotion ? 0 : 1, delay: revealDelay, ease: "power3.out" }
-              );
-            }
-            if (video) safePlay(video);
-            dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
-          }
+          onEnter: () => revealStop(stop, section)
         });
 
         ScrollTrigger.create({
@@ -160,6 +174,26 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           onEnterBack: () => options.onActiveStopChange?.(stop.id)
         });
       });
+
+      // position-cache-free fallback (see comment above)
+      const checkReveals = () => {
+        if (revealed.size >= watched.length) return;
+        const vh = window.innerHeight;
+        watched.forEach(({ stop, section }) => {
+          if (revealed.has(stop.id)) return;
+          const rect = section.getBoundingClientRect();
+          if (rect.top < vh * 0.6 && rect.bottom > 0) revealStop(stop, section);
+        });
+      };
+      window.addEventListener("scroll", checkReveals, { passive: true });
+      cleanups.push(() => window.removeEventListener("scroll", checkReveals));
+      checkReveals();
+
+      // re-measure once every asset has loaded — trigger positions computed
+      // against a half-loaded layout would otherwise stay subtly wrong
+      const onLoad = () => ScrollTrigger.refresh();
+      window.addEventListener("load", onLoad);
+      cleanups.push(() => window.removeEventListener("load", onLoad));
 
       // ---- final CTA reveal ----
       const enquireText = $<HTMLElement>("#tier2-enquire [data-stop-text]");

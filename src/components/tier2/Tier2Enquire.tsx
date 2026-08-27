@@ -3,6 +3,8 @@ import gsap from "gsap";
 import type { Destination } from "../../data/tier2Destinations";
 import { submitEnquiry } from "../../lib/enquiry";
 
+export type EnquiryOption = Pick<Destination, "id" | "interest"> & Partial<Pick<Destination, "gate">>;
+
 // A jagged torn-paper edge, built as a clip-path polygon.
 const TEETH = 14;
 const TORN_EDGE_CLIP = (() => {
@@ -17,7 +19,7 @@ const TORN_EDGE_CLIP = (() => {
 
 type Tier2EnquireProps = {
   selectedInterest: string | null;
-  destinations: Destination[];
+  destinations: EnquiryOption[];
 };
 
 export default function Tier2Enquire({ selectedInterest, destinations }: Tier2EnquireProps) {
@@ -195,7 +197,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
 
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Gate</div>
-                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{selectedDestination?.gate ?? "--"}</div>
+                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{selectedDestination?.gate ?? "OPEN"}</div>
                 </div>
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Seat</div>

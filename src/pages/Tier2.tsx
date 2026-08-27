@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DotMap, { type DotMapHandle } from "../components/tier2/DotMap";
 import Tier2Nav from "../components/tier2/Tier2Nav";
+import Tier2CollectionGrid from "../components/tier2/Tier2CollectionGrid";
 import Tier2Hero from "../components/tier2/Tier2Hero";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Stop from "../components/tier2/Stop";
@@ -8,6 +9,9 @@ import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
 import { DESTINATIONS, FLIGHT_STOPS } from "../data/tier2Destinations";
+import { CATALOG } from "../data/tier2Catalog";
+import CountryStrip from "../components/tier2/CountryStrip";
+import { ASIA } from "../data/regions/asia";
 
 export default function Tier2() {
   const dotMapRef = useRef<DotMapHandle>(null);
@@ -20,6 +24,7 @@ export default function Tier2() {
     () => DESTINATIONS.find((s) => s.id === activeStopId) ?? DESTINATIONS[0],
     [activeStopId]
   );
+  const stopTotal = useMemo(() => DESTINATIONS.filter((d) => d.kind !== "catalog").length, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsLoading(false), 1150);
@@ -39,7 +44,9 @@ export default function Tier2() {
   };
 
   return (
-    <div className="relative bg-ink min-h-screen text-white font-sans overflow-hidden">
+    // overflow-x-clip, NOT overflow-hidden: hidden creates a scroll container
+    // and silently kills every position:sticky descendant (pinned sections)
+    <div className="relative bg-ink min-h-screen text-white font-sans overflow-x-clip">
       <DotMap ref={dotMapRef} className="fixed inset-0 z-0 opacity-70 sm:opacity-100" />
       <div className={`premium-loader ${isLoading ? "is-active" : ""}`} aria-hidden={!isLoading}>
         <img src="/media/brand/retreat-collection-logo-crop.png" alt="" className="premium-loader__logo" />
@@ -70,24 +77,43 @@ export default function Tier2() {
       <main id="tier2-journey" className="relative z-10">
         <Tier2FlightPath stops={FLIGHT_STOPS} />
         <Tier2Hero />
-        {DESTINATIONS.map((s, i) => (
-          <Stop
-            key={s.id}
-            id={s.id}
-            index={i + 1}
-            eyebrow={s.eyebrow}
-            title={s.title}
-            copy={s.copy}
-            coords={s.coords}
-            slug={s.slug}
-            season={s.season}
-            highlights={s.highlights}
-            theme={s.theme}
-            layout={s.layout}
-            interest={s.interest}
-            onEnquire={handleEnquire}
-          />
-        ))}
+        {DESTINATIONS.map((s, i) =>
+          s.kind === "catalog" ? (
+            <Tier2CollectionGrid
+              key={s.id}
+              id={s.id}
+              catalog={CATALOG}
+              index={i + 1}
+              total={DESTINATIONS.length}
+              eyebrow="The wider collection"
+              heading={["Every region,", "every stay"]}
+              intro="Beyond the route above — the wider portfolio, organised by region. Each stay carries its own experience brochure to take away."
+            />
+          ) : (
+            <div key={s.id} className="contents">
+              <Stop
+                id={s.id}
+                index={i + 1}
+                total={stopTotal}
+                eyebrow={s.eyebrow}
+                title={s.title}
+                copy={s.copy}
+                coords={s.coords}
+                slug={s.slug}
+                season={s.season}
+                highlights={s.highlights}
+                theme={s.theme}
+                layout={s.layout}
+                interest={s.interest}
+                onEnquire={handleEnquire}
+                ctaLabel={s.ctaLabel}
+                ctaHref={s.ctaHref}
+              />
+              {/* right after the Asia stop: the scroll-glide country selector */}
+              {s.id === "tier2-asia" && <CountryStrip region={ASIA} />}
+            </div>
+          )
+        )}
       </main>
       <Tier2Enquire selectedInterest={selectedInterest} destinations={DESTINATIONS} />
     </div>

@@ -68,6 +68,153 @@ a {
 
 .anim-ring { animation: ring-spin 18s linear infinite; }
 
+/* content entrance replayed on each moment change (via React key remount) */
+@keyframes moment-in {
+  0% { opacity: 0; transform: translateY(26px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.moment-in { animation: moment-in 0.72s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.moment-in-1 { animation-delay: 0.06s; }
+.moment-in-2 { animation-delay: 0.13s; }
+.moment-in-3 { animation-delay: 0.2s; }
+
+/* slow, continuous drift on the active cinematic video (Ken Burns) */
+@keyframes kenburns {
+  0% { transform: scale(1.04) translate3d(0, 0, 0); }
+  100% { transform: scale(1.14) translate3d(-1.5%, -1.5%, 0); }
+}
+.kenburns { animation: kenburns 16s ease-out both; }
+
+
+/* the quote signing itself in — words ink in one after another once the
+   section arrives, at a hand-writing pace independent of scroll speed */
+.quote-word {
+  opacity: 0.06;
+  filter: blur(3.5px);
+  transform: translateY(5px);
+}
+.quote-word-in { animation: word-ink 0.68s cubic-bezier(0.25, 0.6, 0.25, 1) forwards; }
+@keyframes word-ink {
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+.quote-attr { opacity: 0; transform: translateY(8px); }
+.quote-attr-in { animation: attr-ink 0.9s cubic-bezier(0.25, 0.6, 0.25, 1) forwards; }
+@keyframes attr-ink {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* the living chart: routes flow along their dashes, waypoints breathe,
+   the compass ring turns and the needle sways */
+@keyframes route-flow { to { stroke-dashoffset: -260; } }
+.atlas-route { animation: route-flow linear infinite; }
+@keyframes waypoint-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+.atlas-waypoint { animation: waypoint-pulse ease-in-out infinite; }
+.atlas-rose-dash {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring-spin 90s linear infinite;
+}
+@keyframes needle-sway {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+.atlas-needle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: needle-sway 9s ease-in-out infinite;
+}
+/* living light: two warm sheens drifting slowly across the paper */
+@keyframes sheen-drift-a {
+  0%, 100% { transform: translate3d(-3%, -2%, 0) scale(1); opacity: 0.75; }
+  50% { transform: translate3d(4%, 3%, 0) scale(1.1); opacity: 1; }
+}
+@keyframes sheen-drift-b {
+  0%, 100% { transform: translate3d(3%, 2%, 0) scale(1.06); opacity: 0.65; }
+  50% { transform: translate3d(-4%, -3%, 0) scale(1); opacity: 1; }
+}
+.atlas-sheen-a { animation: sheen-drift-a 34s ease-in-out infinite; }
+.atlas-sheen-b { animation: sheen-drift-b 46s ease-in-out infinite; }
+
+/* waypoints emit a slow sonar ring, echoing the landing pulse */
+@keyframes waypoint-sonar {
+  0% { transform: scale(0.25); opacity: 0.55; }
+  75% { opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.waypoint-sonar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: waypoint-sonar 6.5s ease-out infinite;
+}
+
+/* tiny ambient planes flying the chart's corridors */
+@keyframes ambient-fly {
+  0% { offset-distance: 0%; opacity: 0; }
+  5% { opacity: 0.8; }
+  95% { opacity: 0.8; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.ambient-plane {
+  offset-rotate: auto 90deg;
+  animation: ambient-fly linear infinite;
+}
+
+/* coastlines sketch themselves in on arrival */
+@keyframes sketch-draw { to { stroke-dashoffset: 0; } }
+.sketch-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sketch-draw 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes sketch-fade { to { opacity: 1; } }
+.sketch-late { opacity: 0; animation: sketch-fade 1.4s ease forwards; }
+
+/* little waves rolling in the open sea */
+@keyframes wave-drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+.sea-wave { animation: wave-drift ease-in-out infinite; }
+
+/* sailboats: same corridor technique as the planes, kept upright + rocking */
+.ambient-boat {
+  offset-rotate: 0deg;
+  animation: ambient-fly linear infinite;
+}
+@keyframes boat-rock {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+.boat-rock {
+  transform-origin: 50% 85%;
+  animation: boat-rock 4.5s ease-in-out infinite;
+}
+
+/* the essentials deck: each card tilts in like a sheet laid on the desk */
+@keyframes essential-in {
+  0% { opacity: 0; transform: perspective(900px) rotateX(9deg) translateY(46px); }
+  100% { opacity: 1; transform: perspective(900px) rotateX(0deg) translateY(0); }
+}
+.essential-hidden { opacity: 0; }
+.essential-enter { animation: essential-in 0.85s cubic-bezier(0.22, 0.7, 0.25, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .essential-hidden { opacity: 1; }
+  .essential-enter { animation: none; }
+  .moment-in, .kenburns { animation: none; }
+  .atlas-route, .atlas-waypoint, .atlas-rose-dash, .atlas-needle { animation: none; }
+  .atlas-sheen-a, .atlas-sheen-b, .waypoint-sonar, .ambient-plane { animation: none; }
+  .sea-wave, .ambient-boat, .boat-rock { animation: none; }
+  .ambient-plane, .ambient-boat { display: none; }
+  .sketch-line { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+  .sketch-late { opacity: 1; animation: none; }
+  .quote-word { opacity: 1; filter: none; transform: none; }
+  .quote-attr { opacity: 1; transform: none; }
+}
+
 .premium-loader {
   position: fixed;
   inset: 0;
@@ -157,6 +304,92 @@ a {
   animation: route-glow 3.6s ease-in-out infinite;
 }
 
+.region-route-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.region-route-path--base {
+  stroke: rgba(227, 198, 130, .2);
+  stroke-width: .7;
+  stroke-dasharray: 1.8 2.6;
+}
+
+.region-route-path--active {
+  stroke: #e3c682;
+  stroke-width: 1.05;
+  stroke-dasharray: 1;
+  filter: drop-shadow(0 0 10px rgba(227, 198, 130, .44));
+  transition: stroke-dashoffset 180ms linear;
+}
+
+.region-route-plane {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(227, 198, 130, .42);
+  border-radius: 999px;
+  color: #e3c682;
+  filter: drop-shadow(0 0 18px rgba(227, 198, 130, .34));
+  transition: left 180ms linear, top 180ms linear, transform 180ms linear;
+}
+
+.region-route-plane::before,
+.region-route-plane::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+}
+
+.region-route-plane::before {
+  inset: 8px;
+  border: 1px solid rgba(227, 198, 130, .18);
+}
+
+.region-route-plane::after {
+  width: 6px;
+  height: 6px;
+  background: #e3c682;
+  box-shadow: 0 0 16px rgba(227, 198, 130, .58);
+}
+
+.region-route-plane span {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateX(-50%) rotate(90deg);
+}
+
+.region-route-plane span::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  clip-path: polygon(96% 50%, 42% 31%, 42% 7%, 30% 7%, 30% 31%, 4% 50%, 4% 62%, 30% 54%, 30% 77%, 20% 83%, 20% 92%, 36% 87%, 52% 92%, 52% 83%, 42% 77%, 42% 54%, 96% 62%);
+}
+
+.catalog-light-shell {
+  background: #eeece6;
+  color: #16243c;
+  isolation: isolate;
+  box-shadow: 0 -1px 0 rgba(200, 162, 76, .18);
+}
+
+.catalog-light-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #eeece6;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -165,7 +398,9 @@ a {
     animation: none;
   }
   .premium-loader,
-  #tier2-flight-plane {
+  #tier2-flight-plane,
+  .region-route-plane,
+  .region-route-path--active {
     animation: none;
     transition: none;
   }

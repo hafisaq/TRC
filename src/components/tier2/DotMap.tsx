@@ -84,7 +84,9 @@ function buildDots(isMobile: boolean): Dot[] {
   return dots;
 }
 
-const DotMap = forwardRef<DotMapHandle, { className?: string }>(function DotMap({ className = "" }, ref) {
+export type DotMapFocus = { cx: number; cy: number; zoom: number };
+
+const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocus }>(function DotMap({ className = "", focus }, ref) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useMemo(() => window.matchMedia("(max-width: 640px)").matches, []);
   const dotsRef = useRef<Dot[]>(buildDots(isMobile));
@@ -92,16 +94,29 @@ const DotMap = forwardRef<DotMapHandle, { className?: string }>(function DotMap(
   const rafRef = useRef(0);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const lastFrameRef = useRef(0);
+  // Kept in a ref (not state) since resize()/draw()/burst() are plain
+  // functions defined once in the effect below, not re-created on re-render.
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+
+  const toScreen = (xPct: number, yPct: number, w: number, h: number) => {
+    const f = focusRef.current;
+    if (!f) return { x: xPct * w, y: yPct * h };
+    return {
+      x: (xPct * w - f.cx * w) * f.zoom + w / 2,
+      y: (yPct * h - f.cy * h) * f.zoom + h / 2
+    };
+  };
 
   useImperativeHandle(ref, () => ({
     burst(xPct, yPct, color = "#c8a24c") {
       const { w, h } = sizeRef.current;
-      const bx = xPct * w;
-      const by = yPct * h;
+      const { x: bx, y: by } = toScreen(xPct, yPct, w, h);
+      const zoom = focusRef.current?.zoom ?? 1;
       const rgb = hexToRgb(color);
       dotsRef.current.forEach((d) => {
         const dist = Math.hypot(d.x - bx, d.y - by);
-        const falloff = Math.max(0, 1 - dist / (w * 0.22));
+        const falloff = Math.max(0, 1 - dist / (w * 0.22 * zoom));
         if (falloff > 0) {
           d.excite = Math.max(d.excite, falloff);
           d.exciteR = rgb.r;
@@ -132,8 +147,9 @@ const DotMap = forwardRef<DotMapHandle, { className?: string }>(function DotMap(
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dotsRef.current.forEach((d) => {
-        d.x = d.xPct * w;
-        d.y = d.yPct * h;
+        const p = toScreen(d.xPct, d.yPct, w, h);
+        d.x = p.x;
+        d.y = p.y;
       });
       draw(0, true);
     };
@@ -141,13 +157,14 @@ const DotMap = forwardRef<DotMapHandle, { className?: string }>(function DotMap(
     const draw = (time = 0, staticFrame = false) => {
       const { w, h } = sizeRef.current;
       ctx.clearRect(0, 0, w, h);
+      const zoom = focusRef.current?.zoom ?? 1;
 
       dotsRef.current.forEach((d) => {
         const wave = staticFrame || prefersReducedMotion ? 0 : getContinentWave(time, d.continent);
         const twinkle = staticFrame || prefersReducedMotion ? 0 : Math.max(0, Math.sin(time * 0.00125 + d.phase)) * d.twinkle;
         const light = wave + twinkle;
         const alpha = d.shimmer + wave * 0.78 + twinkle * 0.72 + d.excite * 0.62;
-        const radius = d.r * (1 + wave * 2 + twinkle * 3.2 + d.excite * 2.2);
+        const radius = d.r * zoom * (1 + wave * 2 + twinkle * 3.2 + d.excite * 2.2);
         const cr = d.color[0] + (d.exciteR - d.color[0]) * d.excite;
         const cg = d.color[1] + (d.exciteG - d.color[1]) * d.excite;
         const cb = d.color[2] + (d.exciteB - d.color[2]) * d.excite;

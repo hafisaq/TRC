@@ -78,7 +78,7 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
           />
         </div>
         <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-white/38">{statusText}</div>
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-6 gap-1">
           {navItems.map((item) => {
             const isActive = item.href === `#${activeStopId}`;
             return (

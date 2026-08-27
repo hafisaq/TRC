@@ -22,14 +22,14 @@ function buildPath(points: Point[]): string {
  * and flown via scroll-scrub in useTier2Animations (id-based lookups),
  * not here — this component only builds the geometry.
  */
-export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
+export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { stops: FlightStop[]; startId?: string }) {
   const [geometry, setGeometry] = useState<{ w: number; h: number; d: string; stopPoints: Point[] } | null>(null);
   const lastWidth = useRef(0);
 
   useLayoutEffect(() => {
     const measure = () => {
       const main = document.querySelector("main");
-      const hero = document.getElementById("tier2-hero");
+      const hero = document.getElementById(startId);
       if (!main || !hero) return;
       const w = window.innerWidth;
       const h = main.scrollHeight;
@@ -45,12 +45,28 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
       if (w === lastWidth.current) return;
       lastWidth.current = w;
 
-      const heroPoint: Point = { x: w / 2, y: hero.offsetTop + hero.offsetHeight * 0.42 };
+      // Document-true Y via rect + scrollY — offsetTop is relative to the
+      // nearest positioned ancestor and collapses for stops nested inside a
+      // `relative` wrapper (e.g. timeline rows), which made the path double
+      // back on itself.
+      const docY = (el: Element, frac = 0.5) => {
+        const r = el.getBoundingClientRect();
+        return r.top + window.scrollY + r.height * frac;
+      };
+      const heroPoint: Point = { x: w / 2, y: docY(hero, 0.42) };
       const stopPoints: Point[] = stops.map((s, i) => {
         const el = document.getElementById(s.id);
-        const centerY = el ? el.offsetTop + el.offsetHeight / 2 : heroPoint.y;
+        if (!el) return { x: w / 2, y: heroPoint.y };
+        // A stop may declare an exact landing anchor (e.g. a timeline node):
+        // the plane then lands ON it, and consecutive anchors sharing an x
+        // make the path fly that line dead straight.
+        const anchor = el.querySelector<HTMLElement>("[data-flight-node]");
+        if (anchor) {
+          const r = anchor.getBoundingClientRect();
+          return { x: r.left + window.scrollX + r.width / 2, y: r.top + window.scrollY + r.height / 2 };
+        }
         const wiggle = w * 0.09;
-        return { x: w / 2 + (i % 2 === 0 ? -wiggle : wiggle), y: centerY };
+        return { x: w / 2 + (i % 2 === 0 ? -wiggle : wiggle), y: docY(el) };
       });
 
       setGeometry({ w, h, d: buildPath([heroPoint, ...stopPoints]), stopPoints });
@@ -69,7 +85,7 @@ export default function Tier2FlightPath({ stops }: { stops: FlightStop[] }) {
       window.removeEventListener("resize", measure);
       ro.disconnect();
     };
-  }, [stops]);
+  }, [stops, startId]);
 
   if (!geometry) return null;
 

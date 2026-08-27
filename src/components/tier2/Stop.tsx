@@ -6,6 +6,7 @@ export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
 type StopProps = {
   id: string;
   index: number;
+  total?: number;
   eyebrow: string;
   title: [string, string];
   copy: string;
@@ -17,6 +18,11 @@ type StopProps = {
   layout: StopLayout;
   interest: string;
   onEnquire: (interest: string) => void;
+  // When set, the CTA becomes a plain link (hash anchor or a real page
+  // path) instead of the enquire handler — used for stops like About Us
+  // or a region overview that lead somewhere other than the enquiry form.
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
 const THEME_STYLES: Record<
@@ -70,7 +76,7 @@ function VideoTag({ slug, className = "" }: { slug: string; className?: string }
   );
 }
 
-export default function Stop({ id, index, eyebrow, title, copy, coords, slug, season, highlights, theme, layout, interest, onEnquire }: StopProps) {
+export default function Stop({ id, index, total = 4, eyebrow, title, copy, coords, slug, season, highlights, theme, layout, interest, onEnquire, ctaLabel, ctaHref }: StopProps) {
   const t = THEME_STYLES[theme];
   const handleEnquireClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -79,7 +85,10 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
   const wash = (
     <div data-stop-wash className="absolute inset-0 opacity-0 backdrop-blur-[2px]" style={{ background: t.wash }} />
   );
-  const idx = `${String(index).padStart(2, "0")} / 04 · ${coords}`;
+  const idx = `${String(index).padStart(2, "0")} / ${String(total).padStart(2, "0")} · ${coords}`;
+  const cta = ctaHref
+    ? { href: ctaHref, onClick: undefined, label: ctaLabel ?? "Learn more" }
+    : { href: "#tier2-enquire", onClick: handleEnquireClick, label: "Enquire about this route" };
 
   if (layout === "cinematic") {
     return (
@@ -104,8 +113,8 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
               </span>
             ))}
           </div>
-          <a href="#tier2-enquire" onClick={handleEnquireClick} className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
-            Enquire about this route
+          <a href={cta.href} onClick={cta.onClick} className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
+            {cta.label}
           </a>
         </div>
       </section>
@@ -144,8 +153,8 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
                 </span>
               ))}
             </div>
-            <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
-              Enquire about this route
+            <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+              {cta.label}
             </a>
           </div>
         </div>
@@ -184,8 +193,8 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
                   </span>
                 ))}
               </div>
-              <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
-                Enquire about this route
+              <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+                {cta.label}
               </a>
             </div>
           </div>
@@ -209,8 +218,8 @@ export default function Stop({ id, index, eyebrow, title, copy, coords, slug, se
           <div className="text-center lg:text-left">
             <Meta index={index} coords={coords} season={season} highlights={highlights} t={t} />
           </div>
-          <a href="#tier2-enquire" onClick={handleEnquireClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
-            Enquire about this route
+          <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+            {cta.label}
           </a>
         </div>
 

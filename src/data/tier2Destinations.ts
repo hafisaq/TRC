@@ -15,9 +15,57 @@ export type Destination = Tier2Stop & {
   interest: string;
   gate: string;
   statusLabel: string;
+  // Marks the one stop that isn't a single-property Stop layout — Tier2
+  // renders it as the info-dense Tier2Collection section instead. Every
+  // other field above stays populated for it so it still works as a normal
+  // entry in the flight path, nav, and enquiry chip list.
+  kind?: "catalog";
+  // When set, Stop's CTA becomes this link instead of "Enquire about this
+  // route" — used for About Us (scrolls to the next stop) and region
+  // overviews like Asia (a real page navigation to that region's journey).
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
 export const DESTINATIONS: Destination[] = [
+  {
+    id: "tier2-about",
+    mapPos: [0.42, 0.22],
+    eyebrow: "The Retreat Collection",
+    title: ["Private travel,", "arranged with care"],
+    copy: "We design journeys, not itineraries — each one built around the traveller, not a fixed package. Every stay in the collection is visited, vetted, and arranged directly, so what you see here is what you get.",
+    coords: "About us",
+    slug: "alpine-ridge",
+    season: "Est. 2024",
+    highlights: ["Bespoke routing", "Direct relationships", "No fixed packages"],
+    theme: "white",
+    layout: "split",
+    navLabel: "About",
+    interest: "General enquiry",
+    gate: "A1",
+    statusLabel: "About Us",
+    ctaLabel: "Continue the journey ↓",
+    ctaHref: "#tier2-asia"
+  },
+  {
+    id: "tier2-asia",
+    mapPos: [0.64, 0.4],
+    eyebrow: "Coast, temple & garden",
+    title: ["The region", "of Asia"],
+    copy: "Bali's quiet coastlines, Maldivian reefs, Sri Lankan hill country, Rajasthan's forts — one region, four very different ways to disappear.",
+    coords: "13.7°N 100.5°E",
+    slug: "bali-coast",
+    season: "Year-round",
+    highlights: ["4 stays", "Private guide", "Custom routing"],
+    theme: "gold",
+    layout: "cinematic",
+    navLabel: "Asia",
+    interest: "Asia",
+    gate: "AS1",
+    statusLabel: "Asia",
+    ctaLabel: "Discover Asia →",
+    ctaHref: "/asia"
+  },
   {
     id: "tier2-alpine",
     mapPos: [0.48, 0.28],
@@ -85,6 +133,24 @@ export const DESTINATIONS: Destination[] = [
     interest: "Cities & culture",
     gate: "K1",
     statusLabel: "Cities"
+  },
+  {
+    id: "tier2-collection",
+    mapPos: [0.36, 0.7],
+    eyebrow: "The wider collection",
+    title: ["Every region,", "every stay"],
+    copy: "Beyond this route — the fuller portfolio, organised by region, each stay with its own brochure to take away.",
+    coords: "5 regions · 12 stays",
+    slug: "desert-ruins",
+    season: "Year-round",
+    highlights: ["Africa", "Americas", "Asia", "Europe", "Middle East"],
+    theme: "white",
+    layout: "editorial",
+    navLabel: "Collection",
+    interest: "The wider collection",
+    gate: "ALL",
+    statusLabel: "The Collection",
+    kind: "catalog"
   }
 ];
 
