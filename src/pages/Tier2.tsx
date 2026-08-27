@@ -62,18 +62,6 @@ export default function Tier2() {
         statusText={`TRC 001 · Approaching ${activeDestination.statusLabel}`}
         onEnquire={() => handleEnquire()}
       />
-      <a
-        id="mobile-enquire-cta"
-        href="#tier2-enquire"
-        onClick={(e) => {
-          e.preventDefault();
-          handleEnquire();
-        }}
-        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+76px)] z-50 sm:hidden rounded-full border border-gold/45 bg-ink/72 px-4 py-3 text-[9px] tracking-[0.24em] uppercase text-gold-light backdrop-blur-md transition-opacity duration-300"
-      >
-        Enquire
-      </a>
-
       <main id="tier2-journey" className="relative z-10">
         <Tier2FlightPath stops={FLIGHT_STOPS} />
         <Tier2Hero />

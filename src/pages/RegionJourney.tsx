@@ -62,13 +62,13 @@ export default function RegionJourney({ region }: { region: Region }) {
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-ink font-sans text-white">
-      <DotMap ref={dotMapRef} focus={region.focus} className="fixed inset-0 z-0 opacity-70 sm:opacity-100" />
+      <DotMap ref={dotMapRef} focus={region.focus} className="fixed inset-0 z-0 opacity-35 sm:opacity-100" />
 
-      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-4 border-b border-white/10 bg-ink/70 px-5 py-4 backdrop-blur-md sm:px-8 sm:py-5">
+      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-3 border-b border-white/10 bg-ink/78 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-md sm:gap-4 sm:px-8 sm:py-5">
         <a href="/" className="shrink-0 text-[9px] uppercase tracking-[0.24em] text-white/60 transition-colors hover:text-gold-light sm:text-[10px]">
           ← The Retreat Collection
         </a>
-        <nav className="flex items-center gap-4 overflow-x-auto no-scrollbar sm:gap-6" aria-label="Countries in this region">
+        <nav className="flex max-w-[52vw] items-center gap-4 overflow-x-auto overscroll-x-contain no-scrollbar sm:max-w-none sm:gap-6" aria-label="Countries in this region">
           {region.stops.map((stop) => (
             <a
               key={stop.id}

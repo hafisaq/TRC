@@ -58,6 +58,18 @@ function useViewProgress(ref: React.RefObject<HTMLElement | null>) {
   return p;
 }
 
+function useIsSmallScreen() {
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsSmall(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return isSmall;
+}
+
 // A White Desert-style "product page" for ONE country — editorial chapters,
 // a pull quote, and a numbered day-by-day journey. The signature: the same
 // scroll-scrubbed flight path from the main screen flies down this page and
@@ -169,7 +181,11 @@ function CountryDetailInner({
 
   const otherCountries = region.stops.filter((s) => s.country !== stop.country);
   const maskId = "cd-hero-mask";
-  const heroFontSize = page.country.length > 8 ? 130 : page.country.length > 5 ? 165 : 220;
+  const isSmall = useIsSmallScreen();
+  const heroViewBox = isSmall ? "0 0 390 844" : "0 0 1000 560";
+  const heroTextX = isSmall ? 195 : 500;
+  const heroTextY = isSmall ? 386 : 308;
+  const heroFontSize = isSmall ? (page.country.length > 8 ? 54 : page.country.length > 5 ? 66 : 96) : page.country.length > 8 ? 130 : page.country.length > 5 ? 165 : 220;
 
   // closing transition on the hero: its copy fades and lifts away as you
   // leave, instead of being scrolled off abruptly
@@ -245,41 +261,50 @@ function CountryDetailInner({
       </div>
 
       {/* fixed header */}
-      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 border-b border-gold/20 bg-cream-deep/85 px-5 py-4 backdrop-blur-md sm:px-8">
-        <a href="/asia" className="shrink-0 text-[9px] uppercase tracking-[0.24em] text-navy/55 transition-colors hover:text-gold-deep sm:text-[10px]">
-          ← Asia
+      <header className="fixed inset-x-0 top-0 z-50 grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-gold/20 bg-cream-deep/88 px-4 pt-[calc(env(safe-area-inset-top)+10px)] pb-2.5 backdrop-blur-md sm:gap-4 sm:px-8 sm:py-3">
+        <a href="/" className="shrink-0 text-[9px] uppercase tracking-[0.2em] text-navy/55 transition-colors hover:text-gold-deep sm:text-[10px] sm:tracking-[0.24em]">
+          ← Home
         </a>
-        <div className="hidden text-[10px] uppercase tracking-[0.3em] text-gold-deep sm:block">{page.country}</div>
-        <button
-          type="button"
-          onClick={() => handleEnquire()}
-          className="shrink-0 border-b border-gold-deep/55 pb-1 text-[9px] uppercase tracking-[0.24em] text-gold-deep transition-colors hover:text-navy sm:text-[10px]"
-        >
-          Enquire
-        </button>
+        <a href="/" aria-label="The Retreat Collection home" className="grid place-items-center">
+          <img
+            src="/media/brand/retreat-collection-logo-crop.png"
+            alt="The Retreat Collection"
+            className="h-auto w-[108px] opacity-85 sm:w-[150px]"
+          />
+        </a>
+        <div className="flex min-w-0 items-center justify-end gap-5">
+          <div className="hidden truncate text-[10px] uppercase tracking-[0.3em] text-gold-deep md:block">{page.country}</div>
+          <button
+            type="button"
+            onClick={() => handleEnquire()}
+            className="shrink-0 border-b border-gold-deep/55 pb-1 text-[9px] uppercase tracking-[0.2em] text-gold-deep transition-colors hover:text-navy sm:text-[10px] sm:tracking-[0.24em]"
+          >
+            Enquire
+          </button>
+        </div>
       </header>
 
       <main id="tier2-journey" className="relative z-10">
         <Tier2FlightPath stops={flightStops} startId={heroId} />
 
         {/* HERO — the country name with the footage seeping through the letters */}
-        <section id={heroId} className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-ink">
+        <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
           <video autoPlay muted loop playsInline poster={`/media/poster/${page.heroSlug}.jpg`} className="absolute inset-0 h-full w-full object-cover">
             <source src={`/media/video/${page.heroSlug}.mp4`} type="video/mp4" />
           </video>
-          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
               <mask id={maskId}>
-                <rect width="1000" height="560" fill="white" />
-                <text x="500" y="308" textAnchor="middle" fontFamily="var(--font-serif)" fontWeight="300" fontSize={heroFontSize} letterSpacing="2" fill="black">
+                <rect width="100%" height="100%" fill="white" />
+                <text x={heroTextX} y={heroTextY} textAnchor="middle" fontFamily="var(--font-serif)" fontWeight="300" fontSize={heroFontSize} letterSpacing="2" fill="black">
                   {page.country.toUpperCase()}
                 </text>
               </mask>
             </defs>
-            <rect width="1000" height="560" fill="rgba(14,13,12,0.72)" mask={`url(#${maskId})`} />
+            <rect width="100%" height="100%" fill="rgba(14,13,12,0.72)" mask={`url(#${maskId})`} />
           </svg>
           <div
-            className="pointer-events-none absolute inset-x-0 top-[62%] flex flex-col items-center px-5 text-center"
+            className="pointer-events-none absolute inset-x-0 top-[58%] flex flex-col items-center px-5 text-center sm:top-[62%]"
             style={{ opacity: 1 - heroFade, transform: `translateY(${-heroFade * 34}px)` }}
           >
             <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.3em] text-gold-light sm:gap-4 sm:text-[10px]">
@@ -311,7 +336,7 @@ function CountryDetailInner({
 
         {/* sticky in-page section nav — White Desert's chip bar, scroll-spied */}
         <nav
-          className="sticky top-[53px] z-40 flex gap-2 overflow-x-auto border-b border-gold/18 bg-cream-deep/85 px-5 py-3 backdrop-blur-md no-scrollbar sm:top-[57px] sm:px-8"
+          className="sticky top-[calc(env(safe-area-inset-top)+51px)] z-40 flex gap-2 overflow-x-auto overscroll-x-contain border-b border-gold/18 bg-cream-deep/88 px-4 py-2.5 backdrop-blur-md no-scrollbar sm:top-[57px] sm:px-8 sm:py-3"
           aria-label="Page sections"
         >
           {sections.map((s) => (
@@ -322,7 +347,7 @@ function CountryDetailInner({
                 e.preventDefault();
                 scrollToHash(`#${s.id}`);
               }}
-              className={`shrink-0 border px-4 py-2 text-[8.5px] uppercase tracking-[0.18em] transition-colors ${
+              className={`grid min-h-10 shrink-0 place-items-center border px-3 py-2 text-[8.5px] uppercase tracking-[0.16em] transition-colors sm:px-4 sm:tracking-[0.18em] ${
                 activeSection === s.id
                   ? "border-gold bg-gold/10 text-gold-deep"
                   : "border-navy/15 text-navy/50 hover:border-gold/50 hover:text-gold-deep"
@@ -508,24 +533,25 @@ function ExpandChapter({
 }) {
   const ref = useRef<HTMLElement | null>(null);
   const p = usePinProgress(ref);
+  const isSmall = useIsSmallScreen();
 
-  const open = clamp(p / 0.42, 0, 1); // film opens to full-bleed
-  const insetX = (1 - open) * 24;
-  const insetY = (1 - open) * 18;
+  const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1); // film opens to full-bleed
+  const insetX = (1 - open) * (isSmall ? 8 : 24);
+  const insetY = (1 - open) * (isSmall ? 14 : 18);
   const radius = (1 - open) * 26;
-  const titleOut = 1 - clamp((open - 0.3) / 0.45, 0, 1); // backdrop word cedes to the film
-  const textIn = clamp((p - 0.5) / 0.16, 0, 1); // fade-in
-  const closing = 1 - clamp((p - 0.9) / 0.1, 0, 1); // closing fade before release
+  const titleOut = 1 - clamp((open - (isSmall ? 0.14 : 0.3)) / (isSmall ? 0.34 : 0.45), 0, 1); // backdrop word cedes to the film
+  const textIn = clamp((p - (isSmall ? 0.36 : 0.5)) / (isSmall ? 0.18 : 0.16), 0, 1); // fade-in
+  const closing = 1 - clamp((p - (isSmall ? 0.92 : 0.9)) / (isSmall ? 0.08 : 0.1), 0, 1); // closing fade before release
 
   return (
-    <section ref={ref} id={id} data-tier2-stop={id} className="relative h-[220svh] w-full">
+    <section ref={ref} id={id} data-tier2-stop={id} className="relative h-[180svh] w-full sm:h-[220svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* the word the film opens over */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center" style={{ opacity: titleOut }}>
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">
             {String(index + 1).padStart(2, "0")} · {chapter.eyebrow}
           </div>
-          <div className="mt-4 font-serif text-[clamp(44px,9vw,120px)] font-light leading-[0.96] text-navy/90">
+          <div className="mt-4 font-serif text-[clamp(42px,16vw,120px)] font-light leading-[0.96] text-navy/90 sm:text-[clamp(44px,9vw,120px)]">
             {chapter.title[0]}
             <br />
             {chapter.title[1]}
@@ -546,18 +572,18 @@ function ExpandChapter({
 
         {/* editorial over the opened film — fades in, then closes out */}
         <div
-          className="absolute inset-x-0 bottom-0 px-5 pb-[calc(env(safe-area-inset-bottom)+56px)] sm:px-10 lg:px-16"
+          className="absolute inset-x-0 bottom-0 px-5 pb-[calc(env(safe-area-inset-bottom)+34px)] sm:px-10 sm:pb-[calc(env(safe-area-inset-bottom)+56px)] lg:px-16"
           style={{ opacity: textIn * closing, transform: `translateY(${(1 - textIn) * 36 - (1 - closing) * 22}px)` }}
         >
           <div className="mx-auto max-w-[1280px]">
             <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">
               {String(index + 1).padStart(2, "0")} · {chapter.eyebrow}
             </div>
-            <h2 className="mt-3 font-serif text-[clamp(32px,5vw,60px)] font-light leading-[1.0] text-white">
+            <h2 className="mt-3 font-serif text-[clamp(30px,11vw,60px)] font-light leading-[1.0] text-white sm:text-[clamp(32px,5vw,60px)]">
               {chapter.title[0]} {chapter.title[1]}
             </h2>
             {chapter.paragraphs.map((para, pi) => (
-              <p key={pi} className="mt-4 max-w-[560px] text-[13.5px] font-light leading-[1.85] text-white/80 sm:text-[14.5px]">
+              <p key={pi} className="mt-3 max-w-[560px] text-[13px] font-light leading-[1.75] text-white/80 sm:mt-4 sm:text-[14.5px] sm:leading-[1.85]">
                 {para}
               </p>
             ))}
@@ -618,7 +644,7 @@ function StayDossier({
 
   return (
     <div className="fixed inset-0 z-[70] overflow-y-auto bg-ink/[0.985] backdrop-blur-md">
-      <div className="mx-auto max-w-[1100px] px-5 pb-24 pt-[calc(env(safe-area-inset-top)+72px)] sm:px-10">
+      <div className="mx-auto max-w-[1100px] px-5 pb-[calc(env(safe-area-inset-bottom)+88px)] pt-[calc(env(safe-area-inset-top)+72px)] sm:px-10 sm:pb-24">
         <div className="flex items-start justify-between gap-6">
           <div className="moment-in">
             <div className="flex items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-light">
@@ -638,7 +664,7 @@ function StayDossier({
         </div>
 
         {/* lead film */}
-        <div className="moment-in moment-in-1 relative mt-8 aspect-[16/8] w-full overflow-hidden rounded-xl border border-gold/30">
+        <div className="moment-in moment-in-1 relative mt-8 aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 sm:aspect-[16/8]">
           <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
             <source src={gallery[0].replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")} type="video/mp4" />
           </video>
@@ -668,7 +694,7 @@ function StayDossier({
         ) : null}
 
         {/* facts */}
-        <div className="moment-in moment-in-3 mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="moment-in moment-in-3 mt-10 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
           {facts.map((fact) => (
             <div key={fact.label} className="border border-white/12 px-4 py-4">
               <div className="text-[8.5px] uppercase tracking-[0.18em] text-gold-light/75">{fact.label}</div>
@@ -1143,7 +1169,7 @@ function EssentialsStack({ cards, country }: { cards: EssentialCard[]; country: 
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="sticky"
+              className="sm:sticky"
               style={{
                 top: `calc(110px + ${i * 30}px)`,
                 zIndex: i + 1,

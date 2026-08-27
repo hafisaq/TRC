@@ -324,7 +324,7 @@ function CountryRouteChapter({
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.45),rgba(14,13,12,.05)_30%,rgba(14,13,12,.5))]" />
           <div className={`pointer-events-none absolute inset-0 ${goldChapter ? "bg-[linear-gradient(90deg,rgba(14,13,12,.7),transparent_45%)]" : "bg-[linear-gradient(270deg,rgba(14,13,12,.7),transparent_45%)]"}`} />
           {/* live coordinate ticker on the media */}
-          <div className="absolute left-5 top-[92px] flex items-center gap-2 border border-white/18 bg-ink/30 px-3 py-2 text-[8px] uppercase tracking-[0.22em] text-gold-light backdrop-blur-md sm:top-24">
+          <div className="absolute left-4 top-[78px] flex items-center gap-2 border border-white/18 bg-ink/30 px-3 py-2 text-[8px] uppercase tracking-[0.22em] text-gold-light backdrop-blur-md sm:left-5 sm:top-24">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
             {active.entry.coordinates ?? active.entry.location}
           </div>
@@ -344,9 +344,9 @@ function CountryRouteChapter({
         </div>
 
         {/* PANEL — full-height column (no floating box, no dead space) */}
-        <div className={`absolute inset-x-0 bottom-0 top-auto lg:inset-y-0 ${panelSide}`}>
+        <div className={`absolute inset-x-0 bottom-0 top-auto max-h-[72svh] overflow-y-auto overscroll-contain lg:inset-y-0 lg:max-h-none lg:overflow-visible ${panelSide}`}>
           <div
-            className={`flex h-full flex-col justify-end gap-6 border-t ${panelBorder} ${panelClass} px-5 pb-[calc(env(safe-area-inset-bottom)+22px)] pt-6 backdrop-blur-md sm:px-8 lg:justify-center lg:border-t-0 ${
+            className={`flex min-h-[46svh] flex-col justify-end gap-5 border-t ${panelBorder} ${panelClass} px-5 pb-[calc(env(safe-area-inset-bottom)+22px)] pt-6 backdrop-blur-md sm:gap-6 sm:px-8 lg:h-full lg:justify-center lg:border-t-0 ${
               goldChapter ? "lg:border-r" : "lg:border-l"
             } lg:px-12 lg:pb-10 lg:pt-[104px]`}
           >

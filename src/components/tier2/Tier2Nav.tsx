@@ -69,7 +69,7 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
 
       <nav
         aria-label="Destination navigation"
-        className="fixed inset-x-0 bottom-0 z-50 sm:hidden border-t border-white/10 bg-ink/82 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] backdrop-blur-xl"
+        className="fixed inset-x-0 bottom-0 z-50 sm:hidden border-t border-white/10 bg-ink/88 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(0,0,0,.28)] backdrop-blur-xl"
       >
         <div className="absolute left-0 right-0 top-0 h-px bg-white/10">
           <div
@@ -77,8 +77,8 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
             style={{ width: `${Math.max(0, Math.min(1, routeProgress)) * 100}%` }}
           />
         </div>
-        <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-white/38">{statusText}</div>
-        <div className="grid grid-cols-6 gap-1">
+        <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-white/42">{statusText}</div>
+        <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 pb-0.5 no-scrollbar">
           {navItems.map((item) => {
             const isActive = item.href === `#${activeStopId}`;
             return (
@@ -87,8 +87,10 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
               href={item.href}
               onClick={(e) => handleClick(e, item.href)}
               aria-current={isActive ? "location" : undefined}
-              className={`grid min-h-12 place-items-center rounded-md px-1 text-center text-[8px] tracking-[0.1em] uppercase transition-colors active:bg-white/5 active:text-gold-light ${
-                isActive ? "bg-gold/10 text-gold-light shadow-[0_0_18px_rgba(200,162,76,.22)]" : "text-white/58"
+              className={`grid min-h-12 min-w-[78px] place-items-center rounded-md border px-2 text-center text-[8px] tracking-[0.1em] uppercase transition-colors active:bg-white/5 active:text-gold-light ${
+                isActive
+                  ? "border-gold/35 bg-gold/12 text-gold-light shadow-[0_0_18px_rgba(200,162,76,.22)]"
+                  : "border-white/0 text-white/58"
               }`}
             >
               {item.label}

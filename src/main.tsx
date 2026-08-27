@@ -17,8 +17,17 @@ const page = countrySlug ? (
 
 createRoot(document.getElementById("root")!).render(page);
 
+const standalone =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+
+document.documentElement.dataset.displayMode = standalone ? "standalone" : "browser";
+
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .then((registration) => registration.update().catch(() => undefined))
+      .catch(() => undefined);
   });
 }

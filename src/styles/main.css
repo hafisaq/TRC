@@ -43,6 +43,8 @@ body {
   color: var(--color-navy);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   overflow-x: clip;
 }
 
@@ -213,6 +215,40 @@ a {
   .sketch-late { opacity: 1; animation: none; }
   .quote-word { opacity: 1; filter: none; transform: none; }
   .quote-attr { opacity: 1; transform: none; }
+}
+
+@media (max-width: 639px) {
+  html {
+    scroll-padding-top: calc(env(safe-area-inset-top) + 96px);
+  }
+
+  #tier2-flight-svg {
+    opacity: .42;
+  }
+
+  .ambient-plane,
+  .ambient-boat {
+    display: none;
+  }
+
+  .atlas-sheen-a,
+  .atlas-sheen-b {
+    opacity: .55;
+  }
+
+  .atlas-route,
+  .atlas-waypoint,
+  .sketch-late {
+    opacity: .65;
+  }
+
+  .moment-in {
+    animation-duration: .58s;
+  }
+}
+
+html[data-display-mode="standalone"] body {
+  overscroll-behavior-y: contain;
 }
 
 .premium-loader {

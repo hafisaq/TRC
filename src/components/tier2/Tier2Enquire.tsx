@@ -156,14 +156,14 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             </label>
 
             <div className="mt-6 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Cabin — where to</div>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-2.5">
+            <div className="mt-2.5 grid max-h-44 grid-cols-1 gap-2 overflow-y-auto overscroll-contain rounded-sm border border-navy/10 bg-white/20 p-2 min-[380px]:grid-cols-2 sm:max-h-none sm:flex sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0">
               {destinations.map((destination) => (
                 <button
                   key={destination.id}
                   type="button"
                   disabled={status !== "idle"}
                   onClick={() => setCabin(destination.interest === cabin ? null : destination.interest)}
-                  className={`min-h-10 text-[8.5px] sm:text-[9.5px] tracking-[0.08em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3.5 py-2 border transition-colors duration-200 disabled:opacity-50 ${
+                  className={`min-h-11 break-words text-[8.5px] leading-snug sm:text-[9.5px] tracking-[0.08em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3.5 py-2 border transition-colors duration-200 disabled:opacity-50 ${
                     cabin === destination.interest ? "border-gold bg-gold/10 text-navy" : "border-navy/20 text-navy/60 hover:border-navy/40"
                   }`}
                   style={{ fontFamily: "var(--font-type)" }}

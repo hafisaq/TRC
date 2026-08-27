@@ -80,7 +80,7 @@ export default function CountryStrip({ region }: { region: Region }) {
   return (
     <section ref={sectionRef} id="tier2-asia-countries" className="relative bg-cream-deep text-navy lg:h-[280svh]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(200,162,76,.14),transparent_36%),linear-gradient(180deg,rgba(250,248,244,.9),rgba(243,239,231,.98))]" />
-      <div className="relative flex flex-col justify-center gap-8 overflow-hidden py-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
+      <div className="relative flex flex-col justify-center gap-7 overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:gap-8 sm:py-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
         <div className="px-5 sm:px-10 lg:px-16">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Choose your route</div>
           <div className="mt-2 flex items-end justify-between gap-6">
@@ -96,7 +96,7 @@ export default function CountryStrip({ region }: { region: Region }) {
 
         <div
           ref={rowRef}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 no-scrollbar sm:gap-6 sm:px-10 lg:snap-none lg:overflow-visible lg:px-16"
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 no-scrollbar sm:gap-6 sm:px-10 lg:snap-none lg:overflow-visible lg:px-16"
         >
           <div
             ref={innerRef}
@@ -110,7 +110,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                 <a
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : `/${region.slug}`}
-                  className={`group relative h-[54svh] min-h-[340px] w-[78vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:w-[52vw] lg:w-[34vw] ${
+                  className={`group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
                     goldCard ? "border-gold/50 shadow-[0_16px_44px_rgba(200,162,76,.18)]" : "border-navy/15 shadow-[0_16px_44px_rgba(22,36,60,.12)]"
                   } hover:border-gold`}
                   onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
@@ -128,7 +128,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                     <span className={`h-px w-6 ${goldCard ? "bg-white/60" : "bg-gold/60"}`} />
                     <span>{stop.coords}</span>
                   </div>
-                  <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
+                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
                     <div className="text-[9px] uppercase tracking-[0.26em] text-gold-light">{stop.eyebrow}</div>
                     <div className="mt-2 font-serif text-[clamp(34px,4.4vw,58px)] font-light leading-[0.98] text-white">{stop.country}</div>
                     <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.22em] text-white/80">

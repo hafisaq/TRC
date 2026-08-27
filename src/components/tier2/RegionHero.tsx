@@ -1,4 +1,17 @@
+import { useEffect, useState } from "react";
 import type { RegionStop } from "../../data/regions/types";
+
+function useIsSmallScreen() {
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsSmall(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return isSmall;
+}
 
 // White Desert-style opener: the region name is huge, and the video plays
 // BRIGHT inside the letters while the surround is dimmed — the video seeps
@@ -15,22 +28,26 @@ export default function RegionHero({
   intro: string;
 }) {
   const maskId = `${id}-text-mask`;
+  const isSmall = useIsSmallScreen();
+  const heroViewBox = isSmall ? "0 0 390 844" : "0 0 1000 560";
+  const textX = isSmall ? 195 : 500;
+  const textY = isSmall ? 386 : 315;
   // Scale the type down a touch for long names so it always fits one line.
-  const fontSize = title.length > 7 ? 150 : title.length > 5 ? 200 : 240;
+  const fontSize = isSmall ? (title.length > 7 ? 54 : title.length > 5 ? 66 : 96) : title.length > 7 ? 150 : title.length > 5 ? 200 : 240;
 
   return (
-    <section id={id} className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-ink">
+    <section id={id} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
       <video autoPlay muted loop playsInline poster={`/media/poster/${stop.slug}.jpg`} className="absolute inset-0 h-full w-full object-cover">
         <source src={`/media/video/${stop.slug}.mp4`} type="video/mp4" />
       </video>
 
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <mask id={maskId}>
-            <rect width="1000" height="560" fill="white" />
+            <rect width="100%" height="100%" fill="white" />
             <text
-              x="500"
-              y="315"
+              x={textX}
+              y={textY}
               textAnchor="middle"
               fontFamily="var(--font-serif)"
               fontWeight="300"
@@ -43,7 +60,7 @@ export default function RegionHero({
           </mask>
         </defs>
         {/* dim everything except inside the letters */}
-        <rect width="1000" height="560" fill="rgba(14,13,12,0.72)" mask={`url(#${maskId})`} />
+        <rect width="100%" height="100%" fill="rgba(14,13,12,0.72)" mask={`url(#${maskId})`} />
       </svg>
 
       {/* faint gold outline of the same word, for definition */}
@@ -60,7 +77,7 @@ export default function RegionHero({
         </span>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 top-[64%] flex flex-col items-center px-5 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-[61%] flex flex-col items-center px-5 text-center sm:top-[64%]">
         <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.3em] text-gold-light sm:gap-4 sm:text-[10px]">
           <span className="h-px w-8 bg-gold/60 sm:w-10" />
           The Region
