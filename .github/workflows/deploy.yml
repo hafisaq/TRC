@@ -42,10 +42,16 @@ jobs:
       - name: Build with noindex robots guard
         run: npm run build:replica
 
+      # hPanel's copy button includes the "ftp://" prefix — strip any
+      # protocol/trailing slashes so a verbatim paste still connects
+      - name: Sanitize FTP host
+        id: ftp
+        run: echo "host=$(printf '%s' '${{ secrets.REPLICA_FTP_HOST }}' | sed -E 's#^[a-zA-Z]+://##; s#/+$##')" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to replica site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.REPLICA_FTP_HOST }}
+          server: ${{ steps.ftp.outputs.host }}
           username: ${{ secrets.REPLICA_FTP_USER }}
           password: ${{ secrets.REPLICA_FTP_PASS }}
           local-dir: dist/
@@ -72,10 +78,14 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      - name: Sanitize FTP host
+        id: ftp
+        run: echo "host=$(printf '%s' '${{ secrets.PROD_FTP_HOST }}' | sed -E 's#^[a-zA-Z]+://##; s#/+$##')" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to production site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.PROD_FTP_HOST }}
+          server: ${{ steps.ftp.outputs.host }}
           username: ${{ secrets.PROD_FTP_USER }}
           password: ${{ secrets.PROD_FTP_PASS }}
           local-dir: dist/
