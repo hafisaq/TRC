@@ -18,7 +18,16 @@ export function registerMedia(key: string, urls: { poster?: string; film?: strin
   if (urls.film) films.set(key, urls.film);
 }
 
-export const posterUrl = (key: string) => posters.get(key) ?? `/media/poster/${key}.jpg`;
+// Sanity's image CDN resizes/re-encodes on the fly — a raw 2560px
+// original (~600KB+) becomes a ~100-200KB WebP/AVIF sized to what the
+// layout actually needs. Applied to any cdn.sanity.io image URL; local
+// demo files pass through untouched.
+export const imgSized = (url: string, w = 1600) =>
+  url.includes("cdn.sanity.io/images") && !url.includes("?")
+    ? `${url}?auto=format&q=75&w=${w}`
+    : url;
+
+export const posterUrl = (key: string, w = 1600) => imgSized(posters.get(key) ?? `/media/poster/${key}.jpg`, w);
 
 export const videoUrl = (key: string) => films.get(key) ?? `/media/video/${key}.mp4`;
 

@@ -6,7 +6,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
-import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm } from "../lib/media";
+import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized } from "../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -419,13 +419,13 @@ function CountryDetailInner({
                     Speak to us about {page.country}
                   </button>
                 </div>
-                <div data-stop-video className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
+                <div data-stop-video className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
                   {hasFilm(ch.slug) ? (
                     <video muted loop playsInline preload="none" poster={posterUrl(ch.slug)} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(ch.slug)} type="video/mp4" />
                     </video>
                   ) : (
-                    <img src={posterUrl(ch.slug)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                    <img src={posterUrl(ch.slug, 1100)} alt="" loading="lazy" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   )}
                 </div>
               </div>
@@ -474,7 +474,7 @@ function CountryDetailInner({
               </div>
               <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 no-scrollbar">
               {group.entries.map((entry, i) => (
-                <div key={entry.name} className="group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
+                <div key={entry.name} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
                   {/* film-first: a stay with footage plays it; stills only
                       when no film exists for the entry */}
                   {filmForPoster(entry.poster) ? (
@@ -484,20 +484,21 @@ function CountryDetailInner({
                       loop
                       playsInline
                       preload="metadata"
-                      poster={entry.poster}
+                      poster={imgSized(entry.poster, 900)}
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
                     >
                       <source src={filmForPoster(entry.poster)} type="video/mp4" />
                     </video>
                   ) : (
                     <img
-                      src={entry.poster}
+                      src={imgSized(entry.poster, 900)}
                       alt=""
                       width={1080}
                       height={608}
                       loading="lazy"
                       decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                      onLoad={(e) => e.currentTarget.classList.add("media-ready")}
+                      className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
                     />
                   )}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
@@ -739,13 +740,13 @@ function StayDossier({
         {/* the file: film + frames on the left, the reading matter on the right */}
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12">
           <div>
-            <div className="moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
+            <div className="media-shell moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
               {filmForPoster(gallery[0]) || gallery[0].startsWith("/media/poster/") ? (
-                <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
+                <video autoPlay muted loop playsInline poster={imgSized(gallery[0], 1400)} className="absolute inset-0 h-full w-full object-cover">
                   <source src={videoForPoster(gallery[0])} type="video/mp4" />
                 </video>
               ) : (
-                <img src={gallery[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <img src={imgSized(gallery[0], 1400)} alt="" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
               )}
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="pointer-events-none absolute inset-2 rounded-lg border border-gold-light/20" />
@@ -767,13 +768,14 @@ function StayDossier({
                   {gallery.map((src, i) => (
                     <div key={src + i} className="group relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
                       <img
-                        src={src}
+                        src={imgSized(src, 600)}
                         alt=""
                         width={1080}
                         height={608}
                         loading="lazy"
                         decoding="async"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
+                        onLoad={(e) => e.currentTarget.classList.add("media-ready")}
+                        className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
                       />
                     </div>
                   ))}
@@ -924,7 +926,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
         <div className="mt-14 grid items-start gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           {/* sticky film — follows the day being read */}
           <div className="hidden lg:sticky lg:top-[120px] lg:block">
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
+            <div className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
               {days.map((day, i) =>
                 hasFilm(day.slug) ? (
                   <video
@@ -936,7 +938,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     loop
                     playsInline
                     preload={i === 0 ? "metadata" : "none"}
-                    poster={posterUrl(day.slug)}
+                    poster={posterUrl(day.slug, 1000)}
                     className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
                       i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
                     }`}
@@ -948,9 +950,10 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                   // element whose 404 source would blank its own poster
                   <img
                     key={day.title}
-                    src={posterUrl(day.slug)}
+                    src={posterUrl(day.slug, 1000)}
                     alt=""
                     loading="lazy"
+                    onLoad={(e) => e.currentTarget.classList.add("media-ready")}
                     className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
                       i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
                     }`}
@@ -1022,7 +1025,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     {/* the film inline on mobile, where there's no sticky panel */}
                     <div className="relative mt-5 aspect-[16/9] w-full max-w-[440px] overflow-hidden rounded-lg border border-navy/15 lg:hidden">
                       <img
-                        src={posterUrl(day.slug)}
+                        src={posterUrl(day.slug, 800)}
                         alt=""
                         width={1080}
                         height={608}
@@ -1439,16 +1442,17 @@ function GallerySection({
                 onMouseLeave={(e) => stopTile(e.currentTarget)}
                 onFocus={(e) => playTile(e.currentTarget)}
                 onBlur={(e) => stopTile(e.currentTarget)}
-                className={`group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
+                className={`media-shell group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
               >
                 <img
-                  src={item.poster}
+                  src={imgSized(item.poster, 900)}
                   alt=""
                   width={1080}
                   height={608}
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]"
+                  onLoad={(e) => e.currentTarget.classList.add("media-ready")}
+                  className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]"
                 />
                 {item.video && (
                   <video
@@ -1456,7 +1460,7 @@ function GallerySection({
                     loop
                     playsInline
                     preload="none"
-                    poster={item.poster}
+                    poster={imgSized(item.poster, 900)}
                     className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
                   >
                     <source data-src={item.video} type="video/mp4" />
@@ -1522,7 +1526,7 @@ function GallerySection({
               </video>
             ) : (
               <img
-                src={items[open].poster}
+                src={imgSized(items[open].poster, 1920)}
                 alt=""
                 width={1080}
                 height={608}
