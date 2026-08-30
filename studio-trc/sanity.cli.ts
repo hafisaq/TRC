@@ -5,6 +5,7 @@ export default defineCliConfig({
     projectId: 'nvmppjc2',
     dataset: 'production'
   },
+  studioHost: 'trc-retreat',
   deployment: {
     /**
      * Enable auto-updates for studios.
