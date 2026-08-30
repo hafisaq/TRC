@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { DotMapHandle } from "../components/tier2/DotMap";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Tier2Enquire, { type EnquiryOption } from "../components/tier2/Tier2Enquire";
@@ -1489,9 +1490,12 @@ function GallerySection({
         </div>
       </div>
 
-      {/* lightbox — film frames play, stills hold */}
-      {open !== null && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/[0.96] backdrop-blur-md" onClick={() => setOpen(null)}>
+      {/* lightbox — film frames play, stills hold. Portaled to <body>:
+          GSAP leaves transforms on ancestor sections, which would trap this
+          fixed overlay in their stacking context (nav bleeds through, media
+          clips under it). */}
+      {open !== null && createPortal(
+        <div data-lenis-prevent className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/[0.96] p-6 backdrop-blur-md" onClick={() => setOpen(null)}>
           <button
             type="button"
             aria-label="Close"
@@ -1552,7 +1556,8 @@ function GallerySection({
           >
             →
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
