@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://darkviolet-mouse-380960.hostingersite.com/sitemap.xml
+Sitemap: __SITE_URL__/sitemap.xml

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/copy-routes.mjs",
+    "build": "tsc -b && vite build && node scripts/copy-routes.mjs && node scripts/apply-site-url.mjs",
+    "build:replica": "npm run build && node scripts/replica-guard.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {

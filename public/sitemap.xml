@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/</loc>
+    <loc>__SITE_URL__/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/tier2/</loc>
+    <loc>__SITE_URL__/tier2/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/asia/</loc>
+    <loc>__SITE_URL__/asia/</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/asia/maldives/</loc>
+    <loc>__SITE_URL__/asia/maldives/</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/asia/thailand/</loc>
+    <loc>__SITE_URL__/asia/thailand/</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/asia/sri-lanka/</loc>
+    <loc>__SITE_URL__/asia/sri-lanka/</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://darkviolet-mouse-380960.hostingersite.com/asia/india/</loc>
+    <loc>__SITE_URL__/asia/india/</loc>
     <priority>0.7</priority>
   </url>
 </urlset>

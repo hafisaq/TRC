@@ -1,0 +1,82 @@
+# Deploys, driven entirely from GitHub:
+#
+#   REPLICA — automatic. Every push to the `replica` branch builds (with
+#   the noindex robots guard) and FTPs to the placeholder
+#   (*.hostingersite.com) site. Nothing else auto-deploys anywhere.
+#
+#   PROD — manual button only. Actions tab -> "Deploy" -> "Run workflow",
+#   pick the branch to release (default: replica), press the green button.
+#   That's the only way production ever updates.
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
+#   REPLICA_FTP_HOST / REPLICA_FTP_USER / REPLICA_FTP_PASS
+#   PROD_FTP_HOST    / PROD_FTP_USER    / PROD_FTP_PASS
+# Each site's FTP credentials live in hPanel -> that website -> Files ->
+# FTP Accounts.
+name: Deploy
+
+on:
+  push:
+    branches: [replica]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  replica:
+    if: github.event_name == 'push'
+    name: Replica (auto)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build with noindex robots guard
+        run: npm run build:replica
+
+      - name: Deploy to replica site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.REPLICA_FTP_HOST }}
+          username: ${{ secrets.REPLICA_FTP_USER }}
+          password: ${{ secrets.REPLICA_FTP_PASS }}
+          local-dir: dist/
+          server-dir: public_html/
+
+  prod:
+    if: github.event_name == 'workflow_dispatch'
+    name: Production (manual button)
+    runs-on: ubuntu-latest
+    # Optional hardening later: create a "production" environment in repo
+    # Settings -> Environments and require a reviewer — the button then
+    # asks for an approval click before this job runs.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Deploy to production site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.PROD_FTP_HOST }}
+          username: ${{ secrets.PROD_FTP_USER }}
+          password: ${{ secrets.PROD_FTP_PASS }}
+          local-dir: dist/
+          server-dir: public_html/
