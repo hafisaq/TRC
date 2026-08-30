@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { RegionStop } from "../../data/regions/types";
+import { posterUrl, videoUrl } from "../../lib/media";
 
 function useIsSmallScreen() {
   const [isSmall, setIsSmall] = useState(false);
@@ -37,8 +38,8 @@ export default function RegionHero({
 
   return (
     <section id={id} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
-      <video autoPlay muted loop playsInline poster={`/media/poster/${stop.slug}.jpg`} className="absolute inset-0 h-full w-full object-cover">
-        <source src={`/media/video/${stop.slug}.mp4`} type="video/mp4" />
+      <video autoPlay muted loop playsInline poster={posterUrl(stop.slug)} className="absolute inset-0 h-full w-full object-cover">
+        <source src={videoUrl(stop.slug)} type="video/mp4" />
       </video>
 
       <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">

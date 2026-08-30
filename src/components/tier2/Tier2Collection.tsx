@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogEntry, CatalogGroup, PropertyAsset, PropertyFact } from "../../data/regions/types";
+import { posterUrl, videoUrl, videoForPoster } from "../../lib/media";
 
 type Tier2CollectionProps = {
   id: string;
@@ -31,7 +32,7 @@ type StoryMoment = {
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 function videoFromPoster(poster: string) {
-  return poster.replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4");
+  return videoForPoster(poster);
 }
 
 function galleryFor(entry: CatalogEntry) {

@@ -1,4 +1,5 @@
 import type { MouseEvent } from "react";
+import { posterUrl, videoUrl } from "../../lib/media";
 
 export type StopTheme = "gold" | "white";
 export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
@@ -70,8 +71,8 @@ function Meta({ season, highlights, t }: { index: number; coords: string; season
 
 function VideoTag({ slug, className = "" }: { slug: string; className?: string }) {
   return (
-    <video muted loop playsInline preload="none" poster={`/media/poster/${slug}.jpg`} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
-      <source data-src={`/media/video/${slug}.mp4`} type="video/mp4" />
+    <video muted loop playsInline preload="none" poster={posterUrl(slug)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+      <source data-src={videoUrl(slug)} type="video/mp4" />
     </video>
   );
 }

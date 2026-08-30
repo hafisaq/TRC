@@ -7,19 +7,9 @@ import Stop from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
-import { DESTINATIONS, FLIGHT_PATH_STOPS } from "../data/tier2Destinations";
+import { DESTINATIONS, flightPathStops } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
 import { ASIA } from "../data/regions/asia";
-
-// DESTINATIONS plus the country strip's hold waypoint — passive, so the
-// plane pulses a landing and wears a visible gold accent through the cream
-// strip (its zone would otherwise inherit Asia's white accent, invisible
-// on cream), without the hold ever becoming the nav's "active stop".
-const ANIMATION_STOPS = [
-  ...DESTINATIONS.slice(0, 2),
-  { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] as [number, number], theme: "white" as const, coords: "", passive: true },
-  ...DESTINATIONS.slice(2)
-];
 
 // The loader's night sky: deterministic pseudo-random star placements (a
 // seeded hash, not Math.random, so every visit renders the same sky and
@@ -59,7 +49,21 @@ export default function Tier2() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  useTier2Animations(dotMapRef, ANIMATION_STOPS, {
+  // DESTINATIONS plus the country strip's hold waypoint — passive, so the
+  // plane pulses a landing and wears a visible gold accent through the
+  // cream strip, without the hold ever becoming the nav's "active stop".
+  // Built at render time (after CMS hydration), inserted after Asia by id.
+  const animationStops = useMemo(() => {
+    const asiaIdx = DESTINATIONS.findIndex((d) => d.id === "tier2-asia");
+    const cut = asiaIdx >= 0 ? asiaIdx + 1 : Math.min(2, DESTINATIONS.length);
+    return [
+      ...DESTINATIONS.slice(0, cut),
+      { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] as [number, number], theme: "white" as const, coords: "", passive: true },
+      ...DESTINATIONS.slice(cut)
+    ];
+  }, []);
+
+  useTier2Animations(dotMapRef, animationStops, {
     onActiveStopChange: setActiveStopId,
     onProgressChange: setRouteProgress,
     heroReady: !isLoading
@@ -127,7 +131,7 @@ export default function Tier2() {
         onEnquire={() => handleEnquire()}
       />
       <main id="tier2-journey" className="relative z-10">
-        <Tier2FlightPath stops={FLIGHT_PATH_STOPS} />
+        <Tier2FlightPath stops={flightPathStops()} />
         <Tier2Hero />
         {DESTINATIONS.map((s, i) => (
           <div key={s.id} className="contents">

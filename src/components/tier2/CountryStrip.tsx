@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Region } from "../../data/regions/types";
+import { posterUrl, videoUrl } from "../../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -150,8 +151,8 @@ export default function CountryStrip({ region }: { region: Region }) {
                   onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
                   onMouseLeave={(e) => wakeVideo(e.currentTarget, false)}
                 >
-                  <video muted loop playsInline preload="none" poster={`/media/poster/${stop.slug}.jpg`} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
-                    <source data-src={`/media/video/${stop.slug}.mp4`} type="video/mp4" />
+                  <video muted loop playsInline preload="none" poster={posterUrl(stop.slug)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
+                    <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                   </video>
                   {/* lighter than before — just enough for legibility */}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.72),rgba(14,13,12,.06)_52%,rgba(14,13,12,.16))] transition-opacity duration-500 group-hover:opacity-75" />

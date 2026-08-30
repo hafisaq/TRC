@@ -11,3 +11,4 @@ work/
 # Kept locally only, not versioned (large binaries, no LFS configured).
 /*.mp4
 /WhatsApp Image*.jpeg
+seed/
