@@ -1,12 +1,10 @@
-const VERSION = "trc-pwa-v4";
+const VERSION = "trc-pwa-v5";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const CACHE_PREFIX = "trc-";
 
 const CORE_ROUTES = [
   "/",
-  "/tier2/",
-  "/asia/",
   "/asia/maldives/",
   "/asia/thailand/",
   "/asia/sri-lanka/",
@@ -65,6 +63,16 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
+
+  // Sanity's image CDN: sized/re-encoded posters and gallery stills. URLs
+  // are content-addressed (immutable), so cache-first is always correct —
+  // repeat visits render media without touching the network. Films stay
+  // network-only (range requests, below).
+  if (url.hostname === "cdn.sanity.io" && request.destination === "image") {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
@@ -120,7 +128,9 @@ async function cacheFirst(request) {
   if (cached) return cached;
 
   const response = await fetch(request);
-  if (response.ok) {
+  // no-cors image fetches (cdn.sanity.io) come back opaque: ok is false
+  // but the bytes are fine — cache those too
+  if (response.ok || response.type === "opaque") {
     const cache = await caches.open(RUNTIME_CACHE);
     cache.put(request, response.clone());
   }

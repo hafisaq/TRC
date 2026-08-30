@@ -159,6 +159,23 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           if (video) safePlay(video);
         });
         dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
+
+        // lookahead: start buffering the NEXT stop's film now, so by the
+        // time the user scrolls there it plays instead of holding on its
+        // poster. One section ahead keeps at most one film in flight.
+        const at = watched.findIndex((w) => w.stop.id === stop.id);
+        const next = watched[at + 1];
+        if (next && !revealed.has(next.stop.id)) {
+          $$<HTMLVideoElement>("[data-stop-video] video", next.section).forEach((video) => {
+            const source = video.querySelector<HTMLSourceElement>("source[data-src]");
+            if (source) {
+              source.src = source.dataset.src || "";
+              source.removeAttribute("data-src");
+              video.preload = "auto";
+              video.load();
+            }
+          });
+        }
       };
 
       const watched: Array<{ stop: Tier2Stop; section: HTMLElement }> = [];
