@@ -48,23 +48,16 @@ jobs:
         id: ftp
         run: echo "host=$(printf '%s' '${{ secrets.REPLICA_FTP_HOST }}' | sed -E 's#^[a-zA-Z]+://##; s#/+$##')" >> "$GITHUB_OUTPUT"
 
-      # NOTE: the account-level FTP user's root is /home/u.../, NOT the
-      # site's docroot — Hostinger serves this website from
-      # domains/<site>/public_html. A bare "public_html/" would create a
-      # stray unused folder at the FTP root (learned the hard way).
-      - name: Diagnose FTP layout (temporary)
+      # Sanity: with a SITE-SCOPED FTP account this listing shows the
+      # website's real public_html (the default page, or our own files on
+      # later deploys). The account-level u-number FTP user is jailed to a
+      # legacy directory the webserver never serves — REPLICA_FTP_USER must
+      # be the scoped account created under this website's FTP Accounts.
+      - name: Show FTP root before deploy (sanity)
         run: |
           H="${{ steps.ftp.outputs.host }}"
-          U="${{ secrets.REPLICA_FTP_USER }}"
-          P="${{ secrets.REPLICA_FTP_PASS }}"
-          echo "== FTP root =="
-          curl -s --user "$U:$P" "ftp://$H/" --list-only || true
-          echo "== /domains/ =="
-          curl -s --user "$U:$P" "ftp://$H/domains/" --list-only || true
-          echo "== /public_html/ (from first attempt) =="
-          curl -s --user "$U:$P" "ftp://$H/public_html/" --list-only | head -5 || true
-          echo "== /domains/khaki-deer-133961.hostingersite.com/ =="
-          curl -s --user "$U:$P" "ftp://$H/domains/khaki-deer-133961.hostingersite.com/" --list-only || true
+          echo "== FTP root as seen by the deploy account =="
+          curl -s --user "${{ secrets.REPLICA_FTP_USER }}:${{ secrets.REPLICA_FTP_PASS }}" "ftp://$H/" --list-only || true
 
       - name: Deploy to replica site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -73,7 +66,7 @@ jobs:
           username: ${{ secrets.REPLICA_FTP_USER }}
           password: ${{ secrets.REPLICA_FTP_PASS }}
           local-dir: dist/
-          server-dir: domains/khaki-deer-133961.hostingersite.com/public_html/
+          server-dir: ./
 
   prod:
     if: github.event_name == 'workflow_dispatch'
