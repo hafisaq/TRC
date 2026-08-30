@@ -5,4 +5,4 @@
 // When the new Hostinger account's placeholder URL — and later the
 // client's real domain — is known, change this line and rebuild. Nothing
 // else to touch.
-export const SITE_URL = "https://darkviolet-mouse-380960.hostingersite.com";
+export const SITE_URL = "https://khaki-deer-133961.hostingersite.com";
