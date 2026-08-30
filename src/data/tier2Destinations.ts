@@ -57,9 +57,7 @@ export const DESTINATIONS: Destination[] = [
     navLabel: "Asia",
     interest: "Asia",
     gate: "AS1",
-    statusLabel: "Asia",
-    ctaLabel: "Discover Asia →",
-    ctaHref: "#tier2-asia-countries"
+    statusLabel: "Asia"
   },
   {
     id: "tier2-alpine",

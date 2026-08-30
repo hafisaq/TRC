@@ -113,8 +113,14 @@ export async function hydrateFromCms(): Promise<boolean> {
           ...(d.ctaHref ? { ctaHref: d.ctaHref as string } : {})
         };
         const existing = DESTINATIONS.find((x) => x.id === id);
-        if (existing) Object.assign(existing, mapped);
-        else DESTINATIONS.push(mapped);
+        if (existing) {
+          // assign can't remove fields the CMS unset — clear optionals first
+          delete existing.ctaLabel;
+          delete existing.ctaHref;
+          Object.assign(existing, mapped);
+        } else {
+          DESTINATIONS.push(mapped);
+        }
       }
     }
 
