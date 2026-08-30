@@ -1,6 +1,5 @@
 import type { Region } from "./types";
 
-const SAMPLE_BROCHURE = "/media/brochures/sample-experience-brochure.pdf";
 
 export const ASIA: Region = {
   slug: "asia",
@@ -75,7 +74,6 @@ export const ASIA: Region = {
           name: "Cheval Blanc Randheli",
           location: "Noonu Atoll, Maldives",
           poster: "/media/poster/reef-dive.jpg",
-          brochureUrl: SAMPLE_BROCHURE,
           description:
             "A private island address for ultra-quiet Maldives requests: villas, spa journeys, private island buyouts, and a library of sales assets ready for advisors.",
           coordinates: "5.8°N 73.4°E",
@@ -151,7 +149,6 @@ export const ASIA: Region = {
           name: "Overwater Reef Villa",
           location: "North Male Atoll",
           poster: "/media/poster/reef-dive.jpg",
-          brochureUrl: SAMPLE_BROCHURE,
           description: "A reef-led stay with quiet overwater villas, guided snorkelling, and a house reef close enough to become the daily rhythm.",
           coordinates: "4.2°N 73.5°E",
           season: "May - Oct",
@@ -167,7 +164,6 @@ export const ASIA: Region = {
           name: "Private Island Residence",
           location: "Baa Atoll",
           poster: "/media/poster/bali-coast.jpg",
-          brochureUrl: SAMPLE_BROCHURE,
           description: "A buyout-style island residence for families and private groups who want total control of the pace.",
           coordinates: "5.1°N 73.0°E",
           season: "Nov - Apr",
@@ -185,25 +181,25 @@ export const ASIA: Region = {
       id: "thailand",
       label: "Thailand",
       entries: [
-        { name: "Amanpuri Beach Villa", location: "Phuket, Thailand", poster: "/media/poster/bali-coast.jpg", brochureUrl: SAMPLE_BROCHURE },
-        { name: "Phuket Cliffside Retreat", location: "Phuket, Thailand", poster: "/media/poster/reef-dive.jpg", brochureUrl: SAMPLE_BROCHURE }
+        { name: "Amanpuri Beach Villa", location: "Phuket, Thailand", poster: "/media/poster/bali-coast.jpg", },
+        { name: "Phuket Cliffside Retreat", location: "Phuket, Thailand", poster: "/media/poster/reef-dive.jpg", }
       ]
     },
     {
       id: "sri-lanka",
       label: "Sri Lanka",
       entries: [
-        { name: "Ceylon Tea Estate House", location: "Nuwara Eliya", poster: "/media/poster/alpine-ridge.jpg", brochureUrl: SAMPLE_BROCHURE },
-        { name: "Galle Fort Townhouse", location: "Galle, Sri Lanka", poster: "/media/poster/desert-ruins.jpg", brochureUrl: SAMPLE_BROCHURE }
+        { name: "Ceylon Tea Estate House", location: "Nuwara Eliya", poster: "/media/poster/alpine-ridge.jpg", },
+        { name: "Galle Fort Townhouse", location: "Galle, Sri Lanka", poster: "/media/poster/desert-ruins.jpg", }
       ]
     },
     {
       id: "india",
       label: "India",
       entries: [
-        { name: "Rajasthan Fort Palace", location: "Jodhpur, Rajasthan", poster: "/media/poster/desert-ruins.jpg", brochureUrl: SAMPLE_BROCHURE },
-        { name: "Kerala Backwater House", location: "Alleppey, Kerala", poster: "/media/poster/bali-coast.jpg", brochureUrl: SAMPLE_BROCHURE },
-        { name: "Himalayan Foothill Lodge", location: "Uttarakhand", poster: "/media/poster/alpine-ridge.jpg", brochureUrl: SAMPLE_BROCHURE }
+        { name: "Rajasthan Fort Palace", location: "Jodhpur, Rajasthan", poster: "/media/poster/desert-ruins.jpg", },
+        { name: "Kerala Backwater House", location: "Alleppey, Kerala", poster: "/media/poster/bali-coast.jpg", },
+        { name: "Himalayan Foothill Lodge", location: "Uttarakhand", poster: "/media/poster/alpine-ridge.jpg", }
       ]
     }
   ]

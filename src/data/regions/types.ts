@@ -30,7 +30,6 @@ export type CatalogEntry = {
   name: string;
   location: string;
   poster: string;
-  brochureUrl: string;
   description?: string;
   coordinates?: string;
   season?: string;

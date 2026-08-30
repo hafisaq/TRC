@@ -419,54 +419,12 @@ html[data-display-mode="standalone"] body {
   animation: route-glow 3.6s ease-in-out infinite;
 }
 
-.region-route-path {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.region-route-path--base {
-  stroke: rgba(227, 198, 130, .2);
-  stroke-width: .7;
-  stroke-dasharray: 1.8 2.6;
-}
-
-.region-route-path--active {
-  stroke: #e3c682;
-  stroke-width: 1.05;
-  stroke-dasharray: 1;
-  filter: drop-shadow(0 0 10px rgba(227, 198, 130, .44));
-  transition: stroke-dashoffset 180ms linear;
-}
-
-.catalog-light-shell {
-  background: #eeece6;
-  color: #16243c;
-  isolation: isolate;
-  box-shadow: 0 -1px 0 rgba(200, 162, 76, .18);
-}
-
-.catalog-light-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: #eeece6;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .anim-ring {
+  .anim-ring,
+  #tier2-flight-plane {
     animation: none;
-  }
-  .premium-loader,
-  #tier2-flight-plane,
-  .region-route-plane,
-  .region-route-path--active {
-    animation: none;
-    transition: none;
   }
 }

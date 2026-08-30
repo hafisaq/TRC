@@ -33,31 +33,6 @@ function usePinProgress(ref: React.RefObject<HTMLElement | null>) {
   return p;
 }
 
-// 0→1 as an (unpinned) section crosses the viewport — 0 when its top enters
-// from below, 1 when its bottom leaves above. Drives continuous scrubbed
-// motion (parallax, drift) rather than one-shot reveals.
-function useViewProgress(ref: React.RefObject<HTMLElement | null>) {
-  const [p, setP] = useState(0);
-  useEffect(() => {
-    const update = () => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      const next = clamp((vh - rect.top) / (vh + rect.height), 0, 1);
-      setP((c) => (Math.abs(c - next) > 0.004 ? next : c));
-    };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, [ref]);
-  return p;
-}
-
 function useIsSmallScreen() {
   const [isSmall, setIsSmall] = useState(false);
   useEffect(() => {
