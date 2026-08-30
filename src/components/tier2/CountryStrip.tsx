@@ -4,6 +4,10 @@ import { posterUrl, videoUrl } from "../../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
+// spelled-out counts read better in a serif headline than digits
+const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+const countWord = (n: number) => WORDS[n] ?? String(n);
+
 // The country selector inside the main page's Asia moment: a light, gold-on-
 // cream band (the brand's white-bg/gold-text side) where scrolling glides a
 // row of country cards horizontally past the viewport. Hovering a card wakes
@@ -124,7 +128,7 @@ export default function CountryStrip({ region }: { region: Region }) {
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Choose your route</div>
           <div className="mt-2 flex items-end justify-between gap-6">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-navy">
-              Four countries,<br className="sm:hidden" /> four ways in
+              {countWord(region.stops.length)} countries,<br className="sm:hidden" /> {countWord(region.stops.length).toLowerCase()} ways in
             </h3>
             <div className="hidden h-px flex-1 bg-gold/25 lg:block">
               <div ref={barRef} className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)]" style={{ width: "0%" }} />
@@ -145,7 +149,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                 <a
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : `/${region.slug}`}
-                  className={`group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
+                  className={`media-shell group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
                     goldCard ? "border-gold/50 shadow-[0_16px_44px_rgba(200,162,76,.18)]" : "border-navy/15 shadow-[0_16px_44px_rgba(22,36,60,.12)]"
                   } hover:border-gold`}
                   onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
