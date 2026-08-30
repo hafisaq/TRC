@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Region } from "../../data/regions/types";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -11,55 +11,82 @@ export default function CountryStrip({ region }: { region: Region }) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const rowRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [maxShift, setMaxShift] = useState(0);
+  const barRef = useRef<HTMLDivElement | null>(null);
 
-  const updateFromScroll = useCallback(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const rect = section.getBoundingClientRect();
-    const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
-    setProgress((current) => {
-      const next = clamp(-rect.top / scrollable, 0, 1);
-      return Math.abs(current - next) > 0.002 ? next : current;
-    });
-  }, []);
-
-  // How far the row must glide for the last card to fully enter view.
-  // offsetWidth (layout truth, immune to both transforms and the
-  // scrollWidth-collapses-under-overflow-visible quirk) — not scrollWidth.
-  const measure = useCallback(() => {
-    const inner = innerRef.current;
-    const outer = rowRef.current;
-    if (!inner || !outer || window.innerWidth < 1024) {
-      setMaxShift(0);
-      return;
-    }
-    const kids = Array.from(inner.children) as HTMLElement[];
-    if (!kids.length) return;
-    const gap = parseFloat(getComputedStyle(inner).columnGap || "0") || 0;
-    const contentW = kids.reduce((acc, k) => acc + k.offsetWidth, 0) + gap * (kids.length - 1);
-    const cs = getComputedStyle(outer);
-    const avail = outer.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    setMaxShift(Math.max(0, contentW - avail));
-  }, []);
-
+  // The glide is driven OUTSIDE React: one rAF loop eases the row toward
+  // its scroll target and writes the transform directly. The previous
+  // approach (per-scroll setState + a 120ms CSS transition) restarted a
+  // linear transition on every scroll event — three smoothing systems
+  // (Lenis, the transition, state updates) fighting each other, which
+  // read as visible shake/vibration, worst in Safari's event cadence.
   useEffect(() => {
-    updateFromScroll();
-    measure();
-    window.addEventListener("scroll", updateFromScroll, { passive: true });
-    window.addEventListener("resize", updateFromScroll);
-    window.addEventListener("resize", measure);
-    window.addEventListener("load", measure);
-    return () => {
-      window.removeEventListener("scroll", updateFromScroll);
-      window.removeEventListener("resize", updateFromScroll);
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("load", measure);
-    };
-  }, [updateFromScroll, measure]);
+    let maxShift = 0;
+    let target = 0;
+    let current = -1; // force first paint
+    let raf = 0;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const shift = maxShift * progress;
+    // How far the row must glide for the last card to fully enter view.
+    // offsetWidth (layout truth, immune to both transforms and the
+    // scrollWidth-collapses-under-overflow-visible quirk) — not scrollWidth.
+    const measure = () => {
+      const inner = innerRef.current;
+      const outer = rowRef.current;
+      if (!inner || !outer || window.innerWidth < 1024) {
+        maxShift = 0;
+        if (inner) inner.style.transform = "";
+        return;
+      }
+      const kids = Array.from(inner.children) as HTMLElement[];
+      if (!kids.length) return;
+      const gap = parseFloat(getComputedStyle(inner).columnGap || "0") || 0;
+      const contentW = kids.reduce((acc, k) => acc + k.offsetWidth, 0) + gap * (kids.length - 1);
+      const cs = getComputedStyle(outer);
+      const avail = outer.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      maxShift = Math.max(0, contentW - avail);
+    };
+
+    const readTarget = () => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
+      target = clamp(-rect.top / scrollable, 0, 1);
+    };
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      // ease toward the target; snap when close so the loop idles cheaply
+      const next = reducedMotion ? target : current + (target - current) * 0.14;
+      const settled = Math.abs(next - target) < 0.0004;
+      const value = settled ? target : next;
+      if (value === current) return;
+      current = value;
+      if (maxShift > 0 && innerRef.current) {
+        innerRef.current.style.transform = `translate3d(${-maxShift * current}px, 0, 0)`;
+      }
+      if (barRef.current) {
+        barRef.current.style.width = `${current * 100}%`;
+      }
+    };
+
+    measure();
+    readTarget();
+    tick();
+    const onResize = () => {
+      measure();
+      readTarget();
+    };
+    window.addEventListener("scroll", readTarget, { passive: true });
+    window.addEventListener("resize", onResize);
+    window.addEventListener("load", onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", readTarget);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", onResize);
+    };
+  }, []);
 
   const wakeVideo = (card: HTMLElement, play: boolean) => {
     const video = card.querySelector<HTMLVideoElement>("video");
@@ -99,7 +126,7 @@ export default function CountryStrip({ region }: { region: Region }) {
               Four countries,<br className="sm:hidden" /> four ways in
             </h3>
             <div className="hidden h-px flex-1 bg-gold/25 lg:block">
-              <div className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)] transition-[width] duration-150 ease-out" style={{ width: `${progress * 100}%` }} />
+              <div ref={barRef} className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)]" style={{ width: "0%" }} />
             </div>
             <div className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 lg:block">Scroll →</div>
           </div>
@@ -109,11 +136,7 @@ export default function CountryStrip({ region }: { region: Region }) {
           ref={rowRef}
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 no-scrollbar sm:gap-6 sm:px-10 lg:snap-none lg:overflow-visible lg:px-16"
         >
-          <div
-            ref={innerRef}
-            className="flex gap-4 sm:gap-6 lg:will-change-transform"
-            style={{ transform: maxShift > 0 ? `translateX(${-shift}px)` : undefined, transition: "transform 120ms linear" }}
-          >
+          <div ref={innerRef} className="flex gap-4 sm:gap-6 lg:will-change-transform">
             {region.stops.map((stop, i) => {
               const gid = region.catalog.find((g) => g.label.toLowerCase() === stop.country.toLowerCase())?.id;
               const goldCard = i % 2 === 0;
