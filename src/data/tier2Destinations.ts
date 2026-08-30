@@ -131,21 +131,25 @@ export const DESTINATIONS: Destination[] = [
   }
 ];
 
-export const FLIGHT_STOPS = DESTINATIONS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }));
+// Call-time functions, NOT module constants: CMS hydration mutates
+// DESTINATIONS in place before first render, and a snapshot taken at
+// module evaluation would go stale.
+export const flightStops = () => DESTINATIONS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }));
 
 // Geometry only, for Tier2FlightPath — the path continues past the last
 // content stop and lands on the boarding pass's own plane icon (via its
-// data-flight-node anchor). Not fed to useTier2Animations: Tier2Enquire
-// owns its own reveal and gets its landing pulse wired there, so this
-// point deliberately doesn't duplicate a content-stop reveal or show up
-// in nav.
-export const FLIGHT_PATH_STOPS = [
-  // about + asia, then the hold: two anchors inside the pinned country
-  // strip (see CountryStrip's hold markers) that share an x, so the path
-  // runs dead straight down that section instead of swerving through it
-  ...FLIGHT_STOPS.slice(0, 2),
-  { id: "tier2-asia-hold-in", theme: "white" as const, coords: "" },
-  { id: "tier2-asia-hold-out", theme: "white" as const, coords: "" },
-  ...FLIGHT_STOPS.slice(2),
-  { id: "tier2-enquire", theme: DESTINATIONS[DESTINATIONS.length - 1].theme, coords: "" }
-];
+// data-flight-node anchor). The hold pair (straight lane through the
+// pinned country strip) is inserted after the Asia stop BY ID, so extra
+// CMS-added stops don't shift it.
+export const flightPathStops = () => {
+  const stops = flightStops();
+  const asiaIdx = stops.findIndex((s) => s.id === "tier2-asia");
+  const cut = asiaIdx >= 0 ? asiaIdx + 1 : Math.min(2, stops.length);
+  return [
+    ...stops.slice(0, cut),
+    { id: "tier2-asia-hold-in", theme: "white" as const, coords: "" },
+    { id: "tier2-asia-hold-out", theme: "white" as const, coords: "" },
+    ...stops.slice(cut),
+    { id: "tier2-enquire", theme: DESTINATIONS[DESTINATIONS.length - 1].theme, coords: "" }
+  ];
+};

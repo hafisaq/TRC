@@ -20,7 +20,13 @@ const page = countrySlug ? (
   <Tier2 />
 );
 
-createRoot(document.getElementById("root")!).render(page);
+// Hydrate content from Sanity BEFORE first render (3s budget) — on any
+// failure the bundled demo content renders unchanged. The home page's own
+// loader covers the wait.
+import { hydrateFromCms } from "./lib/cms";
+hydrateFromCms().finally(() => {
+  createRoot(document.getElementById("root")!).render(page);
+});
 
 const standalone =
   window.matchMedia("(display-mode: standalone)").matches ||

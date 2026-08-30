@@ -1,4 +1,5 @@
 import type { CatalogGroup, Region, RegionStop } from "./types";
+import { keyForPoster } from "../../lib/media";
 
 // White Desert-style product page content for a single country: editorial
 // chapters, a pull quote, and a numbered day-by-day journey the flight path
@@ -167,7 +168,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
         navLabel: "The Address",
         eyebrow: "The Address",
         title: ["Rooms worth the", "flight over"],
-        slug: second?.poster.replace("/media/poster/", "").replace(".jpg", "") ?? stop.slug,
+        slug: second ? keyForPoster(second.poster) : stop.slug,
         light: true,
         paragraphs: [
           second?.description ?? `From ${lead?.location ?? stop.country} outward, the collection keeps only the addresses we would send our own families to.`,
@@ -181,7 +182,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
     },
     days: [
       { title: "Private arrival", copy: `Met on landing and routed privately to the first stay. The first evening is deliberately unscheduled — arrive, settle, breathe.`, slug: stop.slug, details: ["Met on landing", "Private transfer", "Unscheduled evening"] },
-      { title: "The signature day", copy: `${stop.highlights[0] ?? "A private guide"} sets the pace. Placeholder itinerary copy standing in for the real day-by-day.`, slug: second?.poster.replace("/media/poster/", "").replace(".jpg", "") ?? stop.slug, details: [stop.highlights[0] ?? "Private guide", stop.highlights[1] ?? "Own pace"] },
+      { title: "The signature day", copy: `${stop.highlights[0] ?? "A private guide"} sets the pace. Placeholder itinerary copy standing in for the real day-by-day.`, slug: second ? keyForPoster(second.poster) : stop.slug, details: [stop.highlights[0] ?? "Private guide", stop.highlights[1] ?? "Own pace"] },
       { title: "Further out", copy: "A day beyond the guidebook radius — the kind of detour that only works with a driver, a guide, and no fixed lunch reservation.", slug: "alpine-ridge", details: ["Private driver", "No fixed reservations"] },
       { title: "At leisure", copy: "Nothing on the calendar until you ask for it. The team stays close; the day stays yours.", slug: "desert-ruins", details: ["Day at leisure", "Team on call"] },
       { title: "Departure, unhurried", copy: "A late checkout as standard, a quiet transfer, and the route home already smoothed.", slug: stop.slug, details: ["Late checkout", "Smoothed route home"] }
@@ -206,10 +207,19 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
   };
 }
 
+// Pages injected from the CMS at boot take precedence over the authored
+// demo page, which takes precedence over the generated fallback — so a
+// country goes live in Sanity the moment its page document exists, and
+// keeps working (generated) until then.
+const CMS_PAGES: Record<string, CountryPageData> = {};
+export function setCountryPage(slug: string, page: CountryPageData) {
+  CMS_PAGES[slug] = page;
+}
+
 export function getCountryPage(region: Region, slug: string) {
   const group = region.catalog.find((g) => g.id === slug);
   const stop = region.stops.find((s) => s.country.toLowerCase() === group?.label.toLowerCase());
   if (!group || !stop) return null;
-  const page = AUTHORED[slug] ?? generatePage(stop, group);
+  const page = CMS_PAGES[slug] ?? AUTHORED[slug] ?? generatePage(stop, group);
   return { group, stop, page };
 }

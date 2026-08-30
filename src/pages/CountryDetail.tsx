@@ -6,6 +6,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
+import { posterUrl, videoUrl, videoForPoster } from "../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -341,8 +342,8 @@ function CountryDetailInner({
 
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
-          <video autoPlay muted loop playsInline poster={`/media/poster/${page.heroSlug}.jpg`} className="absolute inset-0 h-full w-full object-cover">
-            <source src={`/media/video/${page.heroSlug}.mp4`} type="video/mp4" />
+          <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
+            <source src={videoUrl(page.heroSlug)} type="video/mp4" />
           </video>
           <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
@@ -419,8 +420,8 @@ function CountryDetailInner({
                   </button>
                 </div>
                 <div data-stop-video className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
-                  <video muted loop playsInline preload="none" poster={`/media/poster/${ch.slug}.jpg`} className="absolute inset-0 h-full w-full object-cover">
-                    <source data-src={`/media/video/${ch.slug}.mp4`} type="video/mp4" />
+                  <video muted loop playsInline preload="none" poster={posterUrl(ch.slug)} className="absolute inset-0 h-full w-full object-cover">
+                    <source data-src={videoUrl(ch.slug)} type="video/mp4" />
                   </video>
                 </div>
               </div>
@@ -607,8 +608,8 @@ function ExpandChapter({
           className="absolute inset-0"
           style={{ clipPath: `inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${radius}px)` }}
         >
-          <video autoPlay muted loop playsInline preload="metadata" poster={`/media/poster/${chapter.slug}.jpg`} className="kenburns absolute inset-0 h-full w-full object-cover">
-            <source src={`/media/video/${chapter.slug}.mp4`} type="video/mp4" />
+          <video autoPlay muted loop playsInline preload="metadata" poster={posterUrl(chapter.slug)} className="kenburns absolute inset-0 h-full w-full object-cover">
+            <source src={videoUrl(chapter.slug)} type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
         </div>
@@ -720,7 +721,7 @@ function StayDossier({
           <div>
             <div className="moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
               <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
-                <source src={gallery[0].replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")} type="video/mp4" />
+                <source src={videoForPoster(gallery[0])} type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="pointer-events-none absolute inset-2 rounded-lg border border-gold-light/20" />
@@ -910,12 +911,12 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                   loop
                   playsInline
                   preload={i === 0 ? "metadata" : "none"}
-                  poster={`/media/poster/${day.slug}.jpg`}
+                  poster={posterUrl(day.slug)}
                   className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
                     i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
                   }`}
                 >
-                  <source data-src={`/media/video/${day.slug}.mp4`} type="video/mp4" />
+                  <source data-src={videoUrl(day.slug)} type="video/mp4" />
                 </video>
               ))}
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
@@ -983,7 +984,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     {/* the film inline on mobile, where there's no sticky panel */}
                     <div className="relative mt-5 aspect-[16/9] w-full max-w-[440px] overflow-hidden rounded-lg border border-navy/15 lg:hidden">
                       <img
-                        src={`/media/poster/${day.slug}.jpg`}
+                        src={posterUrl(day.slug)}
                         alt=""
                         width={1080}
                         height={608}
@@ -1314,8 +1315,8 @@ function GallerySection({
     const map = new Map<string, GalleryItem>();
     // film frames — the hero and each day of the journey carry footage
     [page.heroSlug, ...page.days.map((d) => d.slug)].forEach((slug) => {
-      const poster = `/media/poster/${slug}.jpg`;
-      map.set(poster, { poster, video: `/media/video/${slug}.mp4` });
+      const poster = posterUrl(slug);
+      map.set(poster, { poster, video: videoUrl(slug) });
     });
     // stills from the stays' galleries (skip any already present as film)
     group.entries.forEach((e) => {

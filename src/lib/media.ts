@@ -1,0 +1,46 @@
+// Media indirection: components ask for a poster/film by KEY instead of
+// hardcoding /media/... paths. For the bundled demo content the key is a
+// demo slug and resolves to the local files, exactly as before. When
+// content hydrates from Sanity, each media slot registers its CDN URLs
+// under a unique key — the same components then serve CMS-managed media
+// with zero further changes.
+const posters = new Map<string, string>();
+const films = new Map<string, string>();
+// film lookup for content that carries a poster URL/path instead of a key
+// (stay galleries, dossier lead media)
+const filmByPoster = new Map<string, string>();
+
+export function registerMedia(key: string, urls: { poster?: string; film?: string }) {
+  if (urls.poster) {
+    posters.set(key, urls.poster);
+    if (urls.film) filmByPoster.set(urls.poster, urls.film);
+  }
+  if (urls.film) films.set(key, urls.film);
+}
+
+export const posterUrl = (key: string) => posters.get(key) ?? `/media/poster/${key}.jpg`;
+
+export const videoUrl = (key: string) => films.get(key) ?? `/media/video/${key}.mp4`;
+
+// For poster paths/URLs: the matching film if one is registered, else the
+// demo convention (poster path -> sibling mp4).
+export const videoForPoster = (poster: string) =>
+  filmByPoster.get(poster) ??
+  poster.replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4");
+
+// Derive a registry key from a poster path/URL: demo paths map back to
+// their slug; anything else (a CMS URL) registers itself under a stable
+// key so slug-driven components can carry it.
+let anonN = 0;
+const keyByPoster = new Map<string, string>();
+export function keyForPoster(poster: string): string {
+  const demo = poster.match(/^\/media\/poster\/([a-z0-9-]+)\.[a-z]+$/i);
+  if (demo) return demo[1];
+  let key = keyByPoster.get(poster);
+  if (!key) {
+    key = `p-${(anonN++).toString(36)}`;
+    keyByPoster.set(poster, key);
+    registerMedia(key, { poster, film: videoForPoster(poster) });
+  }
+  return key;
+}
