@@ -6,7 +6,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
-import { posterUrl, videoUrl, videoForPoster, filmForPoster } from "../lib/media";
+import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm } from "../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -420,9 +420,13 @@ function CountryDetailInner({
                   </button>
                 </div>
                 <div data-stop-video className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
-                  <video muted loop playsInline preload="none" poster={posterUrl(ch.slug)} className="absolute inset-0 h-full w-full object-cover">
-                    <source data-src={videoUrl(ch.slug)} type="video/mp4" />
-                  </video>
+                  {hasFilm(ch.slug) ? (
+                    <video muted loop playsInline preload="none" poster={posterUrl(ch.slug)} className="absolute inset-0 h-full w-full object-cover">
+                      <source data-src={videoUrl(ch.slug)} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img src={posterUrl(ch.slug)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                  )}
                 </div>
               </div>
             </section>
@@ -736,9 +740,13 @@ function StayDossier({
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12">
           <div>
             <div className="moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
-              <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
-                <source src={videoForPoster(gallery[0])} type="video/mp4" />
-              </video>
+              {filmForPoster(gallery[0]) || gallery[0].startsWith("/media/poster/") ? (
+                <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
+                  <source src={videoForPoster(gallery[0])} type="video/mp4" />
+                </video>
+              ) : (
+                <img src={gallery[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              )}
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="pointer-events-none absolute inset-2 rounded-lg border border-gold-light/20" />
               {entry.coordinates && (
@@ -917,24 +925,38 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
           {/* sticky film — follows the day being read */}
           <div className="hidden lg:sticky lg:top-[120px] lg:block">
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
-              {days.map((day, i) => (
-                <video
-                  key={day.title}
-                  ref={(el) => {
-                    filmRefs.current[i] = el;
-                  }}
-                  muted
-                  loop
-                  playsInline
-                  preload={i === 0 ? "metadata" : "none"}
-                  poster={posterUrl(day.slug)}
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
-                    i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
-                  }`}
-                >
-                  <source data-src={videoUrl(day.slug)} type="video/mp4" />
-                </video>
-              ))}
+              {days.map((day, i) =>
+                hasFilm(day.slug) ? (
+                  <video
+                    key={day.title}
+                    ref={(el) => {
+                      filmRefs.current[i] = el;
+                    }}
+                    muted
+                    loop
+                    playsInline
+                    preload={i === 0 ? "metadata" : "none"}
+                    poster={posterUrl(day.slug)}
+                    className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
+                      i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
+                    }`}
+                  >
+                    <source data-src={videoUrl(day.slug)} type="video/mp4" />
+                  </video>
+                ) : (
+                  // no footage for this signature — a still, never a video
+                  // element whose 404 source would blank its own poster
+                  <img
+                    key={day.title}
+                    src={posterUrl(day.slug)}
+                    alt=""
+                    loading="lazy"
+                    className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
+                      i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
+                    }`}
+                  />
+                )
+              )}
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="absolute bottom-4 left-4 flex items-center gap-2.5 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
