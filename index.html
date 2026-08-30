@@ -22,6 +22,10 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
 <link rel="manifest" href="/manifest.webmanifest" />
 <link rel="preload" as="image" href="/media/brand/GOLD.png" fetchpriority="high" />
+<!-- all CMS media + the boot content query come from these two hosts —
+     warming DNS/TLS here shaves a round-trip off the first poster/film -->
+<link rel="preconnect" href="https://cdn.sanity.io" />
+<link rel="preconnect" href="https://nvmppjc2.apicdn.sanity.io" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400;500&family=Special+Elite&display=swap" />

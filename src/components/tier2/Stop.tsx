@@ -69,9 +69,9 @@ function Meta({ season, highlights, t }: { index: number; coords: string; season
   );
 }
 
-function VideoTag({ slug, className = "" }: { slug: string; className?: string }) {
+function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; className?: string; posterW?: number }) {
   return (
-    <video muted loop playsInline preload="none" poster={posterUrl(slug)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+    <video muted loop playsInline preload="none" poster={posterUrl(slug, posterW)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
       <source data-src={videoUrl(slug)} type="video/mp4" />
     </video>
   );
@@ -136,7 +136,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             <div className={`absolute -inset-3 rounded-full border ${t.frame}`} />
             <div className={`absolute -inset-3 rounded-full border ${t.frame} opacity-40 anim-ring`} style={{ borderStyle: "dashed" }} />
             <div className="media-shell relative w-full h-full rounded-full overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.05]">
-              <VideoTag slug={slug} />
+              <VideoTag slug={slug} posterW={640} />
               <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle,rgba(0,0,0,0) 55%,rgba(0,0,0,.4) 100%)" }} />
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
         <div data-stop-video className="group relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] w-full max-w-[560px] mx-auto opacity-0 scale-95">
           <div className={`absolute -inset-2 sm:-inset-4 rounded-[20px] sm:rounded-[28px] border pointer-events-none ${t.frame}`} />
           <div className="media-shell relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.045]">
-            <VideoTag slug={slug} />
+            <VideoTag slug={slug} posterW={1200} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.35))" }} />
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm } from "../../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -93,6 +93,32 @@ export default function CountryStrip({ region }: { region: Region }) {
     };
   }, []);
 
+  // Warm the card films before anyone hovers: once the strip is within a
+  // viewport of scrolling, attach each film's src with preload="metadata"
+  // so the browser fetches the moov atom (a few KB). Hover playback then
+  // starts from a primed pipeline instead of a cold URL.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        section.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
+          const source = video.querySelector<HTMLSourceElement>("source[data-src]");
+          if (source && !source.src) {
+            source.src = source.dataset.src || "";
+            video.preload = "metadata";
+            video.load();
+          }
+        });
+      },
+      { rootMargin: "100% 0px" }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
   const wakeVideo = (card: HTMLElement, play: boolean) => {
     const video = card.querySelector<HTMLVideoElement>("video");
     if (!video) return;
@@ -155,9 +181,13 @@ export default function CountryStrip({ region }: { region: Region }) {
                   onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
                   onMouseLeave={(e) => wakeVideo(e.currentTarget, false)}
                 >
-                  <video muted loop playsInline preload="none" poster={posterUrl(stop.slug)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
-                    <source data-src={videoUrl(stop.slug)} type="video/mp4" />
-                  </video>
+                  {hasFilm(stop.slug) ? (
+                    <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 900)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
+                      <source data-src={videoUrl(stop.slug)} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img src={posterUrl(stop.slug, 900)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" />
+                  )}
                   {/* lighter than before — just enough for legibility */}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.72),rgba(14,13,12,.06)_52%,rgba(14,13,12,.16))] transition-opacity duration-500 group-hover:opacity-75" />
                   <div className={`absolute left-5 top-5 flex items-center gap-3 rounded-sm px-2.5 py-1.5 font-mono text-[8.5px] uppercase tracking-[0.22em] backdrop-blur-sm ${
