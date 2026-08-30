@@ -80,6 +80,17 @@ export default function CountryStrip({ region }: { region: Region }) {
   return (
     <section ref={sectionRef} id="tier2-asia-countries" className="relative bg-cream-deep text-navy lg:h-[280svh]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(200,162,76,.14),transparent_36%),linear-gradient(180deg,rgba(250,248,244,.9),rgba(243,239,231,.98))]" />
+      {/* flight-path hold markers: two anchors sharing an x give the path a
+          dead-straight vertical segment down this pinned section — the
+          plane holds its lane beside the gliding cards instead of swerving
+          through them. Percent offsets keep them ordered at every section
+          height (the section is 280svh pinned on desktop, auto on mobile). */}
+      <span id="tier2-asia-hold-in" aria-hidden="true" className="absolute right-[7vw] top-[16%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
+      <span id="tier2-asia-hold-out" aria-hidden="true" className="absolute right-[7vw] top-[84%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
       <div className="relative flex flex-col justify-center gap-7 overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:gap-8 sm:py-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
         <div className="px-5 sm:px-10 lg:px-16">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Choose your route</div>

@@ -15,11 +15,6 @@ export type Destination = Tier2Stop & {
   interest: string;
   gate: string;
   statusLabel: string;
-  // Marks the one stop that isn't a single-property Stop layout — Tier2
-  // renders it as the info-dense Tier2Collection section instead. Every
-  // other field above stays populated for it so it still works as a normal
-  // entry in the flight path, nav, and enquiry chip list.
-  kind?: "catalog";
   // When set, Stop's CTA becomes this link instead of "Enquire about this
   // route" — used for About Us (scrolls to the next stop) and region
   // overviews like Asia (a real page navigation to that region's journey).
@@ -133,25 +128,24 @@ export const DESTINATIONS: Destination[] = [
     interest: "Cities & culture",
     gate: "K1",
     statusLabel: "Cities"
-  },
-  {
-    id: "tier2-collection",
-    mapPos: [0.36, 0.7],
-    eyebrow: "The wider collection",
-    title: ["Every region,", "every stay"],
-    copy: "Beyond this route — the fuller portfolio, organised by region, each stay with its own brochure to take away.",
-    coords: "5 regions · 12 stays",
-    slug: "desert-ruins",
-    season: "Year-round",
-    highlights: ["Africa", "Americas", "Asia", "Europe", "Middle East"],
-    theme: "white",
-    layout: "editorial",
-    navLabel: "Collection",
-    interest: "The wider collection",
-    gate: "ALL",
-    statusLabel: "The Collection",
-    kind: "catalog"
   }
 ];
 
 export const FLIGHT_STOPS = DESTINATIONS.map((s) => ({ id: s.id, theme: s.theme, coords: s.coords }));
+
+// Geometry only, for Tier2FlightPath — the path continues past the last
+// content stop and lands on the boarding pass's own plane icon (via its
+// data-flight-node anchor). Not fed to useTier2Animations: Tier2Enquire
+// owns its own reveal and gets its landing pulse wired there, so this
+// point deliberately doesn't duplicate a content-stop reveal or show up
+// in nav.
+export const FLIGHT_PATH_STOPS = [
+  // about + asia, then the hold: two anchors inside the pinned country
+  // strip (see CountryStrip's hold markers) that share an x, so the path
+  // runs dead straight down that section instead of swerving through it
+  ...FLIGHT_STOPS.slice(0, 2),
+  { id: "tier2-asia-hold-in", theme: "white" as const, coords: "" },
+  { id: "tier2-asia-hold-out", theme: "white" as const, coords: "" },
+  ...FLIGHT_STOPS.slice(2),
+  { id: "tier2-enquire", theme: DESTINATIONS[DESTINATIONS.length - 1].theme, coords: "" }
+];

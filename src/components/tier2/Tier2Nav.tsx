@@ -38,9 +38,13 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
           aria-label="The Retreat Collection"
         >
           <img
-            src="/media/brand/retreat-collection-logo-crop.png"
+            src="/media/brand/GOLD.png"
             alt="The Retreat Collection"
-            className="w-[154px] h-auto opacity-85 sm:w-[190px]"
+            width={697}
+            height={226}
+            decoding="async"
+            fetchPriority="high"
+            className="w-[154px] h-auto sm:w-[190px]"
           />
         </a>
         <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 sm:flex sm:justify-end">

@@ -124,7 +124,19 @@ function CountryDetailInner({
     return s;
   }, [page, stop]);
 
-  useTier2Animations(dotMapRef, flightStops, { heroReady: true });
+  // Geometry only, for Tier2FlightPath — the path continues past the last
+  // content stop and lands on the boarding pass's own plane icon. Kept
+  // separate from flightStops (passed to useTier2Animations below) so this
+  // extra point doesn't duplicate a content-stop reveal or dotmap burst —
+  // Tier2Enquire already owns its own reveal and gets its landing pulse
+  // wired inside the hook.
+  const pathStops = useMemo(
+    () => [...flightStops, { id: "tier2-enquire", theme: "white" as const, coords: "" }],
+    [flightStops]
+  );
+
+  const [routeProgress, setRouteProgress] = useState(0);
+  useTier2Animations(dotMapRef, flightStops, { heroReady: true, onProgressChange: setRouteProgress });
 
   // Scroll-spy for the sticky section chips (White Desert's in-page nav).
   const sections = useMemo(
@@ -260,32 +272,97 @@ function CountryDetailInner({
         </div>
       </div>
 
-      {/* fixed header */}
-      <header className="fixed inset-x-0 top-0 z-50 grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-gold/20 bg-cream-deep/88 px-4 pt-[calc(env(safe-area-inset-top)+10px)] pb-2.5 backdrop-blur-md sm:gap-4 sm:px-8 sm:py-3">
-        <a href="/" className="shrink-0 text-[9px] uppercase tracking-[0.2em] text-navy/55 transition-colors hover:text-gold-deep sm:text-[10px] sm:tracking-[0.24em]">
-          ← Home
-        </a>
-        <a href="/" aria-label="The Retreat Collection home" className="grid place-items-center">
+      {/* fixed header — the home screen's exact pattern: wordmark left, nav
+          as plain uppercase text in the same row (no boxed chips), Enquire
+          as the last nav item. The boxed-pill look moves to a bottom tab
+          bar on mobile, where it's the established idiom site-wide. */}
+      <header
+        id="tier2-nav"
+        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/92 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl sm:flex sm:items-center sm:gap-8 sm:px-8 sm:py-5"
+      >
+        <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit sm:mx-0">
           <img
-            src="/media/brand/retreat-collection-logo-crop.png"
+            src="/media/brand/01143b.png"
             alt="The Retreat Collection"
-            className="h-auto w-[108px] opacity-85 sm:w-[150px]"
+            width={2101}
+            height={691}
+            decoding="async"
+            className="h-auto w-[132px] sm:w-[152px]"
           />
         </a>
-        <div className="flex min-w-0 items-center justify-end gap-5">
-          <div className="hidden truncate text-[10px] uppercase tracking-[0.3em] text-gold-deep md:block">{page.country}</div>
+        <nav className="mt-3 hidden flex-1 items-center justify-center gap-6 sm:flex sm:justify-end lg:gap-7" aria-label="Page sections">
+          <a
+            href="/asia"
+            className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
+          >
+            <span>← Asia</span>
+            <span className="h-px w-8 bg-gold/45" />
+            <span>{page.country}</span>
+          </a>
+          {sections.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToHash(`#${s.id}`);
+              }}
+              aria-current={activeSection === s.id ? "location" : undefined}
+              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-deep ${
+                activeSection === s.id ? "text-gold-deep" : "text-navy/60"
+              }`}
+            >
+              {s.label}
+            </a>
+          ))}
           <button
             type="button"
             onClick={() => handleEnquire()}
-            className="shrink-0 border-b border-gold-deep/55 pb-1 text-[9px] uppercase tracking-[0.2em] text-gold-deep transition-colors hover:text-navy sm:text-[10px] sm:tracking-[0.24em]"
+            className="shrink-0 text-[10px] tracking-[0.24em] uppercase text-gold-deep transition-colors hover:text-navy"
           >
             Enquire
           </button>
-        </div>
+        </nav>
       </header>
 
+      {/* mobile section nav — bottom tab bar, matching the home screen's
+          mobile pattern; this is where boxed chips + a route progress
+          thread belong, not the top header */}
+      <nav
+        aria-label="Page sections"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-gold/20 bg-cream-deep/94 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(22,36,60,.14)] backdrop-blur-xl sm:hidden"
+      >
+        <div className="absolute left-0 right-0 top-0 h-px bg-navy/10">
+          <div
+            className="h-full bg-gold shadow-[0_0_14px_rgba(200,162,76,.6)] transition-[width] duration-200"
+            style={{ width: `${Math.max(0, Math.min(1, routeProgress)) * 100}%` }}
+          />
+        </div>
+        <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-navy/45">{page.country}</div>
+        <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 pb-0.5 no-scrollbar">
+          {sections.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToHash(`#${s.id}`);
+              }}
+              aria-current={activeSection === s.id ? "location" : undefined}
+              className={`grid min-h-12 min-w-[78px] place-items-center rounded-md border px-2 text-center text-[8px] tracking-[0.1em] uppercase transition-colors active:bg-gold/10 ${
+                activeSection === s.id
+                  ? "border-gold/45 bg-gold/12 text-gold-deep shadow-[0_0_18px_rgba(200,162,76,.18)]"
+                  : "border-navy/0 text-navy/55"
+              }`}
+            >
+              {s.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
       <main id="tier2-journey" className="relative z-10">
-        <Tier2FlightPath stops={flightStops} startId={heroId} />
+        <Tier2FlightPath stops={pathStops} startId={heroId} />
 
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
@@ -333,30 +410,6 @@ function CountryDetailInner({
             }}
           />
         </section>
-
-        {/* sticky in-page section nav — White Desert's chip bar, scroll-spied */}
-        <nav
-          className="sticky top-[calc(env(safe-area-inset-top)+51px)] z-40 flex gap-2 overflow-x-auto overscroll-x-contain border-b border-gold/18 bg-cream-deep/88 px-4 py-2.5 backdrop-blur-md no-scrollbar sm:top-[57px] sm:px-8 sm:py-3"
-          aria-label="Page sections"
-        >
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToHash(`#${s.id}`);
-              }}
-              className={`grid min-h-10 shrink-0 place-items-center border px-3 py-2 text-[8.5px] uppercase tracking-[0.16em] transition-colors sm:px-4 sm:tracking-[0.18em] ${
-                activeSection === s.id
-                  ? "border-gold bg-gold/10 text-gold-deep"
-                  : "border-navy/15 text-navy/50 hover:border-gold/50 hover:text-gold-deep"
-              }`}
-            >
-              {s.label}
-            </a>
-          ))}
-        </nav>
 
         {/* CHAPTERS — dark ones open up White Desert-style; light ones stay editorial */}
         {page.chapters.map((ch, i) =>
@@ -442,7 +495,15 @@ function CountryDetailInner({
               <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 no-scrollbar">
               {group.entries.map((entry, i) => (
                 <div key={entry.name} className="group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
-                  <img src={entry.poster} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]" />
+                  <img
+                    src={entry.poster}
+                    alt=""
+                    width={1080}
+                    height={608}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                  />
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
                   <div className="absolute top-3 left-3 font-mono text-[9px] uppercase tracking-[0.2em] text-gold-light/85">{String(i + 1).padStart(2, "0")}</div>
                   <div className="absolute inset-x-0 bottom-0 p-5">
@@ -493,11 +554,18 @@ function CountryDetailInner({
             </div>
           </div>
         </section>
-      </main>
 
-      <div className="relative z-10 bg-ink text-white">
-        <Tier2Enquire selectedInterest={selectedInterest} destinations={enquiryOptions} />
-      </div>
+        {/* inside main so the journey's scroll range — and the flight
+            path's own height — extend through it; otherwise the path/plane
+            hit their end exactly at the last stop and the plane appears to
+            stop abruptly instead of flying down to land here.
+            NO z-index here: the flight SVG is z-[2], and giving this
+            opaque bg-ink wrapper a higher z paints it OVER the plane, so
+            the landing on the boarding pass would be invisible. */}
+        <div className="relative bg-ink text-white">
+          <Tier2Enquire selectedInterest={selectedInterest} destinations={enquiryOptions} />
+        </div>
+      </main>
 
       {openStay && (
         <StayDossier
@@ -643,13 +711,22 @@ function StayDossier({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[70] overflow-y-auto bg-ink/[0.985] backdrop-blur-md">
-      <div className="mx-auto max-w-[1100px] px-5 pb-[calc(env(safe-area-inset-bottom)+88px)] pt-[calc(env(safe-area-inset-top)+72px)] sm:px-10 sm:pb-24">
-        <div className="flex items-start justify-between gap-6">
-          <div className="moment-in">
+    // data-lenis-prevent: Lenis hijacks wheel events globally and aims them
+    // at the (locked) page scroll — without this opt-out the dossier's own
+    // scroll container never moves and the lower content looks "cut off".
+    <div data-lenis-prevent className="fixed inset-0 z-[70] overflow-y-auto bg-ink/[0.985] backdrop-blur-md">
+      {/* ambience — the dossier is read by lamplight, not in a void */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(52%_38%_at_20%_0%,rgba(200,162,76,.12),transparent_60%),radial-gradient(46%_34%_at_88%_86%,rgba(200,162,76,.08),transparent_60%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-[1160px] px-5 pb-[calc(env(safe-area-inset-bottom)+64px)] pt-[calc(env(safe-area-inset-top)+56px)] sm:px-10 sm:pb-20">
+        {/* file header — reference line, name, close */}
+        <div className="moment-in flex items-start justify-between gap-6 border-b border-gold/25 pb-6">
+          <div>
             <div className="flex items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-light">
               <span className="h-px w-8 bg-gold/60" />
-              {country} · {entry.location}
+              Stay dossier · {country} · {entry.location}
             </div>
             <h2 className="mt-3 font-serif text-[clamp(34px,6vw,64px)] font-light leading-[1.0] text-white">{entry.name}</h2>
           </div>
@@ -663,88 +740,112 @@ function StayDossier({
           </button>
         </div>
 
-        {/* lead film */}
-        <div className="moment-in moment-in-1 relative mt-8 aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 sm:aspect-[16/8]">
-          <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
-            <source src={gallery[0].replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.4))]" />
-          {entry.coordinates && (
-            <div className="absolute bottom-3 left-3 flex items-center gap-2 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-              {entry.coordinates}
+        {/* the file: film + frames on the left, the reading matter on the right */}
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12">
+          <div>
+            <div className="moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
+              <video autoPlay muted loop playsInline poster={gallery[0]} className="absolute inset-0 h-full w-full object-cover">
+                <source src={gallery[0].replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")} type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
+              <div className="pointer-events-none absolute inset-2 rounded-lg border border-gold-light/20" />
+              {entry.coordinates && (
+                <div className="absolute bottom-3 left-3 flex items-center gap-2 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
+                  {entry.coordinates}
+                </div>
+              )}
+              <div className="absolute right-3 top-3 border border-gold-light/35 bg-ink/30 px-2.5 py-1 font-mono text-[7.5px] uppercase tracking-[0.22em] text-gold-light backdrop-blur-sm">
+                Film
+              </div>
             </div>
-          )}
-        </div>
 
-        {entry.description && (
-          <p className="moment-in moment-in-2 mt-8 max-w-[680px] font-serif text-[clamp(18px,2.4vw,24px)] font-light italic leading-[1.6] text-white/85">
-            {entry.description}
-          </p>
-        )}
-
-        {entry.highlights?.length ? (
-          <div className="moment-in moment-in-2 mt-6 flex flex-wrap gap-2">
-            {entry.highlights.map((h) => (
-              <span key={h} className="border border-gold/30 bg-gold/[0.07] px-3 py-1.5 text-[8.5px] uppercase tracking-[0.16em] text-gold-light/90">
-                {h}
-              </span>
-            ))}
+            {gallery.length > 1 && (
+              <div className="moment-in moment-in-3 mt-6 lg:sticky lg:top-[calc(2.5rem+50svh)]">
+                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">A closer look</div>
+                <div className="mt-3 grid grid-cols-4 gap-2">
+                  {gallery.map((src, i) => (
+                    <div key={src + i} className="group relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
+                      <img
+                        src={src}
+                        alt=""
+                        width={1080}
+                        height={608}
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        ) : null}
 
-        {/* facts */}
-        <div className="moment-in moment-in-3 mt-10 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-4">
-          {facts.map((fact) => (
-            <div key={fact.label} className="border border-white/12 px-4 py-4">
-              <div className="text-[8.5px] uppercase tracking-[0.18em] text-gold-light/75">{fact.label}</div>
-              <div className="mt-2 text-[13px] font-light leading-[1.5] text-white/85">{fact.value}</div>
-            </div>
-          ))}
-        </div>
+          <div>
+            {entry.description && (
+              <p className="moment-in moment-in-2 font-serif text-[clamp(19px,2.2vw,25px)] font-light italic leading-[1.6] text-white/88">
+                <span className="mr-1 font-serif text-[1.6em] leading-none text-gold-light/60">“</span>
+                {entry.description}
+              </p>
+            )}
 
-        {/* gallery */}
-        {gallery.length > 1 && (
-          <div className="mt-10">
-            <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">A closer look</div>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {gallery.map((src, i) => (
-                <div key={src + i} className="group relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
-                  <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08]" />
+            {entry.highlights?.length ? (
+              <div className="moment-in moment-in-2 mt-6 flex flex-wrap gap-2">
+                {entry.highlights.map((h) => (
+                  <span key={h} className="border border-gold/35 bg-gold/[0.08] px-3 py-1.5 text-[8.5px] uppercase tracking-[0.16em] text-gold-light/90">
+                    {h}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            {/* the facts, as a ruled ledger */}
+            <div className="moment-in moment-in-3 mt-8 border-t border-gold/25">
+              {facts.map((fact) => (
+                <div key={fact.label} className="flex items-baseline justify-between gap-6 border-b border-white/[0.08] py-3.5">
+                  <div className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.2em] text-gold-light/70">{fact.label}</div>
+                  <div className="text-right font-serif text-[16px] font-light leading-[1.35] text-white/90">{fact.value}</div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
 
-        {/* the library, as content */}
-        {entry.assets?.length ? (
-          <div className="mt-10 border-t border-white/10 pt-7">
-            <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">In the library for this stay</div>
-            <div className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-              {entry.assets.map((asset, i) => (
-                <div key={asset.title + i} className="flex items-baseline gap-4 border-b border-white/[0.07] pb-3">
-                  <span className="shrink-0 font-mono text-[9px] text-gold-light/60">{String(i + 1).padStart(2, "0")}</span>
-                  <div className="min-w-0">
-                    <div className="truncate text-[13px] font-light text-white/85">{asset.title}</div>
-                    <div className="text-[8.5px] uppercase tracking-[0.16em] text-white/40">{asset.category}</div>
-                  </div>
+            {/* the library, as content */}
+            {entry.assets?.length ? (
+              <div className="moment-in moment-in-3 mt-8">
+                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">In the library for this stay</div>
+                <div className="mt-4 grid gap-y-3">
+                  {entry.assets.map((asset, i) => (
+                    <div key={asset.title + i} className="flex items-baseline gap-4 border-b border-white/[0.07] pb-3">
+                      <span className="shrink-0 font-mono text-[9px] text-gold-light/60">{String(i + 1).padStart(2, "0")}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[13px] font-light text-white/85">{asset.title}</div>
+                        <div className="text-[8.5px] uppercase tracking-[0.16em] text-white/40">{asset.category}</div>
+                      </div>
+                      <span className="shrink-0 font-mono text-[7.5px] uppercase tracking-[0.18em] text-gold-light/45">On file</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <p className="mt-4 text-[11px] font-light italic text-white/40">
-              Full material is shared as part of your enquiry — nothing to download, nothing to chase.
-            </p>
-          </div>
-        ) : null}
+                <p className="mt-4 text-[11px] font-light italic text-white/40">
+                  Full material is shared as part of your enquiry — nothing to download, nothing to chase.
+                </p>
+              </div>
+            ) : null}
 
-        <button
-          type="button"
-          onClick={() => onEnquire(entry.name)}
-          className="mt-10 inline-block border-b border-gold-light/60 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-gold-light transition-colors hover:text-white"
-        >
-          Enquire about {entry.name} →
-        </button>
+            <button
+              type="button"
+              onClick={() => onEnquire(entry.name)}
+              className="mt-9 w-full bg-gold py-4 text-[10px] uppercase tracking-[0.26em] text-white transition-colors duration-300 hover:bg-[#b08d3f]"
+            >
+              Enquire about this stay
+            </button>
+            <div className="mt-4 flex items-center justify-center gap-4 font-mono text-[8px] uppercase tracking-[0.24em] text-white/35">
+              <span className="h-px w-8 bg-gold/40" />
+              {country} — The Retreat Collection
+              <span className="h-px w-8 bg-gold/40" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -906,7 +1007,15 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     ) : null}
                     {/* the film inline on mobile, where there's no sticky panel */}
                     <div className="relative mt-5 aspect-[16/9] w-full max-w-[440px] overflow-hidden rounded-lg border border-navy/15 lg:hidden">
-                      <img src={`/media/poster/${day.slug}.jpg`} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                      <img
+                        src={`/media/poster/${day.slug}.jpg`}
+                        alt=""
+                        width={1080}
+                        height={608}
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.4))]" />
                     </div>
                   </div>
@@ -1209,10 +1318,16 @@ function EssentialsStack({ cards, country }: { cards: EssentialCard[]; country: 
   );
 }
 
-// The gallery: every image the country's data holds — stay galleries,
-// posters, the journey's frames — deduplicated into one editorial wall,
-// with a full-screen lightbox. Fully data-driven: new images added to any
-// stay or day (via Sanity later) appear here automatically.
+// The gallery, as a navigator's contact sheet: one editorial grid with a
+// repeating rhythm of feature and supporting tiles (dense-packed, so ANY
+// number of items — 4 or 40 — fills cleanly with no holes). Items are
+// mixed media: film frames play their footage on hover and in the
+// lightbox; stills breathe on hover. Fully data-driven — it aggregates
+// every frame the country's data holds (stay galleries, the journey's
+// footage, the hero film), deduplicated, so Sanity content later simply
+// makes the wall grow.
+type GalleryItem = { poster: string; video?: string };
+
 function GallerySection({
   page,
   group
@@ -1220,13 +1335,20 @@ function GallerySection({
   page: NonNullable<ReturnType<typeof getCountryPage>>["page"];
   group: NonNullable<ReturnType<typeof getCountryPage>>["group"];
 }) {
-  const images = useMemo(() => {
-    const all = [
-      ...group.entries.flatMap((e) => (e.gallery?.length ? e.gallery : [e.poster])),
-      ...page.days.map((d) => `/media/poster/${d.slug}.jpg`),
-      `/media/poster/${page.heroSlug}.jpg`
-    ];
-    return [...new Set(all)];
+  const items = useMemo<GalleryItem[]>(() => {
+    const map = new Map<string, GalleryItem>();
+    // film frames — the hero and each day of the journey carry footage
+    [page.heroSlug, ...page.days.map((d) => d.slug)].forEach((slug) => {
+      const poster = `/media/poster/${slug}.jpg`;
+      map.set(poster, { poster, video: `/media/video/${slug}.mp4` });
+    });
+    // stills from the stays' galleries (skip any already present as film)
+    group.entries.forEach((e) => {
+      (e.gallery?.length ? e.gallery : [e.poster]).forEach((src) => {
+        if (!map.has(src)) map.set(src, { poster: src });
+      });
+    });
+    return [...map.values()];
   }, [page, group]);
   const [open, setOpen] = useState<number | null>(null);
 
@@ -1234,8 +1356,8 @@ function GallerySection({
     if (open === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(null);
-      if (e.key === "ArrowRight") setOpen((o) => (o === null ? o : (o + 1) % images.length));
-      if (e.key === "ArrowLeft") setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length));
+      if (e.key === "ArrowRight") setOpen((o) => (o === null ? o : (o + 1) % items.length));
+      if (e.key === "ArrowLeft") setOpen((o) => (o === null ? o : (o - 1 + items.length) % items.length));
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -1243,10 +1365,39 @@ function GallerySection({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, images.length]);
+  }, [open, items.length]);
 
-  // varied aspect rhythm so equal-sized sources still read editorial
-  const aspects = ["aspect-[4/5]", "aspect-square", "aspect-[3/4]", "aspect-[16/11]", "aspect-[4/5]", "aspect-[16/11]"];
+  // hover-to-play: the source attaches lazily on first hover, then the
+  // film fades in over its own poster frame
+  const playTile = (root: HTMLElement) => {
+    const video = root.querySelector<HTMLVideoElement>("video");
+    if (!video) return;
+    const source = video.querySelector<HTMLSourceElement>("source[data-src]");
+    if (source && !source.src) {
+      source.src = source.dataset.src || "";
+      video.load();
+    }
+    video.style.opacity = "1";
+    const p = video.play();
+    if (p) p.catch(() => undefined);
+  };
+  const stopTile = (root: HTMLElement) => {
+    const video = root.querySelector<HTMLVideoElement>("video");
+    if (!video) return;
+    video.style.opacity = "0";
+    video.pause();
+  };
+
+  // the grid's repeating rhythm: one wide feature, a tall frame, and
+  // supporting stills — dense flow packs any count without holes
+  const SPANS = [
+    "col-span-2 md:col-span-4 md:row-span-2",
+    "md:col-span-2 md:row-span-1",
+    "md:col-span-2 md:row-span-1",
+    "md:col-span-2 md:row-span-2",
+    "md:col-span-2 md:row-span-1",
+    "col-span-2 md:col-span-2 md:row-span-1"
+  ];
 
   return (
     <section id="cd-gallery" data-tier2-stop="cd-gallery" className="relative w-full px-5 pb-10 pt-24 sm:px-10 lg:px-16">
@@ -1260,22 +1411,59 @@ function GallerySection({
               </h2>
             </div>
             <div className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 sm:block">
-              {String(images.length).padStart(2, "0")} frames · tap to open
+              {String(items.length).padStart(2, "0")} frames · hover to play · tap to open
             </div>
           </div>
 
-          <div className="mt-10 columns-2 gap-4 md:columns-3 [&>button]:mb-4">
-            {images.map((src, i) => (
+          <div className="mt-10 grid grid-cols-2 gap-3 [grid-auto-flow:dense] auto-rows-[130px] md:grid-cols-6 md:auto-rows-[168px] md:gap-4">
+            {items.map((item, i) => (
               <button
-                key={src}
+                key={item.poster}
                 type="button"
                 onClick={() => setOpen(i)}
-                className={`group relative block w-full overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${aspects[i % aspects.length]}`}
+                onMouseEnter={(e) => playTile(e.currentTarget)}
+                onMouseLeave={(e) => stopTile(e.currentTarget)}
+                onFocus={(e) => playTile(e.currentTarget)}
+                onBlur={(e) => stopTile(e.currentTarget)}
+                className={`group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
               >
-                <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
-                <span className="absolute inset-0 bg-ink/0 transition-colors duration-500 group-hover:bg-ink/15" />
+                <img
+                  src={item.poster}
+                  alt=""
+                  width={1080}
+                  height={608}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]"
+                />
+                {item.video && (
+                  <video
+                    muted
+                    loop
+                    playsInline
+                    preload="none"
+                    poster={item.poster}
+                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
+                  >
+                    <source data-src={item.video} type="video/mp4" />
+                  </video>
+                )}
+                {/* quiet dim + gold hairline frame, revealed on hover */}
+                <span className="pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-500 group-hover:bg-ink/10" />
+                <span className="pointer-events-none absolute inset-2 rounded-md border border-gold-light/0 transition-colors duration-500 group-hover:border-gold-light/55" />
+                {/* media tag — a film frame announces itself */}
+                <span
+                  className={`absolute right-3 top-3 flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-[7.5px] uppercase tracking-[0.2em] backdrop-blur-sm transition-opacity duration-500 ${
+                    item.video
+                      ? "border-gold-light/40 bg-ink/30 text-gold-light"
+                      : "border-white/25 bg-ink/25 text-white/75 opacity-0 group-hover:opacity-100"
+                  }`}
+                >
+                  {item.video && <span className="h-1 w-1 rounded-full bg-gold-light" />}
+                  {item.video ? "Film" : "Still"}
+                </span>
                 <span className="absolute bottom-2.5 left-3 font-mono text-[8px] uppercase tracking-[0.2em] text-white/0 transition-colors duration-500 group-hover:text-white/85">
-                  {String(i + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+                  {String(i + 1).padStart(2, "0")} — {page.country}
                 </span>
               </button>
             ))}
@@ -1283,7 +1471,7 @@ function GallerySection({
         </div>
       </div>
 
-      {/* lightbox */}
+      {/* lightbox — film frames play, stills hold */}
       {open !== null && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/[0.96] backdrop-blur-md" onClick={() => setOpen(null)}>
           <button
@@ -1299,17 +1487,39 @@ function GallerySection({
             aria-label="Previous"
             onClick={(e) => {
               e.stopPropagation();
-              setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length));
+              setOpen((o) => (o === null ? o : (o - 1 + items.length) % items.length));
             }}
             className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:left-8"
           >
             ←
           </button>
           <figure className="max-h-[82svh] max-w-[86vw]" onClick={(e) => e.stopPropagation()}>
-            <img src={images[open]} alt="" className="max-h-[76svh] w-auto rounded-lg border border-white/15 object-contain shadow-[0_40px_120px_rgba(0,0,0,.6)]" />
+            {items[open].video ? (
+              <video
+                key={items[open].video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={items[open].poster}
+                className="max-h-[76svh] w-auto rounded-lg border border-white/15 object-contain shadow-[0_40px_120px_rgba(0,0,0,.6)]"
+              >
+                <source src={items[open].video} type="video/mp4" />
+              </video>
+            ) : (
+              <img
+                src={items[open].poster}
+                alt=""
+                width={1080}
+                height={608}
+                decoding="async"
+                className="max-h-[76svh] w-auto rounded-lg border border-white/15 object-contain shadow-[0_40px_120px_rgba(0,0,0,.6)]"
+              />
+            )}
             <figcaption className="mt-4 flex items-center justify-center gap-4 font-mono text-[9px] uppercase tracking-[0.26em] text-gold-light/85">
               <span className="h-px w-8 bg-gold/50" />
-              {page.country} — {String(open + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+              {page.country} — {String(open + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+              {items[open].video ? " · Film" : ""}
               <span className="h-px w-8 bg-gold/50" />
             </figcaption>
           </figure>
@@ -1318,7 +1528,7 @@ function GallerySection({
             aria-label="Next"
             onClick={(e) => {
               e.stopPropagation();
-              setOpen((o) => (o === null ? o : (o + 1) % images.length));
+              setOpen((o) => (o === null ? o : (o + 1) % items.length));
             }}
             className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:right-8"
           >

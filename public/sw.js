@@ -1,4 +1,4 @@
-const VERSION = "trc-pwa-v2";
+const VERSION = "trc-pwa-v3";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const CACHE_PREFIX = "trc-";
@@ -16,7 +16,7 @@ const CORE_ROUTES = [
 const CORE_ASSETS = [
   "/offline.html",
   "/manifest.webmanifest",
-  "/media/brand/retreat-collection-logo-crop.png",
+  "/media/brand/retreat-collection-logo-crop-580.png",
   "/media/brand/retreat-collection-logo.jpg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

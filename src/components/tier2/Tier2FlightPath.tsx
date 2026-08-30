@@ -25,6 +25,8 @@ function buildPath(points: Point[]): string {
 export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { stops: FlightStop[]; startId?: string }) {
   const [geometry, setGeometry] = useState<{ w: number; h: number; d: string; stopPoints: Point[] } | null>(null);
   const lastWidth = useRef(0);
+  const lastHeight = useRef(0);
+  const lastEndY = useRef(0);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -37,13 +39,34 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       // degenerate zero-length path in permanently, since nothing else
       // forces a re-measure once it's set. Skip and wait for a real size.
       if (w === 0 || h === 0) return;
-      // Re-measuring replaces the SVG (new path/plane elements), which
-      // destroys whatever GSAP had already bound to the old ones — only
-      // worth doing for a genuine viewport-width change, not for content
-      // reflow (a wash fading in, a video's natural size resolving, a
-      // ScrollTrigger-driven transform) that ResizeObserver also reports.
-      if (w === lastWidth.current) return;
+      // Re-measure on a real width change, a meaningful height change, OR
+      // when the final landing point has drifted from where it was drawn.
+      // Height matters: fonts and lazy media finishing after the first
+      // measure grow the page. The end-anchor check matters even more:
+      // layout can redistribute internally (masonry columns, media aspect
+      // ratios settling) without changing total height at all, leaving the
+      // plane out of sync with the scroll and landing off the boarding
+      // pass. Small (<24px) wobble is ignored so observer noise doesn't
+      // thrash the SVG. (useTier2Animations watches the path's `d` and
+      // rebinds on change, so re-measuring never strands GSAP on stale
+      // geometry.)
+      const endStop = stops[stops.length - 1];
+      const endEl = endStop ? document.getElementById(endStop.id) : null;
+      const endAnchor = endEl?.querySelector<HTMLElement>("[data-flight-node]") ?? endEl;
+      let liveEndY = lastEndY.current;
+      if (endAnchor) {
+        const r = endAnchor.getBoundingClientRect();
+        liveEndY = r.top + window.scrollY + r.height / 2;
+      }
+      if (
+        w === lastWidth.current &&
+        Math.abs(h - lastHeight.current) < 24 &&
+        Math.abs(liveEndY - lastEndY.current) < 10
+      ) {
+        return;
+      }
       lastWidth.current = w;
+      lastHeight.current = h;
 
       // Document-true Y via rect + scrollY — offsetTop is relative to the
       // nearest positioned ancestor and collapses for stops nested inside a
@@ -69,11 +92,16 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
         return { x: w / 2 + (i % 2 === 0 ? -wiggle : wiggle), y: docY(el) };
       });
 
+      lastEndY.current = stopPoints[stopPoints.length - 1]?.y ?? 0;
       setGeometry({ w, h, d: buildPath([heroPoint, ...stopPoints]), stopPoints });
     };
 
     measure();
     window.addEventListener("resize", measure);
+    // The guard above makes measure() a cheap no-op when nothing moved, so
+    // it can run per scroll tick — this is what catches internal layout
+    // shifts that never change the document's total size.
+    window.addEventListener("scroll", measure, { passive: true });
 
     // ResizeObserver as the recovery path instead of requestAnimationFrame:
     // rAF is suspended for hidden/backgrounded tabs, so a tab that becomes
@@ -83,6 +111,7 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
 
     return () => {
       window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure);
       ro.disconnect();
     };
   }, [stops, startId]);

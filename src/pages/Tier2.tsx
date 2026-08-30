@@ -1,17 +1,43 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DotMap, { type DotMapHandle } from "../components/tier2/DotMap";
 import Tier2Nav from "../components/tier2/Tier2Nav";
-import Tier2CollectionGrid from "../components/tier2/Tier2CollectionGrid";
 import Tier2Hero from "../components/tier2/Tier2Hero";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Stop from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
-import { DESTINATIONS, FLIGHT_STOPS } from "../data/tier2Destinations";
-import { CATALOG } from "../data/tier2Catalog";
+import { DESTINATIONS, FLIGHT_PATH_STOPS } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
 import { ASIA } from "../data/regions/asia";
+
+// DESTINATIONS plus the country strip's hold waypoint — passive, so the
+// plane pulses a landing and wears a visible gold accent through the cream
+// strip (its zone would otherwise inherit Asia's white accent, invisible
+// on cream), without the hold ever becoming the nav's "active stop".
+const ANIMATION_STOPS = [
+  ...DESTINATIONS.slice(0, 2),
+  { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] as [number, number], theme: "white" as const, coords: "", passive: true },
+  ...DESTINATIONS.slice(2)
+];
+
+// The loader's night sky: deterministic pseudo-random star placements (a
+// seeded hash, not Math.random, so every visit renders the same sky and
+// React never fights over positions).
+const LOADER_STARS = Array.from({ length: 46 }, (_, i) => {
+  const a = Math.sin(i * 127.1 + 1) * 43758.5453;
+  const b = Math.sin(i * 311.7 + 7) * 12543.2107;
+  const r1 = a - Math.floor(a);
+  const r2 = b - Math.floor(b);
+  return {
+    left: `${(r1 * 100).toFixed(1)}%`,
+    top: `${(r2 * 100).toFixed(1)}%`,
+    size: 1 + (i % 3),
+    delay: `${(r1 * 2.4).toFixed(2)}s`,
+    duration: `${(1.8 + r2 * 2.4).toFixed(2)}s`,
+    gold: i % 5 === 0
+  };
+});
 
 export default function Tier2() {
   const dotMapRef = useRef<DotMapHandle>(null);
@@ -24,14 +50,16 @@ export default function Tier2() {
     () => DESTINATIONS.find((s) => s.id === activeStopId) ?? DESTINATIONS[0],
     [activeStopId]
   );
-  const stopTotal = useMemo(() => DESTINATIONS.filter((d) => d.kind !== "catalog").length, []);
+  const stopTotal = DESTINATIONS.length;
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setIsLoading(false), 1150);
+    // long enough for one full orbit of the plane to read (2.4s spin —
+    // the fade-out overlaps its second lap)
+    const timer = window.setTimeout(() => setIsLoading(false), 1700);
     return () => window.clearTimeout(timer);
   }, []);
 
-  useTier2Animations(dotMapRef, DESTINATIONS, {
+  useTier2Animations(dotMapRef, ANIMATION_STOPS, {
     onActiveStopChange: setActiveStopId,
     onProgressChange: setRouteProgress,
     heroReady: !isLoading
@@ -49,9 +77,45 @@ export default function Tier2() {
     <div className="relative bg-ink min-h-screen text-white font-sans overflow-x-clip">
       <DotMap ref={dotMapRef} className="fixed inset-0 z-0 opacity-70 sm:opacity-100" />
       <div className={`premium-loader ${isLoading ? "is-active" : ""}`} aria-hidden={!isLoading}>
-        <img src="/media/brand/retreat-collection-logo-crop.png" alt="" className="premium-loader__logo" />
+        {/* the night sky: twinkling stars + a shooting star */}
+        <div className="premium-loader__stars" aria-hidden="true">
+          {LOADER_STARS.map((star, i) => (
+            <span
+              key={i}
+              className="loader-star"
+              style={{
+                left: star.left,
+                top: star.top,
+                width: star.size,
+                height: star.size,
+                background: star.gold ? "#e3c682" : "#cfd8e6",
+                animationDelay: star.delay,
+                animationDuration: star.duration
+              }}
+            />
+          ))}
+          <span className="loader-shoot" />
+        </div>
+        <img
+          src="/media/brand/GOLD.png"
+          alt=""
+          width={697}
+          height={226}
+          className="premium-loader__logo"
+        />
+        {/* the compass: plane orbits the ring trailing a gold comet arc */}
         <div className="premium-loader__mark">
-          <span />
+          <div className="premium-loader__orbit">
+            <span className="premium-loader__sweep" />
+            <span className="premium-loader__plane">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
         <div className="premium-loader__text">Preparing route</div>
       </div>
@@ -63,47 +127,38 @@ export default function Tier2() {
         onEnquire={() => handleEnquire()}
       />
       <main id="tier2-journey" className="relative z-10">
-        <Tier2FlightPath stops={FLIGHT_STOPS} />
+        <Tier2FlightPath stops={FLIGHT_PATH_STOPS} />
         <Tier2Hero />
-        {DESTINATIONS.map((s, i) =>
-          s.kind === "catalog" ? (
-            <Tier2CollectionGrid
-              key={s.id}
+        {DESTINATIONS.map((s, i) => (
+          <div key={s.id} className="contents">
+            <Stop
               id={s.id}
-              catalog={CATALOG}
               index={i + 1}
-              total={DESTINATIONS.length}
-              eyebrow="The wider collection"
-              heading={["Every region,", "every stay"]}
-              intro="Beyond the route above — the wider portfolio, organised by region. Each stay carries its own experience brochure to take away."
+              total={stopTotal}
+              eyebrow={s.eyebrow}
+              title={s.title}
+              copy={s.copy}
+              coords={s.coords}
+              slug={s.slug}
+              season={s.season}
+              highlights={s.highlights}
+              theme={s.theme}
+              layout={s.layout}
+              interest={s.interest}
+              onEnquire={handleEnquire}
+              ctaLabel={s.ctaLabel}
+              ctaHref={s.ctaHref}
             />
-          ) : (
-            <div key={s.id} className="contents">
-              <Stop
-                id={s.id}
-                index={i + 1}
-                total={stopTotal}
-                eyebrow={s.eyebrow}
-                title={s.title}
-                copy={s.copy}
-                coords={s.coords}
-                slug={s.slug}
-                season={s.season}
-                highlights={s.highlights}
-                theme={s.theme}
-                layout={s.layout}
-                interest={s.interest}
-                onEnquire={handleEnquire}
-                ctaLabel={s.ctaLabel}
-                ctaHref={s.ctaHref}
-              />
-              {/* right after the Asia stop: the scroll-glide country selector */}
-              {s.id === "tier2-asia" && <CountryStrip region={ASIA} />}
-            </div>
-          )
-        )}
+            {/* right after the Asia stop: the scroll-glide country selector */}
+            {s.id === "tier2-asia" && <CountryStrip region={ASIA} />}
+          </div>
+        ))}
+        {/* inside main so the journey's scroll range — and the flight
+            path's own height — extend through it; otherwise the path/plane
+            hit their end exactly at the last stop and the plane appears to
+            stop abruptly instead of flying down to land here */}
+        <Tier2Enquire selectedInterest={selectedInterest} destinations={DESTINATIONS} />
       </main>
-      <Tier2Enquire selectedInterest={selectedInterest} destinations={DESTINATIONS} />
     </div>
   );
 }

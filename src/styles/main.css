@@ -254,6 +254,7 @@ html[data-display-mode="standalone"] body {
 .premium-loader {
   position: fixed;
   inset: 0;
+  overflow: hidden;
   z-index: 80;
   display: grid;
   place-items: center;
@@ -305,23 +306,40 @@ html[data-display-mode="standalone"] body {
   box-shadow: 0 0 18px rgba(227, 198, 130, .55);
 }
 
-.premium-loader__mark span {
+.premium-loader__orbit {
   position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 15px;
-  height: 15px;
-  transform: translateX(-50%) rotate(90deg);
-  color: #e3c682;
+  inset: 0;
+  animation: ring-spin 2.4s linear infinite;
 }
 
-.premium-loader__mark span::before {
-  content: "";
+/* comet arc sweeping behind the plane, masked down to the ring's edge */
+.premium-loader__sweep {
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  background: conic-gradient(transparent 18%, rgba(227, 198, 130, 0.55) 49.5%, transparent 50%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+}
+
+/* the same symmetric SVG plane glyph used by the flight path and the
+   boarding pass — not the old hand-drawn clip-path polygon, whose wings
+   were visibly unequal */
+.premium-loader__plane {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  transform: translateX(-50%) rotate(-90deg);
+  color: #e3c682;
+  filter: drop-shadow(0 0 6px rgba(227, 198, 130, 0.6));
+}
+
+.premium-loader__plane svg {
   display: block;
   width: 100%;
   height: 100%;
-  background: currentColor;
-  clip-path: polygon(96% 50%, 42% 31%, 42% 7%, 30% 7%, 30% 31%, 4% 50%, 4% 62%, 30% 54%, 30% 77%, 20% 83%, 20% 92%, 36% 87%, 52% 92%, 52% 83%, 42% 77%, 42% 54%, 96% 62%);
 }
 
 .premium-loader__text {
@@ -329,6 +347,67 @@ html[data-display-mode="standalone"] body {
   font-size: 9px;
   letter-spacing: .32em;
   text-transform: uppercase;
+  animation: loader-text-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes loader-text-breathe {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.95; }
+}
+
+.premium-loader__logo {
+  animation: loader-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes loader-rise {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 0.82; transform: translateY(0); }
+}
+
+/* the loader's night sky */
+.premium-loader__stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loader-star {
+  position: absolute;
+  border-radius: 999px;
+  opacity: 0;
+  animation: star-twinkle ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.06; transform: scale(0.6); }
+  50% { opacity: 0.85; transform: scale(1); }
+}
+
+.loader-shoot {
+  position: absolute;
+  top: 16%;
+  left: -10%;
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(227, 198, 130, 0.9));
+  transform: rotate(14deg);
+  opacity: 0;
+  animation: loader-shoot 2.8s ease-in 0.7s infinite;
+}
+
+@keyframes loader-shoot {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(14deg); }
+  5% { opacity: 0.9; }
+  16% { opacity: 0; transform: translate3d(62vw, 15vw, 0) rotate(14deg); }
+  100% { opacity: 0; transform: translate3d(62vw, 15vw, 0) rotate(14deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-loader__orbit, .loader-star, .loader-shoot,
+  .premium-loader__text, .premium-loader__logo { animation: none; }
+  .loader-star { opacity: 0.4; }
+  .premium-loader__logo { opacity: 0.82; }
 }
 
 @keyframes route-glow {
@@ -359,56 +438,6 @@ html[data-display-mode="standalone"] body {
   stroke-dasharray: 1;
   filter: drop-shadow(0 0 10px rgba(227, 198, 130, .44));
   transition: stroke-dashoffset 180ms linear;
-}
-
-.region-route-plane {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(227, 198, 130, .42);
-  border-radius: 999px;
-  color: #e3c682;
-  filter: drop-shadow(0 0 18px rgba(227, 198, 130, .34));
-  transition: left 180ms linear, top 180ms linear, transform 180ms linear;
-}
-
-.region-route-plane::before,
-.region-route-plane::after {
-  content: "";
-  position: absolute;
-  border-radius: inherit;
-}
-
-.region-route-plane::before {
-  inset: 8px;
-  border: 1px solid rgba(227, 198, 130, .18);
-}
-
-.region-route-plane::after {
-  width: 6px;
-  height: 6px;
-  background: #e3c682;
-  box-shadow: 0 0 16px rgba(227, 198, 130, .58);
-}
-
-.region-route-plane span {
-  position: absolute;
-  bottom: -9px;
-  left: 50%;
-  width: 18px;
-  height: 18px;
-  transform: translateX(-50%) rotate(90deg);
-}
-
-.region-route-plane span::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: currentColor;
-  clip-path: polygon(96% 50%, 42% 31%, 42% 7%, 30% 7%, 30% 31%, 4% 50%, 4% 62%, 30% 54%, 30% 77%, 20% 83%, 20% 92%, 36% 87%, 52% 92%, 52% 83%, 42% 77%, 42% 54%, 96% 62%);
 }
 
 .catalog-light-shell {

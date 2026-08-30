@@ -1,16 +1,21 @@
+import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/main.css";
 import Tier2 from "./pages/Tier2";
-import Asia from "./pages/Asia";
-import CountryDetail from "./pages/CountryDetail";
-import { ASIA } from "./data/regions/asia";
+
+const Asia = lazy(() => import("./pages/Asia"));
+const CountryDetailRoute = lazy(() => import("./pages/CountryDetailRoute"));
 
 const path = window.location.pathname.replace(/\/+$/, "");
 const countrySlug = path.match(/^\/asia\/([a-z0-9-]+)$/)?.[1];
 const page = countrySlug ? (
-  <CountryDetail region={ASIA} slug={countrySlug} />
+  <Suspense fallback={null}>
+    <CountryDetailRoute slug={countrySlug} />
+  </Suspense>
 ) : path === "/asia" ? (
-  <Asia />
+  <Suspense fallback={null}>
+    <Asia />
+  </Suspense>
 ) : (
   <Tier2 />
 );

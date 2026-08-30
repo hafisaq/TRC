@@ -105,12 +105,11 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
                 <div className="text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.35em] uppercase text-navy/50">The Retreat Collection</div>
                 <div className="mt-1 text-[15px] sm:text-[17px] tracking-[0.1em] uppercase text-navy font-bold">Boarding Pass</div>
               </div>
-              <svg width="24" height="24" viewBox="0 0 24 24" className="text-gold-deep shrink-0 sm:w-[26px] sm:h-[26px]" style={{ transform: "rotate(90deg)" }}>
-                <path
-                  fill="currentColor"
-                  d="M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z"
-                />
-              </svg>
+              {/* No static plane icon on the card — the flight path's own
+                  animated plane is the only plane, and this empty slot on
+                  the BOARDING PASS header line is exactly where it lands
+                  (data-flight-node is read directly by Tier2FlightPath). */}
+              <div data-flight-node aria-hidden="true" className="h-6 w-6 shrink-0 sm:h-[26px] sm:w-[26px]" />
             </div>
 
             <div className="mt-6 sm:mt-7 flex items-center gap-2.5 sm:gap-3">

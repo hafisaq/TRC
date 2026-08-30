@@ -296,7 +296,10 @@ function CountryRouteChapter({
                     <img
                       src={src}
                       alt=""
+                      width={1080}
+                      height={608}
                       loading="lazy"
+                      decoding="async"
                       className={`absolute inset-0 h-full w-full object-cover ${index === activeIndex ? "kenburns" : ""}`}
                     />
                   </div>
@@ -411,7 +414,15 @@ function CountryRouteChapter({
                       onClick={() => scrollToMoment(Math.max(0, firstMomentIndex))}
                       className={`group relative h-14 w-20 shrink-0 overflow-hidden border transition-colors ${chipBorder}`}
                     >
-                      <img src={entry.poster} alt="" loading="lazy" className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isActive ? "opacity-90" : "opacity-55 group-hover:opacity-80"}`} />
+                      <img
+                        src={entry.poster}
+                        alt=""
+                        width={1080}
+                        height={608}
+                        loading="lazy"
+                        decoding="async"
+                        className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isActive ? "opacity-90" : "opacity-55 group-hover:opacity-80"}`}
+                      />
                       <span className={`absolute inset-0 ${isActive ? "bg-ink/15" : "bg-ink/45"}`} />
                       <span className="absolute bottom-1 left-1.5 right-1.5 truncate font-serif text-[11px] font-light leading-none text-white">
                         {entry.name}

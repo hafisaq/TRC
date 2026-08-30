@@ -27,6 +27,10 @@ export type Tier2Stop = {
   mapPos: [number, number];
   theme: "gold" | "white";
   coords: string;
+  // A waypoint the plane passes (landing pulse + accent zone) that is NOT
+  // a destination: no nav/status identity, so it never becomes the
+  // "active stop". Used for the country strip's hold.
+  passive?: boolean;
 };
 
 type Tier2AnimationOptions = {
@@ -37,6 +41,10 @@ type Tier2AnimationOptions = {
 
 const ACCENT_FOR_THEME = { gold: "#ffffff", white: "#c8a24c" } as const;
 const DEFAULT_ACCENT = "#e3c682";
+// The colour the plane settles into once it lands on the boarding pass —
+// matches the deep gold the card's own type is set in, so a plane that
+// arrived white or gold-light reads as "arrived" rather than "still flying".
+const LANDED_ACCENT = "#8f7231";
 
 /**
  * Tier2FlightPath measures the journey's real pixel height in its own
@@ -166,13 +174,15 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           onEnter: () => revealStop(stop, section)
         });
 
-        ScrollTrigger.create({
-          trigger: section,
-          start: "top 58%",
-          end: "bottom 42%",
-          onEnter: () => options.onActiveStopChange?.(stop.id),
-          onEnterBack: () => options.onActiveStopChange?.(stop.id)
-        });
+        if (!stop.passive) {
+          ScrollTrigger.create({
+            trigger: section,
+            start: "top 58%",
+            end: "bottom 42%",
+            onEnter: () => options.onActiveStopChange?.(stop.id),
+            onEnterBack: () => options.onActiveStopChange?.(stop.id)
+          });
+        }
       });
 
       // position-cache-free fallback (see comment above)
@@ -196,20 +206,43 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
       cleanups.push(() => window.removeEventListener("load", onLoad));
 
       // ---- final CTA reveal ----
+      const enquireSection = $<HTMLElement>("#tier2-enquire");
       const enquireText = $<HTMLElement>("#tier2-enquire [data-stop-text]");
       const mobileEnquireCta = $<HTMLElement>("#mobile-enquire-cta");
+      let enquireRevealed = false;
+      const revealEnquire = () => {
+        if (enquireRevealed || !enquireText) return;
+        enquireRevealed = true;
+        gsap.fromTo(
+          enquireText,
+          { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
+          { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, ease: "power3.out" }
+        );
+        // The plane landing (trail fade, colour settle, the glow pulse) is
+        // handled separately below, bidirectionally — this reveal is a
+        // one-way form appearance and shouldn't hide again on scroll-up,
+        // but the plane should keep flying back out when you do.
+      };
       if (enquireText) {
         ScrollTrigger.create({
           trigger: "#tier2-enquire",
           start: "top 65%",
           once: true,
-          onEnter: () =>
-            gsap.fromTo(
-              enquireText,
-              { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
-              { opacity: 1, y: 0, duration: prefersReducedMotion ? 0 : 0.9, ease: "power3.out" }
-            )
+          onEnter: revealEnquire
         });
+        // same position-cache-free fallback as the stop reveals above —
+        // the boarding pass sits at the very bottom of long, image/video
+        // -heavy pages (especially the country pages), exactly where a
+        // stale ScrollTrigger cache is most likely to have skewed, so it
+        // needs the same live-measurement guarantee the stops already get.
+        const checkEnquireReveal = () => {
+          if (enquireRevealed || !enquireSection) return;
+          const rect = enquireSection.getBoundingClientRect();
+          if (rect.top < window.innerHeight * 0.65 && rect.bottom > 0) revealEnquire();
+        };
+        window.addEventListener("scroll", checkEnquireReveal, { passive: true });
+        cleanups.push(() => window.removeEventListener("scroll", checkEnquireReveal));
+        checkEnquireReveal();
       }
       if (mobileEnquireCta) {
         ScrollTrigger.create({
@@ -228,7 +261,10 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
     // Set up separately once its SVG genuinely exists in the DOM (see
     // whenElementsExist above) rather than assuming effect-ordering timing.
     const stopFlightWatch = whenElementsExist(["tier2-journey", "tier2-flight-path", "tier2-flight-plane"], () => {
-      const flightCtx = gsap.context(() => {
+      let flightCtx: gsap.Context | null = null;
+      const initFlight = () => {
+        flightCtx?.revert();
+        flightCtx = gsap.context(() => {
         const journey = $<HTMLElement>("#tier2-journey")!;
         const path = $<SVGPathElement>("#tier2-flight-path")!;
         const plane = $<SVGGElement>("#tier2-flight-plane")!;
@@ -269,16 +305,71 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           planeTween.progress(1);
           options.onProgressChange?.(1);
         } else {
+          // The plane is ALWAYS scroll-scrubbed — it never takes over and
+          // flies on its own, so it can never park out of view or stop
+          // answering the scroll. The path's geometry ends on the boarding
+          // pass, so at full scroll the plane is simply resting there.
+          // Arrival happens in two scroll-driven beats: the TRAIL fades the
+          // moment the boarding pass enters the viewport (so the plane
+          // finishes its descent clean and lands on the card, no line
+          // crossing it), then at touchdown the plane settles into the
+          // card's own gold with one landing pulse. Both reverse on
+          // scroll-up.
+          const ARRIVAL = 0.985;
+          // the progress at which the boarding pass's top crosses the
+          // bottom of the viewport — recomputed on every rebind, so it
+          // tracks layout changes like everything else here
+          const enquireEl = document.getElementById("tier2-enquire");
+          const vh = window.innerHeight || 1;
+          const journeyDocTop = journey.getBoundingClientRect().top + window.scrollY;
+          const enquireDocTop = enquireEl ? enquireEl.getBoundingClientRect().top + window.scrollY : Infinity;
+          const scrollSpan = Math.max(1, journeyHeight - vh);
+          const TRAIL_FADE = Math.min(0.99, Math.max(0.5, (enquireDocTop - journeyDocTop - vh * 0.92) / scrollSpan));
+          // The plane must be LANDED once Journey's End fills the screen —
+          // not still descending through the last stretch of scroll (the
+          // section is taller than a viewport, so raw progress only hits 1
+          // at the absolute document bottom, leaving the plane hanging
+          // above the card while the user is already looking at it). Remap
+          // so the full path completes exactly when the section's top
+          // reaches the top of the viewport; it then rests on the card for
+          // whatever scroll remains. Still 100% scroll-driven either way.
+          const LAND_AT = Math.min(1, Math.max(0.6, (enquireDocTop - journeyDocTop) / scrollSpan));
+          let trailShown = true;
+          let pulsed = false;
           const applyProgress = (progress: number) => {
-            gsap.set(path, { strokeDashoffset: length * (1 - progress) });
-            planeTween.progress(progress);
             options.onProgressChange?.(progress);
+            const flightP = Math.min(1, progress / LAND_AT);
+            gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
+            planeTween.progress(flightP);
 
-            let accent = DEFAULT_ACCENT;
-            for (const zone of zones) {
-              if (progress >= zone.progress - 0.06) accent = zone.accent;
+            const showTrail = progress < TRAIL_FADE;
+            if (showTrail !== trailShown) {
+              trailShown = showTrail;
+              gsap.killTweensOf(path, "opacity");
+              gsap.to(path, { opacity: showTrail ? 1 : 0, duration: showTrail ? 0.4 : 0.6, ease: "power2.out" });
             }
-            setAccent(accent);
+            const nowArrived = flightP >= ARRIVAL;
+            if (nowArrived) {
+              setAccent(LANDED_ACCENT);
+              if (!pulsed) {
+                pulsed = true;
+                const landingGroup = $<SVGGElement>("#tier2-landing-tier2-enquire");
+                const glow = landingGroup?.querySelector<SVGCircleElement>("[data-landing-glow]");
+                const ring = landingGroup?.querySelector<SVGCircleElement>("[data-landing-ring]");
+                if (glow && ring) {
+                  gsap.set([glow, ring], { fill: LANDED_ACCENT, stroke: LANDED_ACCENT });
+                  gsap.fromTo(glow, { attr: { r: 4 }, opacity: 0.9 }, { attr: { r: 46 }, opacity: 0, duration: 1.2, ease: "power2.out" });
+                  gsap.fromTo(ring, { attr: { r: 4 }, opacity: 1 }, { attr: { r: 30 }, opacity: 0, duration: 1.2, ease: "power2.out", delay: 0.1 });
+                }
+              }
+            } else {
+              pulsed = false; // re-arm so a return visit pulses again
+              let accent = DEFAULT_ACCENT;
+              for (const zone of zones) {
+                if (progress >= zone.progress - 0.06) accent = zone.accent;
+              }
+              setAccent(accent);
+            }
           };
 
           const trigger = ScrollTrigger.create({
@@ -296,9 +387,25 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         }
 
         ScrollTrigger.refresh();
-      });
+        });
+      };
+      initFlight();
 
-      cleanups.push(() => flightCtx.revert());
+      // Tier2FlightPath re-measures update the SAME <path> node's `d` in
+      // place (React patches attributes, it doesn't replace the node) —
+      // but the tween, path length, and colour zones captured at init are
+      // then stale, leaving the plane out of sync with the scroll and
+      // landing above the boarding pass. Watch `d` and rebind on change so
+      // every re-measure (fonts loading, lazy media growing the page,
+      // viewport resize) re-syncs the whole flight system.
+      const pathEl = document.getElementById("tier2-flight-path");
+      const rebind = new MutationObserver(() => initFlight());
+      if (pathEl) rebind.observe(pathEl, { attributes: true, attributeFilter: ["d"] });
+
+      cleanups.push(() => {
+        rebind.disconnect();
+        flightCtx?.revert();
+      });
     });
     cleanups.push(stopFlightWatch);
 
