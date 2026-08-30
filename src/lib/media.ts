@@ -44,3 +44,7 @@ export function keyForPoster(poster: string): string {
   }
   return key;
 }
+
+// The registered film for a poster, or undefined — lets components render
+// a playing film for CMS entries that have one and a still otherwise.
+export const filmForPoster = (poster: string) => filmByPoster.get(poster);

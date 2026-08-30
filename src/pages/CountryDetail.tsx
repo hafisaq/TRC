@@ -6,7 +6,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
-import { posterUrl, videoUrl, videoForPoster } from "../lib/media";
+import { posterUrl, videoUrl, videoForPoster, filmForPoster } from "../lib/media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -119,7 +119,7 @@ function CountryDetailInner({
     () => [
       { id: heroId, label: "Overview" },
       ...page.chapters.map((ch, i) => ({ id: `cd-ch-${i}`, label: ch.navLabel })),
-      { id: "cd-day-0", label: "The Journey" },
+      { id: "cd-day-0", label: "Signatures" },
       { id: "cd-essentials", label: "Essentials" },
       { id: "cd-gallery", label: "Gallery" },
       { id: "cd-stays", label: "The Stays" }
@@ -471,15 +471,31 @@ function CountryDetailInner({
               <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 no-scrollbar">
               {group.entries.map((entry, i) => (
                 <div key={entry.name} className="group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
-                  <img
-                    src={entry.poster}
-                    alt=""
-                    width={1080}
-                    height={608}
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                  />
+                  {/* film-first: a stay with footage plays it; stills only
+                      when no film exists for the entry */}
+                  {filmForPoster(entry.poster) ? (
+                    <video
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      poster={entry.poster}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                    >
+                      <source src={filmForPoster(entry.poster)} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={entry.poster}
+                      alt=""
+                      width={1080}
+                      height={608}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
                   <div className="absolute top-3 left-3 font-mono text-[9px] uppercase tracking-[0.2em] text-gold-light/85">{String(i + 1).padStart(2, "0")}</div>
                   <div className="absolute inset-x-0 bottom-0 p-5">
@@ -888,12 +904,12 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
     <section className="relative w-full px-5 pt-24 pb-10 sm:px-10 lg:px-16">
       <div className="mx-auto max-w-[1280px]">
         <div className="text-center">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Sample itinerary</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The signatures</div>
           <h2 className="mt-3 font-serif text-[clamp(36px,6vw,68px)] font-light leading-[1.0]">
-            {country},<br />day by day
+            {country},<br />signature by signature
           </h2>
           <p className="mx-auto mt-4 max-w-[480px] text-[13px] font-light leading-[1.85] text-navy/60">
-            A sample route, not a schedule — every day bends around the traveller. The plane lands as you do.
+            Not an itinerary — the marks of the Maison, each one arranged entirely around the traveller.
           </p>
         </div>
 
@@ -922,7 +938,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="absolute bottom-4 left-4 flex items-center gap-2.5 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-                {country} — Day {String(active + 1).padStart(2, "0")} of {String(days.length).padStart(2, "0")}
+                {country} — {String(active + 1).padStart(2, "0")} / {String(days.length).padStart(2, "0")}
               </div>
               <div className="absolute right-4 top-4 flex flex-col gap-1.5">
                 {days.map((_, i) => (
@@ -966,7 +982,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                       <span className={`font-mono text-[22px] font-light leading-none ${isActive ? "text-gold-deep" : "text-navy/35"}`}>
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-navy/45">Day {i + 1}</span>
+                      <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-navy/45">Signature</span>
                     </div>
                     <h3 className={`mt-2.5 font-serif text-[clamp(24px,3.2vw,38px)] font-light leading-[1.05] transition-colors duration-400 ${isActive ? "text-navy" : "text-navy/60"}`}>
                       {day.title}
