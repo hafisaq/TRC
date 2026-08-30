@@ -48,6 +48,10 @@ jobs:
         id: ftp
         run: echo "host=$(printf '%s' '${{ secrets.REPLICA_FTP_HOST }}' | sed -E 's#^[a-zA-Z]+://##; s#/+$##')" >> "$GITHUB_OUTPUT"
 
+      # NOTE: the account-level FTP user's root is /home/u.../, NOT the
+      # site's docroot — Hostinger serves this website from
+      # domains/<site>/public_html. A bare "public_html/" would create a
+      # stray unused folder at the FTP root (learned the hard way).
       - name: Deploy to replica site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -55,7 +59,7 @@ jobs:
           username: ${{ secrets.REPLICA_FTP_USER }}
           password: ${{ secrets.REPLICA_FTP_PASS }}
           local-dir: dist/
-          server-dir: public_html/
+          server-dir: domains/khaki-deer-133961.hostingersite.com/public_html/
 
   prod:
     if: github.event_name == 'workflow_dispatch'
@@ -82,6 +86,9 @@ jobs:
         id: ftp
         run: echo "host=$(printf '%s' '${{ secrets.PROD_FTP_HOST }}' | sed -E 's#^[a-zA-Z]+://##; s#/+$##')" >> "$GITHUB_OUTPUT"
 
+      # PROD_SERVER_DIR: set this repo VARIABLE (Settings -> Secrets and
+      # variables -> Actions -> Variables) to the prod site's docroot,
+      # e.g. domains/clientdomain.com/public_html/
       - name: Deploy to production site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -89,4 +96,4 @@ jobs:
           username: ${{ secrets.PROD_FTP_USER }}
           password: ${{ secrets.PROD_FTP_PASS }}
           local-dir: dist/
-          server-dir: public_html/
+          server-dir: ${{ vars.PROD_SERVER_DIR || 'public_html/' }}
