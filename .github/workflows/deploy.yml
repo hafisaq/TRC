@@ -52,6 +52,20 @@ jobs:
       # site's docroot — Hostinger serves this website from
       # domains/<site>/public_html. A bare "public_html/" would create a
       # stray unused folder at the FTP root (learned the hard way).
+      - name: Diagnose FTP layout (temporary)
+        run: |
+          H="${{ steps.ftp.outputs.host }}"
+          U="${{ secrets.REPLICA_FTP_USER }}"
+          P="${{ secrets.REPLICA_FTP_PASS }}"
+          echo "== FTP root =="
+          curl -s --user "$U:$P" "ftp://$H/" --list-only || true
+          echo "== /domains/ =="
+          curl -s --user "$U:$P" "ftp://$H/domains/" --list-only || true
+          echo "== /public_html/ (from first attempt) =="
+          curl -s --user "$U:$P" "ftp://$H/public_html/" --list-only | head -5 || true
+          echo "== /domains/khaki-deer-133961.hostingersite.com/ =="
+          curl -s --user "$U:$P" "ftp://$H/domains/khaki-deer-133961.hostingersite.com/" --list-only || true
+
       - name: Deploy to replica site
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
