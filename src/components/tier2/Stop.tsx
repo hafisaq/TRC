@@ -135,7 +135,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
           <div data-stop-video className="group relative w-[210px] h-[210px] sm:w-[300px] sm:h-[300px] mt-6 sm:mt-7 opacity-0 scale-95">
             <div className={`absolute -inset-3 rounded-full border ${t.frame}`} />
             <div className={`absolute -inset-3 rounded-full border ${t.frame} opacity-40 anim-ring`} style={{ borderStyle: "dashed" }} />
-            <div className="relative w-full h-full rounded-full overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.05]">
+            <div className="media-shell relative w-full h-full rounded-full overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.05]">
               <VideoTag slug={slug} />
               <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle,rgba(0,0,0,0) 55%,rgba(0,0,0,.4) 100%)" }} />
             </div>
@@ -170,7 +170,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
         <div className="relative max-w-[1200px] w-full mx-auto">
           <div data-stop-video className="group relative w-full aspect-[4/5] sm:aspect-[16/8] opacity-0 scale-95">
             <div className={`absolute -inset-2 sm:-inset-3 rounded-[20px] sm:rounded-[24px] border pointer-events-none ${t.frame}`} />
-            <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+            <div className="media-shell relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.02]">
               <VideoTag slug={slug} />
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.3))" }} />
             </div>
@@ -226,7 +226,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
 
         <div data-stop-video className="group relative aspect-[4/3] sm:aspect-video lg:aspect-[4/3] w-full max-w-[560px] mx-auto opacity-0 scale-95">
           <div className={`absolute -inset-2 sm:-inset-4 rounded-[20px] sm:rounded-[28px] border pointer-events-none ${t.frame}`} />
-          <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.045]">
+          <div className="media-shell relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-ink transition-transform duration-500 ease-out group-hover:scale-[1.045]">
             <VideoTag slug={slug} />
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.35))" }} />
           </div>

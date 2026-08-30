@@ -37,7 +37,7 @@ export default function RegionHero({
   const fontSize = isSmall ? (title.length > 7 ? 54 : title.length > 5 ? 66 : 96) : title.length > 7 ? 150 : title.length > 5 ? 200 : 240;
 
   return (
-    <section id={id} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
+    <section id={id} className="media-shell relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
       <video autoPlay muted loop playsInline poster={posterUrl(stop.slug)} className="absolute inset-0 h-full w-full object-cover">
         <source src={videoUrl(stop.slug)} type="video/mp4" />
       </video>
