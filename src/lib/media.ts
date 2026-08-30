@@ -48,3 +48,7 @@ export function keyForPoster(poster: string): string {
 // The registered film for a poster, or undefined — lets components render
 // a playing film for CMS entries that have one and a still otherwise.
 export const filmForPoster = (poster: string) => filmByPoster.get(poster);
+
+// Whether a media key has real footage: registered CMS keys must carry a
+// film explicitly; bare demo slugs are presumed to have their bundled mp4.
+export const hasFilm = (key: string) => films.has(key) || !posters.has(key);
