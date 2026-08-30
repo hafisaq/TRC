@@ -59,7 +59,7 @@ export const DESTINATIONS: Destination[] = [
     gate: "AS1",
     statusLabel: "Asia",
     ctaLabel: "Discover Asia →",
-    ctaHref: "/asia"
+    ctaHref: "#tier2-asia-countries"
   },
   {
     id: "tier2-alpine",

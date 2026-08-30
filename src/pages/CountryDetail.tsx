@@ -268,10 +268,10 @@ function CountryDetailInner({
         </a>
         <nav className="mt-3 hidden flex-1 items-center justify-center gap-6 sm:flex sm:justify-end lg:gap-7" aria-label="Page sections">
           <a
-            href="/asia"
+            href="/"
             className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
           >
-            <span>← Asia</span>
+            <span>← Home</span>
             <span className="h-px w-8 bg-gold/45" />
             <span>{page.country}</span>
           </a>

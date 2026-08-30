@@ -3,18 +3,18 @@ import { createRoot } from "react-dom/client";
 import "./styles/main.css";
 import Tier2 from "./pages/Tier2";
 
-const Asia = lazy(() => import("./pages/Asia"));
 const CountryDetailRoute = lazy(() => import("./pages/CountryDetailRoute"));
 
 const path = window.location.pathname.replace(/\/+$/, "");
 const countrySlug = path.match(/^\/asia\/([a-z0-9-]+)$/)?.[1];
+// the standalone /asia region page is gone — home's country strip is the
+// region browser now; old links land there
+if (path === "/asia") {
+  window.location.replace("/#tier2-asia-countries");
+}
 const page = countrySlug ? (
   <Suspense fallback={null}>
     <CountryDetailRoute slug={countrySlug} />
-  </Suspense>
-) : path === "/asia" ? (
-  <Suspense fallback={null}>
-    <Asia />
   </Suspense>
 ) : (
   <Tier2 />
