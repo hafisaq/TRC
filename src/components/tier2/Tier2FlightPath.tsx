@@ -131,8 +131,8 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       <path
         id="tier2-flight-path"
         d={geometry.d}
-        stroke="#e3c682"
-        strokeWidth="1.25"
+        stroke="#c9a24d"
+        strokeWidth={geometry.w >= 1440 ? 2 : 1.5}
         fill="none"
         vectorEffect="non-scaling-stroke"
         strokeLinecap="round"
@@ -146,12 +146,14 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       ))}
 
       <g id="tier2-flight-plane">
+        <g transform={`scale(${geometry.w < 640 ? 0.62 : geometry.w < 1024 ? 0.82 : 1})`}>
         <g transform="rotate(90 12 12) translate(-14 -14) scale(1)">
           <path
             id="tier2-flight-plane-icon"
             fill="#e3c682"
             d="M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z"
           />
+        </g>
         </g>
       </g>
     </svg>
