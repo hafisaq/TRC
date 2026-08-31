@@ -172,7 +172,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
         light: true,
         paragraphs: [
           second?.description ?? `From ${lead?.location ?? stop.country} outward, the collection keeps only the addresses we would send our own families to.`,
-          "Placeholder editorial copy for this chapter — the final text arrives with the client's content, and drops into this layout without design changes."
+          `${group.entries.map((e) => e.name).join(" · ")} — each visited, vetted, and held to the same standard.`
         ]
       }
     ],
@@ -180,27 +180,28 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
       text: `${stop.country} rewards the traveller who arrives with time to spend, not a list to finish.`,
       attribution: "Field notes — The Retreat Collection"
     },
-    days: [
-      { title: "Private arrival", copy: `Met on landing and routed privately to the first stay. The first evening is deliberately unscheduled — arrive, settle, breathe.`, slug: stop.slug, details: ["Met on landing", "Private transfer", "Unscheduled evening"] },
-      { title: "The signature day", copy: `${stop.highlights[0] ?? "A private guide"} sets the pace. Placeholder itinerary copy standing in for the real day-by-day.`, slug: second ? keyForPoster(second.poster) : stop.slug, details: [stop.highlights[0] ?? "Private guide", stop.highlights[1] ?? "Own pace"] },
-      { title: "Further out", copy: "A day beyond the guidebook radius — the kind of detour that only works with a driver, a guide, and no fixed lunch reservation.", slug: "alpine-ridge", details: ["Private driver", "No fixed reservations"] },
-      { title: "At leisure", copy: "Nothing on the calendar until you ask for it. The team stays close; the day stays yours.", slug: "desert-ruins", details: ["Day at leisure", "Team on call"] },
-      { title: "Departure, unhurried", copy: "A late checkout as standard, a quiet transfer, and the route home already smoothed.", slug: stop.slug, details: ["Late checkout", "Smoothed route home"] }
-    ],
+    // signatures: the country's actual stays, one each — their own lead
+    // media and portal-sourced copy. Never demo footage.
+    days: group.entries.slice(0, 5).map((e) => ({
+      title: e.name,
+      copy: e.description ?? `${e.name}, ${e.location} — arranged directly, with the route and the rooms built around the traveller.`,
+      slug: keyForPoster(e.poster),
+      details: e.highlights?.slice(0, 3) ?? [e.location]
+    })),
     essentials: [
       {
         title: "Getting there",
-        copy: `Routed privately from arrival onward — placeholder logistics copy for ${stop.country}, replaced by the real detail with the client's content.`,
+        copy: `Routed privately from arrival onward — the route into ${stop.country} is arranged end to end before departure.`,
         points: [["Arrival", "Met airside"], ["Transfer", "Private"], ["Check-in", "Handled"]]
       },
       {
         title: "When to go",
-        copy: `${stop.season} is the season we plan around — placeholder climate copy standing in for the final guidance.`,
+        copy: `${stop.season} is the season we plan around; the exact week is chosen with you.`,
         points: [["Best season", stop.season], ["Booked ahead", "3–6 months"], ["Flexible", "Always"]]
       },
       {
         title: "Good to know",
-        copy: "The practical notes — currency, timing, what to pack — arrive with the final content and drop into this card without design changes.",
+        copy: "The practical notes — timing, packing, the hours in between — travel with your itinerary, not a guidebook.",
         points: [["Guides", "Resident"], ["Routing", "Custom"], ["Pace", "Yours"]]
       }
     ]
