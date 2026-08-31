@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DotMapHandle } from "../components/tier2/DotMap";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
@@ -8,11 +8,209 @@ import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
 import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized } from "../lib/media";
+import { useNearViewport } from "../lib/useNearViewport";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 // Tracks 0→1 progress through a tall pinned section via live rect
 // measurement (no cached positions to go stale).
+
+// "The stays" as a pinned scroll-glide — the same interaction grammar as
+// the home selectors: the section holds still while vertical scroll slides
+// the rail sideways. Falls back to a plain swipe row on mobile / when the
+// content already fits. Media defers until the section approaches.
+
+// Render-prop gate for inline use inside maps (hooks can't live in loops):
+// a zero-size sentinel marks the spot; children get `near` once the user
+// approaches, deferring poster/film downloads until then.
+function NearGate({ children }: { children: (near: boolean) => React.ReactNode }) {
+  const { ref, near } = useNearViewport<HTMLSpanElement>();
+  return (
+    <>
+      <span ref={ref} aria-hidden="true" />
+      {children(near)}
+    </>
+  );
+}
+
+function StaysRail({
+  entries,
+  country,
+  onOpen,
+  onEnquire
+}: {
+  entries: CatalogEntry[];
+  country: string;
+  onOpen: (e: CatalogEntry) => void;
+  onEnquire: (name: string) => void;
+}) {
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
+  const [isLg, setIsLg] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setIsLg(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  // rAF-eased glide, borrowed from the home country strip
+  useEffect(() => {
+    let maxShift = 0;
+    let target = 0;
+    let current = -1;
+    let raf = 0;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const measure = () => {
+      const inner = innerRef.current;
+      const outer = rowRef.current;
+      if (!inner || !outer || window.innerWidth < 1024) {
+        maxShift = 0;
+        if (inner) inner.style.transform = "";
+        return;
+      }
+      const kids = Array.from(inner.children) as HTMLElement[];
+      if (!kids.length) return;
+      const gap = parseFloat(getComputedStyle(inner).columnGap || "0") || 0;
+      const contentW = kids.reduce((acc, k) => acc + k.offsetWidth, 0) + gap * (kids.length - 1);
+      maxShift = Math.max(0, contentW - outer.clientWidth);
+    };
+    const readTarget = () => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
+      target = clamp(-rect.top / scrollable, 0, 1);
+    };
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const next = reducedMotion ? target : current + (target - current) * 0.14;
+      const settled = Math.abs(next - target) < 0.0004;
+      const value = settled ? target : next;
+      if (value === current) return;
+      current = value;
+      if (maxShift > 0 && innerRef.current) {
+        innerRef.current.style.transform = `translate3d(${-maxShift * current}px, 0, 0)`;
+      }
+    };
+    measure();
+    readTarget();
+    tick();
+    const onResize = () => {
+      measure();
+      readTarget();
+    };
+    window.addEventListener("scroll", readTarget, { passive: true });
+    window.addEventListener("resize", onResize);
+    window.addEventListener("load", onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", readTarget);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", onResize);
+    };
+  }, [entries.length, isLg]);
+
+  // rail films wake once the section is near
+  useEffect(() => {
+    if (!near) return;
+    sectionRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
+      const p = v.play();
+      if (p) p.catch(() => undefined);
+    });
+  }, [near]);
+
+  const pin = isLg && entries.length > 3;
+  const pinHeight = pin ? `${Math.min(120 + entries.length * 35, 300)}svh` : undefined;
+
+  return (
+    <div ref={sectionRef} className="relative" style={{ height: pinHeight }}>
+      <div
+        ref={nearRef}
+        className={pin ? "sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden" : "relative"}
+      >
+        <div data-stop-text className="opacity-0">
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Where you'll stay</div>
+          <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
+            The stays in {country}
+          </h2>
+        </div>
+        <div className="relative mt-10">
+          <div className="pointer-events-none absolute -top-8 right-0 hidden items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 sm:flex">
+            <span>{String(entries.length).padStart(2, "0")} stays</span>
+            <span className="h-px w-8 bg-gold/50" />
+            <span>{pin ? "Scroll ↓" : "Scroll →"}</span>
+          </div>
+          <div
+            ref={rowRef}
+            className={
+              pin
+                ? "overflow-hidden pb-4"
+                : "flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 no-scrollbar"
+            }
+          >
+            <div ref={pin ? innerRef : undefined} className={pin ? "flex gap-6 will-change-transform" : "contents"}>
+              {entries.map((entry, i) => (
+                <div key={entry.name} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
+                  {near && filmForPoster(entry.poster) ? (
+                    <video
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      poster={imgSized(entry.poster, 900)}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                    >
+                      <source src={filmForPoster(entry.poster)} type="video/mp4" />
+                    </video>
+                  ) : near ? (
+                    <img
+                      src={imgSized(entry.poster, 900)}
+                      alt=""
+                      width={1080}
+                      height={608}
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={(e) => e.currentTarget.classList.add("media-ready")}
+                      className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                    />
+                  ) : null}
+                  <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
+                  <div className="absolute top-3 left-3 font-mono text-[9px] uppercase tracking-[0.2em] text-gold-light/85">{String(i + 1).padStart(2, "0")}</div>
+                  <div className="absolute inset-x-0 bottom-0 p-5">
+                    <div className="text-[9px] uppercase tracking-[0.18em] text-gold-light/85">{entry.location}</div>
+                    <div className="mt-1.5 font-serif text-[22px] font-light leading-[1.1] text-white">{entry.name}</div>
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => onOpen(entry)}
+                        className="border-b border-gold-light/60 pb-1 text-[9px] uppercase tracking-[0.2em] text-gold-light transition-colors hover:text-white"
+                      >
+                        Open the dossier
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onEnquire(entry.name)}
+                        className="border-b border-white/40 pb-1 text-[9px] uppercase tracking-[0.2em] text-white/80 transition-colors hover:text-white"
+                      >
+                        Enquire
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function usePinProgress(ref: React.RefObject<HTMLElement | null>) {
   const [p, setP] = useState(0);
   useEffect(() => {
@@ -441,13 +639,13 @@ function CountryDetailInner({
                   </button>
                 </div>
                 <div data-stop-video className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
-                  {hasFilm(ch.slug) ? (
-                    <video muted loop playsInline preload="none" poster={posterUrl(ch.slug)} className="absolute inset-0 h-full w-full object-cover">
+                  <NearGate>{(near) => hasFilm(ch.slug) ? (
+                    <video muted loop playsInline preload="none" poster={near ? posterUrl(ch.slug) : undefined} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(ch.slug)} type="video/mp4" />
                     </video>
                   ) : (
                     <img src={posterUrl(ch.slug, 1100)} alt="" loading="lazy" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                  )}
+                  )}</NearGate>
                 </div>
               </div>
             </section>
@@ -479,75 +677,14 @@ function CountryDetailInner({
         <GallerySection page={page} group={group} />
 
         {/* THE STAYS */}
-        <section id="cd-stays" data-tier2-stop="cd-stays" className="relative w-full overflow-hidden px-5 py-24 sm:px-10 lg:px-16">
+        <section id="cd-stays" data-tier2-stop="cd-stays" className="relative w-full overflow-x-clip px-5 py-24 sm:px-10 lg:px-16">
           <div className="mx-auto max-w-[1280px]">
-            <div data-stop-text className="opacity-0">
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Where you'll stay</div>
-              <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
-                The stays in {page.country}
-              </h2>
-            </div>
-            <div className="relative mt-10">
-              <div className="pointer-events-none absolute -top-8 right-0 hidden items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 sm:flex">
-                <span>{String(group.entries.length).padStart(2, "0")} stays</span>
-                <span className="h-px w-8 bg-gold/50" />
-                <span>Scroll →</span>
-              </div>
-              <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 no-scrollbar">
-              {group.entries.map((entry, i) => (
-                <div key={entry.name} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
-                  {/* film-first: a stay with footage plays it; stills only
-                      when no film exists for the entry */}
-                  {filmForPoster(entry.poster) ? (
-                    <video
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      poster={imgSized(entry.poster, 900)}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                    >
-                      <source src={filmForPoster(entry.poster)} type="video/mp4" />
-                    </video>
-                  ) : (
-                    <img
-                      src={imgSized(entry.poster, 900)}
-                      alt=""
-                      width={1080}
-                      height={608}
-                      loading="lazy"
-                      decoding="async"
-                      onLoad={(e) => e.currentTarget.classList.add("media-ready")}
-                      className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
-                  <div className="absolute top-3 left-3 font-mono text-[9px] uppercase tracking-[0.2em] text-gold-light/85">{String(i + 1).padStart(2, "0")}</div>
-                  <div className="absolute inset-x-0 bottom-0 p-5">
-                    <div className="text-[9px] uppercase tracking-[0.18em] text-gold-light/85">{entry.location}</div>
-                    <div className="mt-1.5 font-serif text-[22px] font-light leading-[1.1] text-white">{entry.name}</div>
-                    <div className="mt-3 flex flex-wrap items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setOpenStay(entry)}
-                        className="border-b border-gold-light/60 pb-1 text-[9px] uppercase tracking-[0.2em] text-gold-light transition-colors hover:text-white"
-                      >
-                        Open the dossier
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleEnquire(entry.name)}
-                        className="border-b border-white/40 pb-1 text-[9px] uppercase tracking-[0.2em] text-white/80 transition-colors hover:text-white"
-                      >
-                        Enquire
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              </div>
-            </div>
+            <StaysRail
+              entries={group.entries}
+              country={page.country}
+              onOpen={(e) => setOpenStay(e)}
+              onEnquire={(name) => handleEnquire(name)}
+            />
 
             {/* other routes in the region */}
             <div className="mt-16 border-t border-navy/12 pt-8">
@@ -620,6 +757,7 @@ function ExpandChapter({
   const ref = useRef<HTMLElement | null>(null);
   const p = usePinProgress(ref);
   const isSmall = useIsSmallScreen();
+  const { ref: gateRef, near } = useNearViewport<HTMLSpanElement>();
 
   const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1); // film opens to full-bleed
   const insetX = (1 - open) * (isSmall ? 8 : 24);
@@ -631,6 +769,7 @@ function ExpandChapter({
 
   return (
     <section ref={ref} id={id} data-tier2-stop={id} className="relative h-[180svh] w-full sm:h-[220svh]">
+      <span ref={gateRef} aria-hidden="true" />
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* the word the film opens over */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center" style={{ opacity: titleOut }}>
@@ -650,8 +789,8 @@ function ExpandChapter({
           className="absolute inset-0"
           style={{ clipPath: `inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${radius}px)` }}
         >
-          <video autoPlay muted loop playsInline preload="metadata" poster={posterUrl(chapter.slug)} className="kenburns absolute inset-0 h-full w-full object-cover">
-            <source src={videoUrl(chapter.slug)} type="video/mp4" />
+          <video autoPlay muted loop playsInline preload={near ? "metadata" : "none"} poster={near ? posterUrl(chapter.slug) : undefined} className="kenburns absolute inset-0 h-full w-full object-cover">
+            {near && <source src={videoUrl(chapter.slug)} type="video/mp4" />}
           </video>
           <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
         </div>
@@ -952,7 +1091,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
           {/* sticky film — follows the day being read */}
           <div className="hidden lg:sticky lg:top-[120px] lg:block">
             <div className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
-              {days.map((day, i) =>
+              <NearGate>{(near) => days.map((day, i) =>
                 hasFilm(day.slug) ? (
                   <video
                     key={day.title}
@@ -962,8 +1101,8 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     muted
                     loop
                     playsInline
-                    preload={i === 0 ? "metadata" : "none"}
-                    poster={posterUrl(day.slug, 1000)}
+                    preload={near && i === 0 ? "metadata" : "none"}
+                    poster={near ? posterUrl(day.slug, 1000) : undefined}
                     className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
                       i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
                     }`}
@@ -984,7 +1123,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     }`}
                   />
                 )
-              )}
+              )}</NearGate>
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="absolute bottom-4 left-4 flex items-center gap-2.5 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
