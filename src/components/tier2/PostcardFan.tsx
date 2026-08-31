@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { useNearViewport } from "../../lib/useNearViewport";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -15,6 +16,7 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 export default function PostcardFan({ region }: { region: Region }) {
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
   const n = region.stops.length;
 
@@ -60,7 +62,7 @@ export default function PostcardFan({ region }: { region: Region }) {
       if (i === active) return;
       document.querySelector<HTMLVideoElement>(`#postcard-${s.id} video`)?.pause();
     });
-  }, [active, region.stops]);
+  }, [active, region.stops, near]);
 
   if (!n) return null;
 
@@ -86,7 +88,7 @@ export default function PostcardFan({ region }: { region: Region }) {
       <span id="tier2-coast-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[88%]">
         <span data-flight-node className="block h-px w-px" />
       </span>
-      <div className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-4 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
+      <div ref={nearRef} className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-4 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* sun-bleached wash + a faint horizon line through the middle */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,#f7f4ee_0%,#eef0ec_55%,#e8ecea_100%)]" />
@@ -145,13 +147,13 @@ export default function PostcardFan({ region }: { region: Region }) {
                 }`}
                 style={{ transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})` }}
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-ink">
-                  {stop.slug && hasFilm(stop.slug) ? (
-                    <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1200)} className="absolute inset-0 h-full w-full object-cover">
+                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink">
+                  {!near ? null : stop.slug && hasFilm(stop.slug) ? (
+                    <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 1200) : undefined} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                     </video>
                   ) : stop.slug ? (
-                    <img src={posterUrl(stop.slug, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+                    <img src={posterUrl(stop.slug, 1200)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   ) : null}
                   <div className={`absolute inset-0 bg-ink/35 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`} />
                   {/* postmark — coords in a dashed ring, like a cancelled stamp */}
@@ -189,9 +191,9 @@ export default function PostcardFan({ region }: { region: Region }) {
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
                 className="block w-[80vw] shrink-0 snap-center border-8 border-white bg-white shadow-[0_18px_50px_rgba(22,36,60,.2)] sm:w-[54vw]"
               >
-                <div className="relative aspect-[16/10] overflow-hidden bg-ink">
-                  {stop.slug && (
-                    <img src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink">
+                  {near && stop.slug && (
+                    <img src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   )}
                   <div className="absolute right-3 top-3 grid h-14 w-14 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center">
                     <div className="font-mono text-[6px] uppercase leading-[1.5] tracking-[0.12em] text-white/90">TRC<br />{stop.coords}</div>

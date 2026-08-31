@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { useNearViewport } from "../../lib/useNearViewport";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -15,6 +16,7 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 export default function CaravanRoute({ region }: { region: Region }) {
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
   const n = region.stops.length;
 
@@ -54,7 +56,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
         v.pause();
       }
     });
-  }, [active, region.stops]);
+  }, [active, region.stops, near]);
 
   if (!n) return null;
 
@@ -87,7 +89,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
         <span data-flight-node className="block h-px w-px" />
       </span>
 
-      <div className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-0 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
+      <div ref={nearRef} className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-0 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* THE SKY — active country's footage, crossfaded */}
         <div aria-hidden="true" className="absolute inset-0">
           {region.stops.map((stop, i) => (
@@ -97,7 +99,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
               className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
               style={{ opacity: active === i ? 1 : 0 }}
             >
-              {stop.slug && hasFilm(stop.slug) ? (
+              {!near ? null : stop.slug && hasFilm(stop.slug) ? (
                 <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1600)} className="absolute inset-0 h-full w-full object-cover">
                   <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                 </video>
@@ -196,10 +198,10 @@ export default function CaravanRoute({ region }: { region: Region }) {
               <a
                 key={stop.id}
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
-                className="relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
+                className="media-shell relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
               >
-                {stop.slug && (
-                  <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+                {near && stop.slug && (
+                  <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.78),rgba(14,13,12,.08)_55%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-5">

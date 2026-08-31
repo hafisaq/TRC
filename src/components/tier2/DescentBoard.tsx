@@ -4,6 +4,7 @@ import type { Region } from "../../data/regions/types";
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { useNearViewport } from "../../lib/useNearViewport";
 
 // The Mountain & Ice country selector — deliberately NOT the Asia strip.
 // Where Asia glides bright cards sideways across cream, this is a dark
@@ -16,6 +17,7 @@ export default function DescentBoard({ region }: { region: Region }) {
   const [active, setActive] = useState(0);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
   const n = region.stops.length;
 
@@ -56,7 +58,7 @@ export default function DescentBoard({ region }: { region: Region }) {
         v.pause();
       }
     });
-  }, [active]);
+  }, [active, near]);
 
   if (!n) return null;
 
@@ -71,7 +73,7 @@ export default function DescentBoard({ region }: { region: Region }) {
       <span id="tier2-alpine-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[90%]">
         <span data-flight-node className="block h-px w-px" />
       </span>
-      <div className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
+      <div ref={nearRef} className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
       {/* footage layer — one media element per country, crossfaded by row */}
       <div aria-hidden="true" className="absolute inset-0">
         {region.stops.map((stop, i) => (
@@ -80,7 +82,7 @@ export default function DescentBoard({ region }: { region: Region }) {
             className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
             style={{ opacity: active === i ? 1 : 0 }}
           >
-            {stop.slug && hasFilm(stop.slug) ? (
+            {!near ? null : stop.slug && hasFilm(stop.slug) ? (
               <video
                 ref={(el) => {
                   videoRefs.current[i] = el;
@@ -177,8 +179,8 @@ export default function DescentBoard({ region }: { region: Region }) {
                     </span>
                     {/* mobile: inline still so the rows aren't blind */}
                     {stop.slug && (
-                      <span className="mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden">
-                        <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      <span className="media-shell mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden">
+                        <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
                       </span>
                     )}
                   </span>
