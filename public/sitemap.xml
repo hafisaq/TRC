@@ -48,4 +48,28 @@
     <loc>__SITE_URL__/alpine/antarctica/</loc>
     <changefreq>monthly</changefreq>
   </url>
+  <url>
+    <loc>__SITE_URL__/coast/italy/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/coast/france/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/coast/greece/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/coast/spain/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/coast/seychelles/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/coast/indonesia/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
