@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
@@ -10,17 +10,41 @@ import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
 // altimeter board: countries stack as huge serif rows beside a ticked
 // altitude rail, and pointing at a row swaps the footage behind the whole
 // section. Vertical, typographic, lit from within — read by headlamp.
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
 export default function DescentBoard({ region }: { region: Region }) {
   const [active, setActive] = useState(0);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const sectionRef = useRef<HTMLElement | null>(null);
 
-  if (!region.stops.length) return null;
+  const n = region.stops.length;
 
-  const wake = (i: number) => {
-    setActive(i);
+  // scroll drives the descent: the section pins and vertical scroll walks
+  // the rows top to bottom (same pattern as the postcard fan and caravan)
+  useEffect(() => {
+    if (!n) return;
+    const readTarget = () => {
+      const section = sectionRef.current;
+      if (!section || window.innerWidth < 1024) return;
+      const rect = section.getBoundingClientRect();
+      const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
+      const progress = clamp(-rect.top / scrollable, 0, 1);
+      setActive(clamp(Math.round(progress * (n - 1)), 0, n - 1));
+    };
+    readTarget();
+    window.addEventListener("scroll", readTarget, { passive: true });
+    window.addEventListener("resize", readTarget);
+    return () => {
+      window.removeEventListener("scroll", readTarget);
+      window.removeEventListener("resize", readTarget);
+    };
+  }, [n]);
+
+  // active row's film wakes; the rest pause
+  useEffect(() => {
     videoRefs.current.forEach((v, j) => {
       if (!v) return;
-      if (j === i) {
+      if (j === active) {
         const source = v.querySelector<HTMLSourceElement>("source[data-src]");
         if (source && !source.src) {
           source.src = source.dataset.src || "";
@@ -32,10 +56,12 @@ export default function DescentBoard({ region }: { region: Region }) {
         v.pause();
       }
     });
-  };
+  }, [active]);
+
+  if (!n) return null;
 
   return (
-    <section id="tier2-alpine-countries" className="relative overflow-hidden bg-ink text-white">
+    <section ref={sectionRef} id="tier2-alpine-countries" className="relative bg-ink text-white lg:h-[300svh]">
       {/* flight-path hold markers: a straight lane down the board's right
           edge, so the plane tracks past the rows instead of drifting
           through them (same pattern as the Asia strip) */}
@@ -45,6 +71,7 @@ export default function DescentBoard({ region }: { region: Region }) {
       <span id="tier2-alpine-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[90%]">
         <span data-flight-node className="block h-px w-px" />
       </span>
+      <div className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
       {/* footage layer — one media element per country, crossfaded by row */}
       <div aria-hidden="true" className="absolute inset-0">
         {region.stops.map((stop, i) => (
@@ -83,7 +110,7 @@ export default function DescentBoard({ region }: { region: Region }) {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.85),transparent_18%,transparent_82%,rgba(14,13,12,.9))]" />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1380px] gap-10 px-5 py-20 sm:px-10 sm:py-24 lg:grid-cols-[auto_1fr] lg:gap-16 lg:px-16">
+      <div className="relative mx-auto grid max-w-[1380px] gap-10 px-5 py-20 sm:px-10 sm:py-24 lg:h-full lg:grid-cols-[auto_1fr] lg:gap-16 lg:px-16 lg:pb-8 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* the altitude rail — ticks, a running line, and the section head
             rotated into it on large screens */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-4 lg:pt-2">
@@ -107,7 +134,7 @@ export default function DescentBoard({ region }: { region: Region }) {
         </div>
 
         <div>
-          <div className="mb-10 sm:mb-12">
+          <div className="mb-10 sm:mb-12 lg:mb-[clamp(12px,3svh,40px)]">
             <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light lg:hidden">Choose your altitude</div>
             <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white lg:mt-0">
               {countWord(region.stops.length)} countries,<br className="sm:hidden" /> from the Alps to the ice
@@ -122,9 +149,7 @@ export default function DescentBoard({ region }: { region: Region }) {
                 <a
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
-                  onMouseEnter={() => wake(i)}
-                  onFocus={() => wake(i)}
-                  className={`group grid grid-cols-[auto_1fr] items-baseline gap-x-5 border-t border-white/[0.09] py-6 transition-colors duration-500 last:border-b sm:grid-cols-[auto_1fr_auto] sm:gap-x-8 sm:py-7 ${
+                  className={`group grid grid-cols-[auto_1fr] items-baseline gap-x-5 border-t border-white/[0.09] py-6 transition-colors duration-500 last:border-b sm:grid-cols-[auto_1fr_auto] sm:gap-x-8 sm:py-7 lg:py-[clamp(10px,2.4svh,26px)] ${
                     isActive ? "" : "opacity-100"
                   }`}
                 >
@@ -144,7 +169,7 @@ export default function DescentBoard({ region }: { region: Region }) {
                       {stop.eyebrow}
                     </span>
                     <span
-                      className={`mt-1 block font-serif text-[clamp(30px,5.2vw,58px)] font-light leading-[1.02] transition-all duration-500 ${
+                      className={`mt-1 block font-serif text-[clamp(30px,5.2vw,58px)] font-light leading-[1.02] lg:text-[clamp(26px,min(4.6vw,6.4svh),56px)] transition-all duration-500 ${
                         isActive ? "translate-x-1.5 text-white" : "text-white/45"
                       }`}
                     >
@@ -175,6 +200,7 @@ export default function DescentBoard({ region }: { region: Region }) {
             })}
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
