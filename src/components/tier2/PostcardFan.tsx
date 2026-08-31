@@ -86,7 +86,7 @@ export default function PostcardFan({ region }: { region: Region }) {
       <span id="tier2-coast-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[88%]">
         <span data-flight-node className="block h-px w-px" />
       </span>
-      <div className="relative flex flex-col justify-center overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
+      <div className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-4 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* sun-bleached wash + a faint horizon line through the middle */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,#f7f4ee_0%,#eef0ec_55%,#e8ecea_100%)]" />

@@ -87,7 +87,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
         <span data-flight-node className="block h-px w-px" />
       </span>
 
-      <div className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:py-0">
+      <div className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-0 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* THE SKY — active country's footage, crossfaded */}
         <div aria-hidden="true" className="absolute inset-0">
           {region.stops.map((stop, i) => (
@@ -110,7 +110,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.78)_0%,rgba(14,13,12,.25)_38%,rgba(14,13,12,.15)_60%,rgba(14,13,12,.86)_100%)]" />
         </div>
 
-        <div className="relative px-5 sm:px-10 lg:px-16 lg:pt-16">
+        <div className="relative px-5 sm:px-10 lg:px-16">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">The caravan route</div>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white">
