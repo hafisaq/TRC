@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm } from "../../lib/media";
 
@@ -13,6 +13,7 @@ const countWord = (n: number) => WORDS[n] ?? String(n);
 // row of country cards horizontally past the viewport. Hovering a card wakes
 // its footage; clicking flies you to that country's own page.
 export default function CountryStrip({ region }: { region: Region }) {
+  const [near, setNear] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const rowRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -104,6 +105,7 @@ export default function CountryStrip({ region }: { region: Region }) {
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         io.disconnect();
+        setNear(true);
         section.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
           const source = video.querySelector<HTMLSourceElement>("source[data-src]");
           if (source && !source.src) {
@@ -184,11 +186,11 @@ export default function CountryStrip({ region }: { region: Region }) {
                   {!stop.slug ? (
                     <div className="absolute inset-0 bg-ink" />
                   ) : hasFilm(stop.slug) ? (
-                    <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 900)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
+                    <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 900) : undefined} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                     </video>
                   ) : (
-                    <img src={posterUrl(stop.slug, 900)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" />
+                    near ? <img src={posterUrl(stop.slug, 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" /> : <span className="absolute inset-0" />
                   )}
                   {/* lighter than before — just enough for legibility */}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.72),rgba(14,13,12,.06)_52%,rgba(14,13,12,.16))] transition-opacity duration-500 group-hover:opacity-75" />

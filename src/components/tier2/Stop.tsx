@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import { posterUrl, videoUrl } from "../../lib/media";
+import { useNearViewport } from "../../lib/useNearViewport";
 
 export type StopTheme = "gold" | "white";
 export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
@@ -70,8 +71,11 @@ function Meta({ season, highlights, t }: { index: number; coords: string; season
 }
 
 function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; className?: string; posterW?: number }) {
+  // the poster only downloads once the stop is approaching the viewport —
+  // the media-shell shimmer (on the wrapping container) covers the wait
+  const { ref, near } = useNearViewport<HTMLVideoElement>();
   return (
-    <video muted loop playsInline preload="none" poster={posterUrl(slug, posterW)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+    <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
       <source data-src={videoUrl(slug)} type="video/mp4" />
     </video>
   );
