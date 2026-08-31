@@ -9,7 +9,9 @@ import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
 import { DESTINATIONS, flightPathStops } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
+import DescentBoard from "../components/tier2/DescentBoard";
 import { ASIA } from "../data/regions/asia";
+import { ALPINE } from "../data/regions/alpine";
 
 // The loader's night sky: deterministic pseudo-random star placements (a
 // seeded hash, not Math.random, so every visit renders the same sky and
@@ -155,6 +157,9 @@ export default function Tier2() {
             />
             {/* right after the Asia stop: the scroll-glide country selector */}
             {s.id === "tier2-asia" && <CountryStrip region={ASIA} />}
+            {/* after the Mountain & Ice stop: the descent board — its own
+                idiom, dark and vertical (renders only once CMS content is in) */}
+            {s.id === "tier2-alpine" && <DescentBoard region={ALPINE} />}
           </div>
         ))}
         {/* inside main so the journey's scroll range — and the flight
