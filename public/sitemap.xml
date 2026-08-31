@@ -24,4 +24,28 @@
     <loc>__SITE_URL__/asia/india/</loc>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>__SITE_URL__/asia/malaysia/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/alpine/switzerland/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/alpine/france/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/alpine/italy/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/alpine/finland/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/alpine/antarctica/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>

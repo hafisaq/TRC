@@ -7,6 +7,7 @@
 // in lib/media.ts, so posters/films become CDN-managed transparently.
 import { DESTINATIONS, type Destination } from "../data/tier2Destinations";
 import { ASIA } from "../data/regions/asia";
+import { ALPINE } from "../data/regions/alpine";
 import { setCountryPage, type CountryPageData } from "../data/regions/countryContent";
 import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../data/regions/types";
 import { registerMedia } from "./media";
@@ -27,8 +28,8 @@ const QUERY = `{
     layout, mapPos, interest, gate, statusLabel, ctaLabel, ctaHref,
     "media": ${MEDIA_PROJ}
   },
-  "region": *[_type=="region" && slug.current=="asia"][0]{
-    title, intro, focus,
+  "regions": *[_type=="region"]{
+    "slug": slug.current, title, intro, focus,
     stops[]{
       country, eyebrow, title, copy, coords, season, highlights, mapPos, theme,
       "media": ${MEDIA_PROJ}
@@ -73,7 +74,7 @@ export async function hydrateFromCms(): Promise<boolean> {
     `?query=${encodeURIComponent(QUERY)}&perspective=published`;
   let data: {
     destinations?: Array<Record<string, unknown> & { _id: string; media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
-    region?: Record<string, unknown> | null;
+    regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
   };
   try {
@@ -124,27 +125,28 @@ export async function hydrateFromCms(): Promise<boolean> {
       }
     }
 
-    // ---- the Asia region ----
-    const r = data.region as
-      | {
+    // ---- regions (Asia, Mountain & Ice, ...) — each maps into its
+    // bundled container in place ----
+    const REGION_TARGETS = { asia: ASIA, alpine: ALPINE } as const;
+    for (const r of (data.regions ?? []) as Array<{
+          slug?: string;
           title?: string;
           intro?: string;
           focus?: { cx: number; cy: number; zoom: number };
           stops?: Array<Record<string, unknown> & { media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
           catalog?: Array<{ id?: string; label?: string; entries?: Array<Record<string, unknown> & { media?: Media; gallery?: Media[] }> }>;
-        }
-      | null
-      | undefined;
-    if (r) {
-      if (r.title) ASIA.title = r.title;
-      if (r.intro) ASIA.intro = r.intro;
-      if (r.focus) ASIA.focus = r.focus;
+        }>) {
+      const target = REGION_TARGETS[(r.slug ?? "") as keyof typeof REGION_TARGETS];
+      if (!target) continue;
+      if (r.title) target.title = typeof r.title === "string" ? r.title : `${(r.title as TitlePair).line1 ?? ""} ${(r.title as TitlePair).line2 ?? ""}`.trim();
+      if (r.intro) target.intro = r.intro;
+      if (r.focus) target.focus = r.focus;
       if (r.stops?.length) {
         const stops: RegionStop[] = r.stops.map((s) => {
           const country = (s.country as string) ?? "";
-          const bundled = ASIA.stops.find((b) => b.country.toLowerCase() === country.toLowerCase());
+          const bundled = target.stops.find((b) => b.country.toLowerCase() === country.toLowerCase());
           return {
-            id: bundled?.id ?? `asia-${slugify(country)}`,
+            id: bundled?.id ?? `${target.slug}-${slugify(country)}`,
             mapPos: [s.mapPos?.x ?? 0.5, s.mapPos?.y ?? 0.5],
             country,
             eyebrow: (s.eyebrow as string) ?? "",
@@ -159,7 +161,7 @@ export async function hydrateFromCms(): Promise<boolean> {
             theme: ((s.theme as string) ?? bundled?.theme ?? "gold") as RegionStop["theme"]
           };
         });
-        ASIA.stops.splice(0, ASIA.stops.length, ...stops);
+        target.stops.splice(0, target.stops.length, ...stops);
       }
       if (r.catalog?.length) {
         const groups: CatalogGroup[] = r.catalog.map((g) => ({
@@ -189,7 +191,7 @@ export async function hydrateFromCms(): Promise<boolean> {
             };
           })
         }));
-        ASIA.catalog.splice(0, ASIA.catalog.length, ...groups);
+        target.catalog.splice(0, target.catalog.length, ...groups);
       }
     }
 
