@@ -58,13 +58,18 @@ export default function Tier2() {
   // cream strip, without the hold ever becoming the nav's "active stop".
   // Built at render time (after CMS hydration), inserted after Asia by id.
   const animationStops = useMemo(() => {
-    const asiaIdx = DESTINATIONS.findIndex((d) => d.id === "tier2-asia");
-    const cut = asiaIdx >= 0 ? asiaIdx + 1 : Math.min(2, DESTINATIONS.length);
-    return [
-      ...DESTINATIONS.slice(0, cut),
-      { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] as [number, number], theme: "white" as const, coords: "", passive: true },
-      ...DESTINATIONS.slice(cut)
-    ];
+    const holds: Record<string, { id: string; mapPos: [number, number] }> = {
+      "tier2-asia": { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] },
+      "tier2-alpine": { id: "tier2-alpine-hold-in", mapPos: [0.5, 0.3] },
+      "tier2-bali": { id: "tier2-coast-hold-in", mapPos: [0.52, 0.48] }
+    };
+    const out: typeof DESTINATIONS extends Array<infer T> ? Array<T | { id: string; mapPos: [number, number]; theme: "white"; coords: string; passive: true }> : never = [];
+    for (const d of DESTINATIONS) {
+      out.push(d);
+      const h = holds[d.id];
+      if (h) out.push({ id: h.id, mapPos: h.mapPos, theme: "white" as const, coords: "", passive: true });
+    }
+    return out;
   }, []);
 
   useTier2Animations(dotMapRef, animationStops, {

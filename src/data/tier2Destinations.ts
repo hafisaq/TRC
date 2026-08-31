@@ -140,14 +140,23 @@ export const flightStops = () => DESTINATIONS.map((s) => ({ id: s.id, theme: s.t
 // pinned country strip) is inserted after the Asia stop BY ID, so extra
 // CMS-added stops don't shift it.
 export const flightPathStops = () => {
-  const stops = flightStops();
-  const asiaIdx = stops.findIndex((s) => s.id === "tier2-asia");
-  const cut = asiaIdx >= 0 ? asiaIdx + 1 : Math.min(2, stops.length);
-  return [
-    ...stops.slice(0, cut),
-    { id: "tier2-asia-hold-in", theme: "white" as const, coords: "" },
-    { id: "tier2-asia-hold-out", theme: "white" as const, coords: "" },
-    ...stops.slice(cut),
-    { id: "tier2-enquire", theme: DESTINATIONS[DESTINATIONS.length - 1].theme, coords: "" }
-  ];
+  // every region selector pinned after a stop gets a hold pair — two
+  // anchors sharing an x give the path a dead-straight lane through the
+  // tall section instead of the plane drifting across its content
+  const holdAfter: Record<string, string> = {
+    "tier2-asia": "tier2-asia",
+    "tier2-alpine": "tier2-alpine",
+    "tier2-bali": "tier2-coast"
+  };
+  const out: Array<{ id: string; theme: "gold" | "white"; coords: string }> = [];
+  for (const s of flightStops()) {
+    out.push(s);
+    const hold = holdAfter[s.id];
+    if (hold) {
+      out.push({ id: `${hold}-hold-in`, theme: "white", coords: "" });
+      out.push({ id: `${hold}-hold-out`, theme: "white", coords: "" });
+    }
+  }
+  out.push({ id: "tier2-enquire", theme: DESTINATIONS[DESTINATIONS.length - 1].theme, coords: "" });
+  return out;
 };

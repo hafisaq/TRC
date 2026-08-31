@@ -78,6 +78,14 @@ export default function PostcardFan({ region }: { region: Region }) {
 
   return (
     <section ref={sectionRef} id="tier2-coast-countries" className="relative bg-cream-deep text-navy lg:h-[280svh]">
+      {/* flight-path hold markers: the plane holds a straight lane at the
+          right edge while the scroll deals the postcards */}
+      <span id="tier2-coast-hold-in" aria-hidden="true" className="absolute right-[6vw] top-[12%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
+      <span id="tier2-coast-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[88%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
       <div className="relative flex flex-col justify-center overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
         {/* sun-bleached wash + a faint horizon line through the middle */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
