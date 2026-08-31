@@ -146,7 +146,8 @@ export const flightPathStops = () => {
   const holdAfter: Record<string, string> = {
     "tier2-asia": "tier2-asia",
     "tier2-alpine": "tier2-alpine",
-    "tier2-bali": "tier2-coast"
+    "tier2-bali": "tier2-coast",
+    "tier2-desert": "tier2-desert"
   };
   const out: Array<{ id: string; theme: "gold" | "white"; coords: string }> = [];
   for (const s of flightStops()) {

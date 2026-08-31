@@ -72,4 +72,24 @@
     <loc>__SITE_URL__/coast/indonesia/</loc>
     <changefreq>monthly</changefreq>
   </url>
+  <url>
+    <loc>__SITE_URL__/desert/oman/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/desert/uae/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/desert/qatar/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/desert/saudi-arabia/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>__SITE_URL__/desert/morocco/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
