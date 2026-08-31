@@ -36,6 +36,15 @@ export default function DescentBoard({ region }: { region: Region }) {
 
   return (
     <section id="tier2-alpine-countries" className="relative overflow-hidden bg-ink text-white">
+      {/* flight-path hold markers: a straight lane down the board's right
+          edge, so the plane tracks past the rows instead of drifting
+          through them (same pattern as the Asia strip) */}
+      <span id="tier2-alpine-hold-in" aria-hidden="true" className="absolute right-[6vw] top-[10%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
+      <span id="tier2-alpine-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[90%]">
+        <span data-flight-node className="block h-px w-px" />
+      </span>
       {/* footage layer — one media element per country, crossfaded by row */}
       <div aria-hidden="true" className="absolute inset-0">
         {region.stops.map((stop, i) => (
