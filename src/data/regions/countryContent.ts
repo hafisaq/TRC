@@ -221,6 +221,12 @@ export function getCountryPage(region: Region, slug: string) {
   const group = region.catalog.find((g) => g.id === slug);
   const stop = region.stops.find((s) => s.country.toLowerCase() === group?.label.toLowerCase());
   if (!group || !stop) return null;
-  const page = CMS_PAGES[slug] ?? AUTHORED[slug] ?? generatePage(stop, group);
+  // Group ids repeat across regions (alpine/france vs coast/france), but
+  // CMS pages are keyed by slug alone — only apply one whose country
+  // matches THIS region's stop, so a page can never bleed into the wrong
+  // continent's route.
+  const cms = CMS_PAGES[slug];
+  const cmsFits = cms && cms.country.toLowerCase() === stop.country.toLowerCase();
+  const page = (cmsFits ? cms : undefined) ?? AUTHORED[slug] ?? generatePage(stop, group);
   return { group, stop, page };
 }
