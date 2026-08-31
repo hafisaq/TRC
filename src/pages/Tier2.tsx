@@ -10,8 +10,10 @@ import { scrollToHash } from "../lib/scroll";
 import { DESTINATIONS, flightPathStops } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
 import DescentBoard from "../components/tier2/DescentBoard";
+import PostcardFan from "../components/tier2/PostcardFan";
 import { ASIA } from "../data/regions/asia";
 import { ALPINE } from "../data/regions/alpine";
+import { COAST } from "../data/regions/coast";
 
 // The loader's night sky: deterministic pseudo-random star placements (a
 // seeded hash, not Math.random, so every visit renders the same sky and
@@ -160,6 +162,8 @@ export default function Tier2() {
             {/* after the Mountain & Ice stop: the descent board — its own
                 idiom, dark and vertical (renders only once CMS content is in) */}
             {s.id === "tier2-alpine" && <DescentBoard region={ALPINE} />}
+            {/* after the Coast & Islands stop: the postcard fan */}
+            {s.id === "tier2-bali" && <PostcardFan region={COAST} />}
           </div>
         ))}
         {/* inside main so the journey's scroll range — and the flight

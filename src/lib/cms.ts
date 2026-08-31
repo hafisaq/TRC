@@ -8,6 +8,7 @@
 import { DESTINATIONS, type Destination } from "../data/tier2Destinations";
 import { ASIA } from "../data/regions/asia";
 import { ALPINE } from "../data/regions/alpine";
+import { COAST } from "../data/regions/coast";
 import { setCountryPage, type CountryPageData } from "../data/regions/countryContent";
 import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../data/regions/types";
 import { registerMedia } from "./media";
@@ -127,7 +128,7 @@ export async function hydrateFromCms(): Promise<boolean> {
 
     // ---- regions (Asia, Mountain & Ice, ...) — each maps into its
     // bundled container in place ----
-    const REGION_TARGETS = { asia: ASIA, alpine: ALPINE } as const;
+    const REGION_TARGETS = { asia: ASIA, alpine: ALPINE, coast: COAST } as const;
     for (const r of (data.regions ?? []) as Array<{
           slug?: string;
           title?: string;

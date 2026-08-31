@@ -18,7 +18,9 @@ const routes = [
   "tier2", "asia",
   "asia/maldives", "asia/thailand", "asia/sri-lanka", "asia/india", "asia/malaysia",
   "alpine",
-  "alpine/switzerland", "alpine/france", "alpine/italy", "alpine/finland", "alpine/antarctica"
+  "alpine/switzerland", "alpine/france", "alpine/italy", "alpine/finland", "alpine/antarctica",
+  "coast",
+  "coast/italy", "coast/france", "coast/greece", "coast/spain", "coast/seychelles", "coast/indonesia"
 ];
 
 if (!existsSync(src)) {
