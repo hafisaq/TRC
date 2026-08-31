@@ -279,6 +279,33 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         gsap.set(path, { strokeDasharray: length, strokeDashoffset: prefersReducedMotion ? 0 : length, opacity: 1 });
         gsap.set(plane, { opacity: 1 });
 
+        // Scroll is linear in document Y, but motionPath progress is linear
+        // in ARC LENGTH — long horizontal excursions (map wiggles, the jump
+        // to a section's straight lane) make arc length run ahead of Y, so
+        // late in the journey the plane rides a segment whose Y is a whole
+        // viewport above where the user is looking. Build a Y→arc-fraction
+        // lookup (the path only ever descends, so Y is monotonic) and drive
+        // the plane by the Y the scroll implies instead.
+        const SAMPLES = 512;
+        const sampleY: number[] = new Array(SAMPLES + 1);
+        for (let i = 0; i <= SAMPLES; i++) {
+          sampleY[i] = path.getPointAtLength((i / SAMPLES) * length).y;
+        }
+        const startY = sampleY[0];
+        const endY = sampleY[SAMPLES];
+        const fractionAtY = (y: number) => {
+          if (y <= startY) return 0;
+          if (y >= endY) return 1;
+          let lo = 0, hi = SAMPLES;
+          while (hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            if (sampleY[mid] < y) lo = mid;
+            else hi = mid;
+          }
+          const span = sampleY[hi] - sampleY[lo] || 1;
+          return (lo + (y - sampleY[lo]) / span) / SAMPLES;
+        };
+
         const planeTween = gsap.to(plane, {
           motionPath: { path, align: path, autoRotate: true, alignOrigin: [0.5, 0.5] },
           duration: 1,
@@ -343,7 +370,10 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           let pulsed = false;
           const applyProgress = (progress: number) => {
             options.onProgressChange?.(progress);
-            const flightP = Math.min(1, progress / LAND_AT);
+            const scrollP = Math.min(1, progress / LAND_AT);
+            // where the scroll says the plane should BE, in document Y —
+            // then convert to the arc fraction that actually sits there
+            const flightP = fractionAtY(startY + scrollP * (endY - startY));
             gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
             planeTween.progress(flightP);
 
