@@ -151,7 +151,9 @@ export async function hydrateFromCms(): Promise<boolean> {
             title: pair(s.title, [country, ""]),
             copy: (s.copy as string) ?? "",
             coords: (s.coords as string) ?? "",
-            slug: mediaKey(s.media, bundled?.slug ?? "bali-coast"),
+            // unknown countries get NO fallback footage — a demo slug here would
+            // play watermarked placeholder film on the strip card
+            slug: mediaKey(s.media, bundled?.slug ?? ""),
             season: (s.season as string) ?? "",
             highlights: (s.highlights as string[]) ?? [],
             theme: ((s.theme as string) ?? bundled?.theme ?? "gold") as RegionStop["theme"]
@@ -174,7 +176,7 @@ export async function hydrateFromCms(): Promise<boolean> {
             return {
               name: (e.name as string) ?? "",
               location: (e.location as string) ?? "",
-              poster: e.media?.poster ?? `/media/poster/bali-coast.jpg`,
+              poster: e.media?.poster ?? gallery[0] ?? "",
               ...(e.description ? { description: e.description as string } : {}),
               ...(e.coordinates ? { coordinates: e.coordinates as string } : {}),
               ...(e.season ? { season: e.season as string } : {}),
