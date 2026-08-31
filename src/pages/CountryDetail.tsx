@@ -356,6 +356,22 @@ function CountryDetailInner({
               </mask>
             </defs>
             <rect width="100%" height="100%" fill="rgba(14,13,12,0.72)" mask={`url(#${maskId})`} />
+            {/* hairline outline so the cut-out name reads even when the
+                footage inside the letters runs dark or busy */}
+            <text
+              x={heroTextX}
+              y={heroTextY}
+              textAnchor="middle"
+              fontFamily="var(--font-serif)"
+              fontWeight="300"
+              fontSize={heroFontSize}
+              letterSpacing="2"
+              fill="none"
+              stroke="rgba(227,198,130,0.45)"
+              strokeWidth="1"
+            >
+              {page.country.toUpperCase()}
+            </text>
           </svg>
           <div
             className="pointer-events-none absolute inset-x-0 top-[58%] flex flex-col items-center px-5 text-center sm:top-[62%]"
