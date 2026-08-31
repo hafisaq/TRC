@@ -20,7 +20,9 @@ const routes = [
   "alpine",
   "alpine/switzerland", "alpine/france", "alpine/italy", "alpine/finland", "alpine/antarctica",
   "coast",
-  "coast/italy", "coast/france", "coast/greece", "coast/spain", "coast/seychelles", "coast/indonesia"
+  "coast/italy", "coast/france", "coast/greece", "coast/spain", "coast/seychelles", "coast/indonesia",
+  "desert",
+  "desert/oman", "desert/uae", "desert/qatar", "desert/saudi-arabia", "desert/morocco"
 ];
 
 if (!existsSync(src)) {
