@@ -181,7 +181,9 @@ export default function CountryStrip({ region }: { region: Region }) {
                   onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
                   onMouseLeave={(e) => wakeVideo(e.currentTarget, false)}
                 >
-                  {hasFilm(stop.slug) ? (
+                  {!stop.slug ? (
+                    <div className="absolute inset-0 bg-ink" />
+                  ) : hasFilm(stop.slug) ? (
                     <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 900)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                     </video>
