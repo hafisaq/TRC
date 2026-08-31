@@ -37,7 +37,7 @@ const QUERY = `{
       id, label,
       entries[]->{
         name, location, description, coordinates, season, highlights,
-        facts[]{label, value}, assets[]{title, category},
+        facts[]{label, value}, assets[]{title, category, "url": file.asset->url},
         "media": ${MEDIA_PROJ},
         "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url}
       }
