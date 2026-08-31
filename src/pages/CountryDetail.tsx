@@ -813,25 +813,29 @@ function StayDossier({
               ))}
             </div>
 
-            {/* the library, as content */}
-            {entry.assets?.length ? (
+            {/* brochures — only entries carrying a real file render, as
+                downloads (?dl= makes the Sanity CDN send an attachment) */}
+            {entry.assets?.filter((a) => a.url).length ? (
               <div className="moment-in moment-in-3 mt-8">
-                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">In the library for this stay</div>
+                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">Brochures</div>
                 <div className="mt-4 grid gap-y-3">
-                  {entry.assets.map((asset, i) => (
-                    <div key={asset.title + i} className="flex items-baseline gap-4 border-b border-white/[0.07] pb-3">
+                  {entry.assets.filter((a) => a.url).map((asset, i) => (
+                    <a
+                      key={asset.title + i}
+                      href={`${asset.url}?dl=${encodeURIComponent(asset.title.replace(/[^\w &+.-]+/g, " ").trim())}.pdf`}
+                      className="group/dl flex items-baseline gap-4 border-b border-white/[0.07] pb-3 transition-colors"
+                    >
                       <span className="shrink-0 font-mono text-[9px] text-gold-light/60">{String(i + 1).padStart(2, "0")}</span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13px] font-light text-white/85">{asset.title}</div>
-                        <div className="text-[8.5px] uppercase tracking-[0.16em] text-white/40">{asset.category}</div>
+                        <div className="truncate text-[13px] font-light text-white/85 transition-colors group-hover/dl:text-gold-light">{asset.title}</div>
+                        <div className="text-[8.5px] uppercase tracking-[0.16em] text-white/40">{asset.category} · PDF</div>
                       </div>
-                      <span className="shrink-0 font-mono text-[7.5px] uppercase tracking-[0.18em] text-gold-light/45">On file</span>
-                    </div>
+                      <span className="shrink-0 font-mono text-[7.5px] uppercase tracking-[0.18em] text-gold-light/45 transition-colors group-hover/dl:text-gold-light">
+                        Download ↓
+                      </span>
+                    </a>
                   ))}
                 </div>
-                <p className="mt-4 text-[11px] font-light italic text-white/40">
-                  Full material is shared as part of your enquiry — nothing to download, nothing to chase.
-                </p>
               </div>
             ) : null}
 

@@ -16,7 +16,8 @@ export const stay = defineType({
     defineField({ name: 'facts', type: 'array', of: [{ type: 'fact' }] }),
     defineField({ name: 'gallery', type: 'array', of: [{ type: 'mediaSlot' }] }),
     defineField({
-      name: 'assets', title: 'Library (advisor material on file)', type: 'array',
+      name: 'assets', title: 'Brochures & downloads', type: 'array',
+      description: 'Entries with a file render as downloads on the stay dossier; entries without one are not shown.',
       of: [{
         type: 'object',
         fields: [
@@ -26,6 +27,7 @@ export const stay = defineType({
             options: { list: ['Brochures', 'Fact Sheets', 'Images', 'Presentations', 'Newsletter', 'Rates & Offers', 'Videos'] },
             validation: (r) => r.required(),
           }),
+          defineField({ name: 'file', title: 'Downloadable file (PDF)', type: 'file', options: { accept: 'application/pdf' } }),
         ],
         preview: { select: { title: 'title', subtitle: 'category' } },
       }],
