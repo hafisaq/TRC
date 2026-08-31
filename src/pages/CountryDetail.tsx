@@ -343,9 +343,13 @@ function CountryDetailInner({
 
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
-          <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
-            <source src={videoUrl(page.heroSlug)} type="video/mp4" />
-          </video>
+          {hasFilm(page.heroSlug) ? (
+            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
+              <source src={videoUrl(page.heroSlug)} type="video/mp4" />
+            </video>
+          ) : (
+            <img src={posterUrl(page.heroSlug)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          )}
           <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
               <mask id={maskId}>
@@ -1378,7 +1382,9 @@ function GallerySection({
     // film frames — the hero and each day of the journey carry footage
     [page.heroSlug, ...page.days.map((d) => d.slug)].forEach((slug) => {
       const poster = posterUrl(slug);
-      map.set(poster, { poster, video: videoUrl(slug) });
+      // only attach footage that exists — a 404 video source blanks its
+      // own poster in the lightbox
+      map.set(poster, hasFilm(slug) ? { poster, video: videoUrl(slug) } : { poster });
     });
     // stills from the stays' galleries (skip any already present as film)
     group.entries.forEach((e) => {
