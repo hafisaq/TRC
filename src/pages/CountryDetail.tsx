@@ -1534,6 +1534,12 @@ function GallerySection({
     return [...map.values()];
   }, [page, group]);
   const [open, setOpen] = useState<number | null>(null);
+  // the gallery opens collapsed: one rhythm-cycle of frames as a teaser,
+  // the full contact sheet on request
+  const [expanded, setExpanded] = useState(false);
+  const PREVIEW = 6;
+  const collapsible = items.length > PREVIEW;
+  const shown = expanded || !collapsible ? items : items.slice(0, PREVIEW);
 
   useEffect(() => {
     if (open === null) return;
@@ -1598,8 +1604,9 @@ function GallerySection({
             </div>
           </div>
 
-          <div className="mt-10 grid grid-cols-2 gap-3 [grid-auto-flow:dense] auto-rows-[130px] md:grid-cols-6 md:auto-rows-[168px] md:gap-4">
-            {items.map((item, i) => (
+          <div className="relative mt-10">
+          <div className="grid grid-cols-2 gap-3 [grid-auto-flow:dense] auto-rows-[130px] md:grid-cols-6 md:auto-rows-[168px] md:gap-4">
+            {shown.map((item, i) => (
               <button
                 key={item.poster}
                 type="button"
@@ -1652,6 +1659,39 @@ function GallerySection({
               </button>
             ))}
           </div>
+
+          {/* collapsed: a soft veil over the teaser row + the way in */}
+          {collapsible && !expanded && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-44 items-end justify-center bg-[linear-gradient(180deg,rgba(243,239,231,0),rgba(243,239,231,.88)_62%,#f3efe7_96%)] pb-1">
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="pointer-events-auto group flex items-center gap-3 border border-gold/50 bg-cream/80 px-6 py-3 text-[9.5px] uppercase tracking-[0.24em] text-gold-deep shadow-[0_14px_40px_rgba(22,36,60,.14)] backdrop-blur-sm transition-colors duration-300 hover:border-gold hover:bg-cream"
+              >
+                Open the gallery
+                <span className="font-mono text-[8.5px] text-navy/50">{String(items.length).padStart(2, "0")} frames</span>
+                <span className="transition-transform duration-300 group-hover:translate-y-0.5">↓</span>
+              </button>
+            </div>
+          )}
+          </div>
+
+          {/* expanded: fold it back up, returning the reader to the top */}
+          {collapsible && expanded && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setExpanded(false);
+                  document.getElementById("cd-gallery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="group flex items-center gap-3 border border-navy/25 px-6 py-3 text-[9.5px] uppercase tracking-[0.24em] text-navy/70 transition-colors duration-300 hover:border-gold hover:text-gold-deep"
+              >
+                Close the gallery
+                <span className="transition-transform duration-300 group-hover:-translate-y-0.5">↑</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
