@@ -121,7 +121,7 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
   return (
     <svg
       id="tier2-flight-svg"
-      className="absolute top-0 left-0 z-[2] pointer-events-none opacity-55 sm:opacity-100"
+      className="absolute top-0 left-0 z-[2] pointer-events-none"
       width={geometry.w}
       height={geometry.h}
       viewBox={`0 0 ${geometry.w} ${geometry.h}`}
