@@ -9,6 +9,8 @@ import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
 import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized } from "../lib/media";
 import { useNearViewport } from "../lib/useNearViewport";
+import { t } from "../lib/i18n";
+import LanguageSwitch from "../components/tier2/LanguageSwitch";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -134,14 +136,14 @@ function StaysRail({
         className={pin ? "sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden" : "relative"}
       >
         <div data-stop-text className="opacity-0">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Where you'll stay</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.whereStay")}</div>
           <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
-            The stays in {country}
+            {t("page.staysIn", { country })}
           </h2>
         </div>
         <div className="relative mt-10">
           <div className="pointer-events-none absolute -top-8 right-0 hidden items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 sm:flex">
-            <span>{String(entries.length).padStart(2, "0")} stays</span>
+            <span>{String(entries.length).padStart(2, "0")} {t("page.staysCount")}</span>
             <span className="h-px w-8 bg-gold/50" />
             <span>{pin ? "Scroll ↓" : "Scroll →"}</span>
           </div>
@@ -190,14 +192,14 @@ function StaysRail({
                         onClick={() => onOpen(entry)}
                         className="border-b border-gold-light/60 pb-1 text-[9px] uppercase tracking-[0.2em] text-gold-light transition-colors hover:text-white"
                       >
-                        Open the dossier
+                        {t("dossier.open")}
                       </button>
                       <button
                         type="button"
                         onClick={() => onEnquire(entry.name)}
                         className="border-b border-white/40 pb-1 text-[9px] uppercase tracking-[0.2em] text-white/80 transition-colors hover:text-white"
                       >
-                        Enquire
+                        {t("dossier.enquire")}
                       </button>
                     </div>
                   </div>
@@ -316,12 +318,12 @@ function CountryDetailInner({
   // Scroll-spy for the sticky section chips (White Desert's in-page nav).
   const sections = useMemo(
     () => [
-      { id: heroId, label: "Overview" },
+      { id: heroId, label: t("page.overview") },
       ...page.chapters.map((ch, i) => ({ id: `cd-ch-${i}`, label: ch.navLabel })),
-      { id: "cd-day-0", label: "Signatures" },
-      { id: "cd-essentials", label: "Essentials" },
-      { id: "cd-gallery", label: "Gallery" },
-      { id: "cd-stays", label: "The Stays" }
+      { id: "cd-day-0", label: t("page.signatures") },
+      { id: "cd-essentials", label: t("page.essentials") },
+      { id: "cd-gallery", label: t("page.gallery") },
+      { id: "cd-stays", label: t("page.theStays") }
     ],
     [page]
   );
@@ -470,7 +472,7 @@ function CountryDetailInner({
             href="/"
             className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
           >
-            <span>← Home</span>
+            <span>← {t("page.home")}</span>
             <span className="h-px w-8 bg-gold/45" />
             <span>{page.country}</span>
           </a>
@@ -495,8 +497,9 @@ function CountryDetailInner({
             onClick={() => handleEnquire()}
             className="shrink-0 text-[10px] tracking-[0.24em] uppercase text-gold-deep transition-colors hover:text-navy"
           >
-            Enquire
+            {t("nav.enquire")}
           </button>
+          <LanguageSwitch tone="dark" />
         </nav>
       </header>
 
@@ -592,7 +595,7 @@ function CountryDetailInner({
             </div>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 text-white/50">
-            <div className="text-[8.5px] uppercase tracking-[0.34em]">Scroll to fly the route</div>
+            <div className="text-[8.5px] uppercase tracking-[0.34em]">{t("hero.scrollRoute")}</div>
             <div className="h-10 w-px" style={{ background: "linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0))" }} />
           </div>
           {/* dawn veil — the light atlas world rises into the dark hero as
@@ -635,7 +638,7 @@ function CountryDetailInner({
                     onClick={() => handleEnquire()}
                     className="mt-7 border-b border-gold-deep/60 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-gold-deep transition-opacity hover:opacity-70"
                   >
-                    Speak to us about {page.country}
+                    {t("page.speakToUs", { country: page.country })}
                   </button>
                 </div>
                 <div data-stop-video className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
@@ -688,7 +691,7 @@ function CountryDetailInner({
 
             {/* other routes in the region */}
             <div className="mt-16 border-t border-navy/12 pt-8">
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-navy/50">Other routes in {region.title}</div>
+              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-navy/50">{t("page.otherRoutes")} {region.title}</div>
               <div className="mt-4 flex flex-wrap gap-3">
                 {otherCountries.map((c) => {
                   const gid = region.catalog.find((g) => g.label.toLowerCase() === c.country.toLowerCase())?.id;
@@ -883,7 +886,7 @@ function StayDossier({
           <div>
             <div className="flex items-center gap-3 font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-light">
               <span className="h-px w-8 bg-gold/60" />
-              Stay dossier · {country} · {entry.location}
+              {t("dossier.title")} · {country} · {entry.location}
             </div>
             <h2 className="mt-3 font-serif text-[clamp(34px,6vw,64px)] font-light leading-[1.0] text-white">{entry.name}</h2>
           </div>
@@ -917,13 +920,13 @@ function StayDossier({
                 </div>
               )}
               <div className="absolute right-3 top-3 border border-gold-light/35 bg-ink/30 px-2.5 py-1 font-mono text-[7.5px] uppercase tracking-[0.22em] text-gold-light backdrop-blur-sm">
-                Film
+                {t("dossier.film")}
               </div>
             </div>
 
             {gallery.length > 1 && (
               <div className="moment-in moment-in-3 mt-6 lg:sticky lg:top-[calc(2.5rem+50svh)]">
-                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">A closer look</div>
+                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">{t("dossier.closerLook")}</div>
                 <div className="mt-3 grid grid-cols-4 gap-2">
                   {gallery.map((src, i) => (
                     <div key={src + i} className="group relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
@@ -976,7 +979,7 @@ function StayDossier({
                 downloads (?dl= makes the Sanity CDN send an attachment) */}
             {entry.assets?.filter((a) => a.url).length ? (
               <div className="moment-in moment-in-3 mt-8">
-                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">Brochures</div>
+                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80">{t("dossier.brochures")}</div>
                 <div className="mt-4 grid gap-y-3">
                   {entry.assets.filter((a) => a.url).map((asset, i) => (
                     <a
@@ -990,7 +993,7 @@ function StayDossier({
                         <div className="text-[8.5px] uppercase tracking-[0.16em] text-white/40">{asset.category} · PDF</div>
                       </div>
                       <span className="shrink-0 font-mono text-[7.5px] uppercase tracking-[0.18em] text-gold-light/45 transition-colors group-hover/dl:text-gold-light">
-                        Download ↓
+                        {t("dossier.download")} ↓
                       </span>
                     </a>
                   ))}
@@ -1003,7 +1006,7 @@ function StayDossier({
               onClick={() => onEnquire(entry.name)}
               className="mt-9 w-full bg-gold py-4 text-[10px] uppercase tracking-[0.26em] text-white transition-colors duration-300 hover:bg-[#b08d3f]"
             >
-              Enquire about this stay
+              {t("dossier.enquireStay")}
             </button>
             <div className="mt-4 flex items-center justify-center gap-4 font-mono text-[8px] uppercase tracking-[0.24em] text-white/35">
               <span className="h-px w-8 bg-gold/40" />
@@ -1078,12 +1081,12 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
     <section className="relative w-full px-5 pt-24 pb-10 sm:px-10 lg:px-16">
       <div className="mx-auto max-w-[1280px]">
         <div className="text-center">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The signatures</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.theSignatures")}</div>
           <h2 className="mt-3 font-serif text-[clamp(36px,6vw,68px)] font-light leading-[1.0]">
-            {country},<br />signature by signature
+            {t("page.signatureBySignature", { country })}
           </h2>
           <p className="mx-auto mt-4 max-w-[480px] text-[13px] font-light leading-[1.85] text-navy/60">
-            Not an itinerary — the marks of the Maison, each one arranged entirely around the traveller.
+            {t("page.notItinerary")}
           </p>
         </div>
 
@@ -1445,10 +1448,10 @@ function EssentialsStack({ cards, country }: { cards: EssentialCard[]; country: 
         <div data-stop-text className="text-center opacity-0">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The essentials</div>
           <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
-            Before you pack
+            {t("page.beforeYouPack")}
           </h2>
           <p className="mx-auto mt-4 max-w-[460px] text-[13px] font-light leading-[1.85] text-navy/60">
-            The practical side of {country}, one sheet at a time.
+            {t("page.practicalSide", { country })}
           </p>
         </div>
 
@@ -1590,11 +1593,11 @@ function GallerySection({
             <div>
               <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The gallery</div>
               <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
-                {page.country}, framed
+                {t("page.framed", { country: page.country })}
               </h2>
             </div>
             <div className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 sm:block">
-              {String(items.length).padStart(2, "0")} frames · hover to play · tap to open
+              {String(items.length).padStart(2, "0")} {t("page.galleryHint")}
             </div>
           </div>
 
@@ -1644,7 +1647,7 @@ function GallerySection({
                   }`}
                 >
                   {item.video && <span className="h-1 w-1 rounded-full bg-gold-light" />}
-                  {item.video ? "Film" : "Still"}
+                  {item.video ? t("dossier.film") : t("dossier.still")}
                 </span>
                 <span className="absolute bottom-2.5 left-3 font-mono text-[8px] uppercase tracking-[0.2em] text-white/0 transition-colors duration-500 group-hover:text-white/85">
                   {String(i + 1).padStart(2, "0")} — {page.country}

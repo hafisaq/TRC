@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 import { posterUrl, videoUrl } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
+import { t as tr } from "../../lib/i18n";
 
 export type StopTheme = "gold" | "white";
 export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
@@ -58,7 +59,7 @@ const THEME_STYLES: Record<
 function Meta({ season, highlights, t }: { index: number; coords: string; season: string; highlights: string[]; t: typeof THEME_STYLES.gold }) {
   return (
     <>
-      <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+      <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
       <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
         {highlights.map((h) => (
           <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
@@ -93,7 +94,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
   const idx = `${String(index).padStart(2, "0")} / ${String(total).padStart(2, "0")} · ${coords}`;
   const cta = ctaHref
     ? { href: ctaHref, onClick: undefined, label: ctaLabel ?? "Learn more" }
-    : { href: "#tier2-enquire", onClick: handleEnquireClick, label: "Enquire about this route" };
+    : { href: "#tier2-enquire", onClick: handleEnquireClick, label: tr("stop.enquireRoute") };
 
   if (layout === "cinematic") {
     return (
@@ -110,7 +111,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             {title[0]}<br />{title[1]}
           </h2>
           <p className="mt-4 sm:mt-5 max-w-[440px] text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] text-white/78">{copy}</p>
-          <div className="mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-white/70">Best season · {season}</div>
+          <div className="mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-white/70">{tr("stop.bestSeason")} · {season}</div>
           <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
             {highlights.map((h) => (
               <span key={h} className="text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border border-white/30 text-white/80">
@@ -150,7 +151,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
               {title[0]}<br />{title[1]}
             </h2>
             <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
-            <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+            <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
             <div className="mt-3 sm:mt-4 flex flex-wrap justify-center gap-2">
               {highlights.map((h) => (
                 <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
@@ -190,7 +191,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             </div>
             <p className={`text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
             <div>
-              <div className={`text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>Best season · {season}</div>
+              <div className={`text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {highlights.map((h) => (
                   <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>

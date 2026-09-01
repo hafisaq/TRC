@@ -5,6 +5,7 @@ const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "E
 const countWord = (n: number) => WORDS[n] ?? String(n);
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
+import { isAr, t } from "../../lib/i18n";
 
 // The Mountain & Ice country selector — deliberately NOT the Asia strip.
 // Where Asia glides bright cards sideways across cream, this is a dark
@@ -117,7 +118,7 @@ export default function DescentBoard({ region }: { region: Region }) {
             rotated into it on large screens */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-4 lg:pt-2">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80 [writing-mode:vertical-rl]">
-            Choose your altitude
+            {t("board.choose")}
           </div>
           <div className="relative w-px flex-1 bg-gold/25">
             {region.stops.map((_, i) => (
@@ -137,9 +138,11 @@ export default function DescentBoard({ region }: { region: Region }) {
 
         <div>
           <div className="mb-10 sm:mb-12 lg:mb-[clamp(12px,3svh,40px)]">
-            <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light lg:hidden">Choose your altitude</div>
+            <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light lg:hidden">{t("board.choose")}</div>
             <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white lg:mt-0">
-              {countWord(region.stops.length)} countries,<br className="sm:hidden" /> from the Alps to the ice
+              {isAr()
+                ? `${region.stops.length} دول، من الألب إلى الجليد`
+                : <>{countWord(region.stops.length)} countries,<br className="sm:hidden" /> from the Alps to the ice</>}
             </h3>
           </div>
 
@@ -194,7 +197,7 @@ export default function DescentBoard({ region }: { region: Region }) {
                         isActive ? "border-gold-light text-gold-light" : "border-transparent text-white/0"
                       }`}
                     >
-                      Explore {stop.country} →
+                      {t("strip.explore", { country: stop.country })}
                     </span>
                   </span>
                 </a>

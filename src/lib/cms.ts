@@ -13,6 +13,7 @@ import { DESERT } from "../data/regions/desert";
 import { setCountryPage, type CountryPageData } from "../data/regions/countryContent";
 import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../data/regions/types";
 import { registerMedia } from "./media";
+import { isAr, setUiStrings, applyTranslation } from "./i18n";
 
 const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
@@ -31,30 +32,36 @@ const QUERY = `{
     "media": ${MEDIA_PROJ}
   },
   "regions": *[_type=="region"]{
-    "slug": slug.current, title, intro, focus,
+    _id, "slug": slug.current, title, intro, focus,
     stops[]{
-      country, eyebrow, title, copy, coords, season, highlights, mapPos, theme,
+      _key, country, eyebrow, title, copy, coords, season, highlights, mapPos, theme,
       "media": ${MEDIA_PROJ}
     },
     catalog[]{
-      id, label,
+      _key, id, label,
       entries[]->{
-        name, location, description, coordinates, season, highlights,
-        facts[]{label, value}, assets[]{title, category, "url": file.asset->url},
+        _id, name, location, description, coordinates, season, highlights,
+        facts[]{_key, label, value}, assets[]{_key, title, category, "url": file.asset->url},
         "media": ${MEDIA_PROJ},
         "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url}
       }
     }
   },
   "pages": *[_type=="countryPage"]{
-    "slug": slug.current, country, tagline, priceLine, season, coords,
+    _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
     "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url},
-    chapters[]{navLabel, eyebrow, title, paragraphs, light, "media": ${MEDIA_PROJ}},
-    days[]{title, copy, details, "media": ${MEDIA_PROJ}},
-    essentials[]{title, copy, points[]{label, value}}
-  }
+    chapters[]{_key, navLabel, eyebrow, title, paragraphs, light, "media": ${MEDIA_PROJ}},
+    days[]{_key, title, copy, details, "media": ${MEDIA_PROJ}},
+    essentials[]{_key, title, copy, points[]{_key, label, value}}
+  },
+  "translations": *[_type=="translation" && lang=="ar"]{source, strings[]{path, value}},
+  "settings": *[_id=="siteSettings"][0]{showLanguageSwitch}
 }`;
+
+// Site-wide switches from the CMS (mutated in place at hydration, like
+// everything else). Defaults apply when Sanity is unreachable.
+export const SETTINGS = { showLanguageSwitch: false };
 
 let mediaN = 0;
 // register a media slot and return the key components will carry as "slug"
@@ -78,6 +85,8 @@ export async function hydrateFromCms(): Promise<boolean> {
     destinations?: Array<Record<string, unknown> & { _id: string; media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
+    translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
+    settings?: { showLanguageSwitch?: boolean } | null;
   };
   try {
     const controller = new AbortController();
@@ -89,6 +98,42 @@ export async function hydrateFromCms(): Promise<boolean> {
   } catch (err) {
     console.info("[cms] using bundled content:", (err as Error).message);
     return false;
+  }
+
+  // ---- site settings ----
+  SETTINGS.showLanguageSwitch = data.settings?.showLanguageSwitch ?? false;
+
+  // ---- Arabic: overlay the copywriter's strings onto the raw documents
+  // BEFORE any mapping, so every consumer downstream sees Arabic ----
+  if (isAr() && data.translations?.length) {
+    const byId = new Map<string, Array<{ path?: string; value?: string }>>();
+    for (const tr of data.translations) {
+      if (tr.source && tr.strings) byId.set(tr.source, tr.strings);
+    }
+    const apply = (doc: Record<string, unknown> | undefined | null, id: string | undefined) => {
+      if (!doc || !id) return;
+      const strings = byId.get(id);
+      if (!strings) return;
+      for (const { path, value } of strings) {
+        if (path && typeof value === "string") applyTranslation(doc, path, value);
+      }
+    };
+    for (const d of data.destinations ?? []) apply(d, d._id);
+    for (const r of (data.regions ?? []) as Array<Record<string, unknown>>) {
+      apply(r, r._id as string);
+      for (const g of (r.catalog as Array<Record<string, unknown>>) ?? []) {
+        for (const e of (g.entries as Array<Record<string, unknown>>) ?? []) apply(e, e?._id as string);
+      }
+    }
+    for (const p of (data.pages ?? []) as Array<Record<string, unknown>>) apply(p, p._id as string);
+    const uiStrings = byId.get("ui");
+    if (uiStrings) {
+      const overrides: Record<string, string> = {};
+      for (const { path, value } of uiStrings) {
+        if (path && typeof value === "string") overrides[path] = value;
+      }
+      setUiStrings(overrides);
+    }
   }
 
   try {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
+import { isAr, t } from "../../lib/i18n";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -113,10 +114,10 @@ export default function CaravanRoute({ region }: { region: Region }) {
         </div>
 
         <div className="relative px-5 sm:px-10 lg:px-16">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">The caravan route</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">{t("caravan.kicker")}</div>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white">
-              {countWord(n)} countries,<br className="sm:hidden" /> waypoint by waypoint
+              {isAr() ? `${n} دول، محطةً بعد محطة` : <>{countWord(n)} countries,<br className="sm:hidden" /> waypoint by waypoint</>}
             </h3>
             <span className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/50 lg:block">Scroll ↓</span>
           </div>
@@ -143,9 +144,9 @@ export default function CaravanRoute({ region }: { region: Region }) {
                   href={activeGid ? `/${region.slug}/${activeGid}` : "#tier2-enquire"}
                   className="border-b border-gold-light/60 pb-0.5 text-[9.5px] uppercase tracking-[0.24em] text-gold-light transition-colors hover:border-gold-light hover:text-white"
                 >
-                  Explore {activeStop.country} →
+                  {t("strip.explore", { country: activeStop.country })}
                 </a>
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">Best season · {activeStop.season}</span>
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">{t("stop.bestSeason")} · {activeStop.season}</span>
               </div>
             </div>
           )}
