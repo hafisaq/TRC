@@ -222,10 +222,6 @@ a {
     scroll-padding-top: calc(env(safe-area-inset-top) + 96px);
   }
 
-  #tier2-flight-svg {
-    opacity: .42;
-  }
-
   .ambient-plane,
   .ambient-boat {
     display: none;
