@@ -1,3 +1,5 @@
+import { t } from "../../lib/i18n";
+
 export default function Tier2Hero() {
   return (
     <section id="tier2-hero" className="relative h-[92svh] min-h-[640px] sm:h-[100svh] sm:min-h-0 w-full flex flex-col items-center justify-center text-center px-5 pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+84px)] sm:pt-0 sm:pb-0">
@@ -19,11 +21,11 @@ export default function Tier2Hero() {
       </div>
 
       <p id="tier2-kicker" className="mt-8 sm:mt-9 max-w-[300px] sm:max-w-[420px] text-[11px] sm:text-[14px] font-light leading-[1.9] tracking-[0.06em] sm:tracking-[0.08em] uppercase text-white/50 opacity-0">
-        An itinerary, mapped — scroll to follow the route
+        {t("hero.kicker")}
       </p>
 
       <div className="absolute left-0 right-0 bottom-8 sm:bottom-10 flex flex-col items-center gap-3 text-white/50">
-        <div className="text-[8.5px] sm:text-[9px] tracking-[0.34em] sm:tracking-[0.4em] uppercase">Scroll</div>
+        <div className="text-[8.5px] sm:text-[9px] tracking-[0.34em] sm:tracking-[0.4em] uppercase">{t("hero.scroll")}</div>
         <div className="w-px h-10 sm:h-12" style={{ background: "linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0))" }} />
       </div>
     </section>

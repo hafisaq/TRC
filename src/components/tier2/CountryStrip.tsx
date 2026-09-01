@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm } from "../../lib/media";
+import { isAr, t } from "../../lib/i18n";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -153,10 +154,12 @@ export default function CountryStrip({ region }: { region: Region }) {
       </span>
       <div className="relative flex flex-col justify-center gap-7 overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:gap-8 sm:py-16 lg:sticky lg:top-0 lg:h-[100svh] lg:py-0">
         <div className="px-5 sm:px-10 lg:px-16">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Choose your route</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("strip.choose")}</div>
           <div className="mt-2 flex items-end justify-between gap-6">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-navy">
-              {countWord(region.stops.length)} countries,<br className="sm:hidden" /> {countWord(region.stops.length).toLowerCase()} ways in
+              {isAr()
+                ? `${region.stops.length} دول، و${region.stops.length} مداخل`
+                : <>{countWord(region.stops.length)} countries,<br className="sm:hidden" /> {countWord(region.stops.length).toLowerCase()} ways in</>}
             </h3>
             <div className="hidden h-px flex-1 bg-gold/25 lg:block">
               <div ref={barRef} className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)]" style={{ width: "0%" }} />
@@ -206,7 +209,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                     <div className="mt-2 font-serif text-[clamp(34px,4.4vw,58px)] font-light leading-[0.98] text-white">{stop.country}</div>
                     <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.22em] text-white/80">
                       <span className="border-b border-white/50 pb-0.5 transition-colors group-hover:border-gold-light group-hover:text-gold-light">
-                        Explore {stop.country} →
+                        {t("strip.explore", { country: stop.country })}
                       </span>
                       <span className="font-mono text-[8px] text-white/50">{stop.season}</span>
                     </div>

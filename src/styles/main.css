@@ -447,3 +447,21 @@ html[data-display-mode="standalone"] body {
   .media-shell { animation: none; }
   .media-fade { opacity: 1; transition: none; }
 }
+
+
+/* ---- Arabic mode: type pairing + directional fixes ---- */
+html[lang="ar"] {
+  --font-serif: "Amiri", "Cormorant Garamond", serif;
+  --font-sans: "IBM Plex Sans Arabic", "Jost", system-ui, sans-serif;
+  --font-mono: "IBM Plex Sans Arabic", ui-monospace, Menlo, monospace;
+}
+/* wide letter-spacing breaks connected Arabic script */
+html[lang="ar"] * {
+  letter-spacing: 0 !important;
+}
+/* the scroll-glide mechanics measure and translate in LTR space; keep
+   their geometry LTR while the text inside stays RTL */
+html[dir="rtl"] .no-scrollbar,
+html[dir="rtl"] [data-glide-row] {
+  direction: ltr;
+}

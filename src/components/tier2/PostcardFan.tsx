@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
+import { isAr, t } from "../../lib/i18n";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -97,10 +98,10 @@ export default function PostcardFan({ region }: { region: Region }) {
         </div>
 
         <div className="relative px-5 sm:px-10 lg:px-16">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">Postcards from the coast</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("fan.kicker")}</div>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-navy">
-              {countWord(n)} countries,<br className="sm:hidden" /> wish you were here
+              {isAr() ? `${n} دول، ليتك كنت هنا` : <>{countWord(n)} countries,<br className="sm:hidden" /> wish you were here</>}
             </h3>
             <div className="hidden items-center gap-6 lg:flex">
               {region.stops.map((stop, i) => (
@@ -171,7 +172,7 @@ export default function PostcardFan({ region }: { region: Region }) {
                   <div className="text-right">
                     <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-navy/45">{stop.season}</div>
                     <div className={`mt-1 border-b pb-0.5 text-[9px] uppercase tracking-[0.22em] transition-colors duration-300 ${isActive ? "border-gold text-gold-deep" : "border-transparent text-navy/0"}`}>
-                      Explore {stop.country} →
+                      {t("strip.explore", { country: stop.country })}
                     </div>
                   </div>
                 </div>
@@ -211,7 +212,7 @@ export default function PostcardFan({ region }: { region: Region }) {
 
         <div className="relative hidden justify-center pb-8 lg:flex">
           <div className="font-mono text-[8px] uppercase tracking-[0.26em] text-navy/40">
-            {String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} · scroll to deal the next card · click the front card to travel
+            {String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} · {t("fan.hint")}
           </div>
         </div>
       </div>

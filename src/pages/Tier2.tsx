@@ -7,6 +7,7 @@ import Stop from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
+import { t } from "../lib/i18n";
 import { DESTINATIONS, flightPathStops } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
 import DescentBoard from "../components/tier2/DescentBoard";
@@ -133,13 +134,13 @@ export default function Tier2() {
             </span>
           </div>
         </div>
-        <div className="premium-loader__text">Preparing route</div>
+        <div className="premium-loader__text">{t("loader.preparing")}</div>
       </div>
       <Tier2Nav
         destinations={DESTINATIONS}
         activeStopId={activeStopId}
         routeProgress={routeProgress}
-        statusText={`TRC 001 · Approaching ${activeDestination.statusLabel}`}
+        statusText={`${t("status.approaching")} ${activeDestination.statusLabel}`}
         onEnquire={() => handleEnquire()}
       />
       <main id="tier2-journey" className="relative z-10">

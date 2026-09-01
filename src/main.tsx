@@ -33,6 +33,17 @@ const page = routeMatch ? (
 // failure the bundled demo content renders unchanged. The home page's own
 // loader covers the wait.
 import { hydrateFromCms } from "./lib/cms";
+import { isAr } from "./lib/i18n";
+
+// direction + Arabic type must be in place BEFORE first paint
+if (isAr()) {
+  document.documentElement.setAttribute("dir", "rtl");
+  document.documentElement.setAttribute("lang", "ar");
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@200;300;400;500&display=swap";
+  document.head.appendChild(link);
+}
 hydrateFromCms().finally(() => {
   createRoot(document.getElementById("root")!).render(page);
 });

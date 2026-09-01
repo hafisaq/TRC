@@ -1,6 +1,8 @@
 import type { MouseEvent } from "react";
 import type { Destination } from "../../data/tier2Destinations";
 import { scrollToHash } from "../../lib/scroll";
+import LanguageSwitch from "./LanguageSwitch";
+import { t } from "../../lib/i18n";
 
 type Tier2NavProps = {
   destinations: Destination[];
@@ -22,7 +24,7 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
   };
   const navItems = [
     ...destinations.map((destination) => ({ label: destination.navLabel, href: `#${destination.id}` })),
-    { label: "Enquire", href: "#tier2-enquire" }
+    { label: t("nav.enquire"), href: "#tier2-enquire" }
   ];
 
   return (
@@ -47,6 +49,9 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
             className="w-[154px] h-auto sm:w-[190px]"
           />
         </a>
+        <div className="absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] sm:hidden">
+          <LanguageSwitch tone="light" />
+        </div>
         <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 sm:flex sm:justify-end">
           <div className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-white/45 lg:flex">
             <span className="h-px w-8 bg-gold/45" />
@@ -68,6 +73,7 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
             </a>
             );
           })}
+          <LanguageSwitch tone="light" />
         </nav>
       </header>
 
