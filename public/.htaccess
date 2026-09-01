@@ -1,58 +1,19 @@
-# SPA fallback: this site does its own routing in JS (see src/main.tsx,
-# which switches between the main site and /tier2 based on the URL path).
-# A plain Apache static host has no idea /tier2 is a valid route — without
-# this, a direct visit or refresh on /tier2 returns a 404 instead of
-# loading index.html and letting the app take over.
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-
-  # Let real files and directories (JS, CSS, media, etc.) serve normally.
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-
-  # Everything else (including /tier2) falls back to index.html.
-  RewriteRule ^ index.html [L]
-</IfModule>
-
-# Don't let visitors browse folder contents directly.
-Options -Indexes
-
-# Performance headers for static hosting. Hashed build assets, media, icons,
-# and fonts can live in the browser cache; HTML and the service worker stay
-# fresh so new deployments are still picked up quickly.
+# Caching contract for a hashed-asset SPA:
+# - HTML and the service worker must always revalidate (a stale index.html
+#   references hashed bundles that no longer exist after the next deploy —
+#   the page then boots blank or serves last week's app)
+# - hashed /assets are immutable forever
 <IfModule mod_headers.c>
-  <FilesMatch "\.(?:js|css|png|jpe?g|webp|svg|gif|ico|mp4|webm|woff2?|ttf|otf)$">
+  <FilesMatch "\.(js|css|woff2|woff)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
-
-  <FilesMatch "\.(?:html|xml|json|webmanifest)$">
-    Header set Cache-Control "public, max-age=300, must-revalidate"
+  <FilesMatch "\.(jpg|jpeg|png|webp|mp4|pdf|svg|ico)$">
+    Header set Cache-Control "public, max-age=604800"
   </FilesMatch>
-
-  <FilesMatch "^(sw\.js)$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
-
-  Header set X-Content-Type-Options "nosniff"
+  <FilesMatch "^(sw\.js|manifest\.webmanifest|sitemap\.xml|robots\.txt)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
 </IfModule>
-
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/css "access plus 1 year"
-  ExpiresByType application/javascript "access plus 1 year"
-  ExpiresByType image/png "access plus 1 year"
-  ExpiresByType image/jpeg "access plus 1 year"
-  ExpiresByType image/webp "access plus 1 year"
-  ExpiresByType image/svg+xml "access plus 1 year"
-  ExpiresByType video/mp4 "access plus 1 year"
-  ExpiresByType font/woff2 "access plus 1 year"
-  ExpiresByType text/html "access plus 5 minutes"
-</IfModule>
-
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
-</IfModule>
-
-AddType application/manifest+json .webmanifest
