@@ -1,5 +1,6 @@
 import type { CatalogGroup, Region, RegionStop } from "./types";
 import { keyForPoster } from "../../lib/media";
+import { t } from "../../lib/i18n";
 
 // White Desert-style product page content for a single country: editorial
 // chapters, a pull quote, and a numbered day-by-day journey the flight path
@@ -149,7 +150,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
   return {
     country: stop.country,
     tagline: stop.copy,
-    priceLine: "Private routings · rates on request",
+    priceLine: t("gen.priceLine"),
     season: stop.season,
     coords: stop.coords,
     heroSlug: stop.slug,
@@ -161,48 +162,60 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
         slug: stop.slug,
         paragraphs: [
           lead?.description ?? stop.copy,
-          `Every stay in ${stop.country} is visited, vetted, and arranged directly — the route, the rooms, and the hours in between are built around the traveller, not a package.`
+          t("gen.chapter1Para", { country: stop.country })
         ]
       },
       {
-        navLabel: "The Address",
-        eyebrow: "The Address",
-        title: ["Rooms worth the", "flight over"],
+        navLabel: t("gen.addressNav"),
+        eyebrow: t("gen.addressNav"),
+        title: [t("gen.addressTitle1"), t("gen.addressTitle2")],
         slug: second ? keyForPoster(second.poster) : stop.slug,
         light: true,
         paragraphs: [
-          second?.description ?? `From ${lead?.location ?? stop.country} outward, the collection keeps only the addresses we would send our own families to.`,
-          `${group.entries.map((e) => e.name).join(" · ")} — each visited, vetted, and held to the same standard.`
+          second?.description ?? t("gen.addressFallback", { location: lead?.location ?? stop.country }),
+          t("gen.addressPara2", { names: group.entries.map((e) => e.name).join(" · ") })
         ]
       }
     ],
     quote: {
-      text: `${stop.country} rewards the traveller who arrives with time to spend, not a list to finish.`,
-      attribution: "Field notes — The Retreat Collection"
+      text: t("gen.quote", { country: stop.country }),
+      attribution: t("gen.attribution")
     },
     // signatures: the country's actual stays, one each — their own lead
     // media and portal-sourced copy. Never demo footage.
     days: group.entries.slice(0, 5).map((e) => ({
       title: e.name,
-      copy: e.description ?? `${e.name}, ${e.location} — arranged directly, with the route and the rooms built around the traveller.`,
+      copy: e.description ?? t("gen.dayFallback", { name: e.name, location: e.location }),
       slug: keyForPoster(e.poster),
       details: e.highlights?.slice(0, 3) ?? [e.location]
     })),
     essentials: [
       {
-        title: "Getting there",
-        copy: `Routed privately from arrival onward — the route into ${stop.country} is arranged end to end before departure.`,
-        points: [["Arrival", "Met airside"], ["Transfer", "Private"], ["Check-in", "Handled"]]
+        title: t("gen.gettingThere"),
+        copy: t("gen.gettingThereCopy", { country: stop.country }),
+        points: [
+          [t("gen.arrival"), t("gen.metAirside")],
+          [t("gen.transfer"), t("gen.private")],
+          [t("gen.checkin"), t("gen.handled")]
+        ]
       },
       {
-        title: "When to go",
-        copy: `${stop.season} is the season we plan around; the exact week is chosen with you.`,
-        points: [["Best season", stop.season], ["Booked ahead", "3–6 months"], ["Flexible", "Always"]]
+        title: t("gen.whenToGo"),
+        copy: t("gen.whenCopy", { season: stop.season }),
+        points: [
+          [t("stop.bestSeason"), stop.season],
+          [t("gen.bookedAhead"), t("gen.months36")],
+          [t("gen.flexible"), t("gen.always")]
+        ]
       },
       {
-        title: "Good to know",
-        copy: "The practical notes — timing, packing, the hours in between — travel with your itinerary, not a guidebook.",
-        points: [["Guides", "Resident"], ["Routing", "Custom"], ["Pace", "Yours"]]
+        title: t("gen.goodToKnow"),
+        copy: t("gen.goodCopy"),
+        points: [
+          [t("gen.guides"), t("gen.resident")],
+          [t("gen.routing"), t("gen.custom")],
+          [t("gen.pace"), t("gen.yours")]
+        ]
       }
     ]
   };
