@@ -13,10 +13,12 @@ import CountryStrip from "../components/tier2/CountryStrip";
 import DescentBoard from "../components/tier2/DescentBoard";
 import PostcardFan from "../components/tier2/PostcardFan";
 import CaravanRoute from "../components/tier2/CaravanRoute";
+import TerminalBoard from "../components/tier2/TerminalBoard";
 import { ASIA } from "../data/regions/asia";
 import { ALPINE } from "../data/regions/alpine";
 import { COAST } from "../data/regions/coast";
 import { DESERT } from "../data/regions/desert";
+import { CITIES } from "../data/regions/cities";
 
 // The loader's night sky: deterministic pseudo-random star placements (a
 // seeded hash, not Math.random, so every visit renders the same sky and
@@ -65,7 +67,8 @@ export default function Tier2() {
       "tier2-asia": { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] },
       "tier2-alpine": { id: "tier2-alpine-hold-in", mapPos: [0.5, 0.3] },
       "tier2-bali": { id: "tier2-coast-hold-in", mapPos: [0.52, 0.48] },
-      "tier2-desert": { id: "tier2-desert-hold-in", mapPos: [0.55, 0.42] }
+      "tier2-desert": { id: "tier2-desert-hold-in", mapPos: [0.55, 0.42] },
+      "tier2-cities": { id: "tier2-cities-hold-in", mapPos: [0.47, 0.3] }
     };
     const out: typeof DESTINATIONS extends Array<infer T> ? Array<T | { id: string; mapPos: [number, number]; theme: "white"; coords: string; passive: true }> : never = [];
     for (const d of DESTINATIONS) {
@@ -175,6 +178,8 @@ export default function Tier2() {
             {s.id === "tier2-bali" && <PostcardFan region={COAST} />}
             {/* after the Open Country stop: the caravan route */}
             {s.id === "tier2-desert" && <CaravanRoute region={DESERT} />}
+            {/* after the Grand Cities stop: the departures board */}
+            {s.id === "tier2-cities" && <TerminalBoard region={CITIES} />}
           </div>
         ))}
         {/* inside main so the journey's scroll range — and the flight

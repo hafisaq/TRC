@@ -6,7 +6,7 @@ import Tier2 from "./pages/Tier2";
 const CountryDetailRoute = lazy(() => import("./pages/CountryDetailRoute"));
 
 const path = window.location.pathname.replace(/\/+$/, "");
-const routeMatch = path.match(/^\/(asia|alpine|coast|desert)\/([a-z0-9-]+)$/);
+const routeMatch = path.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)$/);
 // the standalone region pages are gone — home's per-region selector is the
 // region browser now; old links land there
 if (path === "/asia") {
@@ -20,6 +20,9 @@ if (path === "/coast") {
 }
 if (path === "/desert") {
   window.location.replace("/#tier2-desert-countries");
+}
+if (path === "/cities") {
+  window.location.replace("/#tier2-cities-countries");
 }
 const page = routeMatch ? (
   <Suspense fallback={null}>
