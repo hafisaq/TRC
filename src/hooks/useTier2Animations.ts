@@ -18,8 +18,15 @@ const safePlay = (video: HTMLVideoElement) => {
     source.removeAttribute("data-src");
     video.load();
   }
-  const play = video.play();
-  if (play) play.catch(() => undefined);
+  const tryPlay = () => {
+    const play = video.play();
+    if (play) play.catch(() => undefined);
+  };
+  tryPlay();
+  // Safari can reject a play() issued in the same tick as load() (resource
+  // selection hasn't run yet) and never recovers on its own — retry once
+  // the element says it actually has playable frames.
+  video.addEventListener("canplay", tryPlay, { once: true });
 };
 
 export type Tier2Stop = {

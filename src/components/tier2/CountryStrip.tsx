@@ -131,8 +131,9 @@ export default function CountryStrip({ region }: { region: Region }) {
       video.load();
     }
     if (play) {
-      const p = video.play();
-      if (p) p.catch(() => undefined);
+      const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
+      tryPlay();
+      video.addEventListener("canplay", tryPlay, { once: true });
     } else {
       video.pause();
     }
