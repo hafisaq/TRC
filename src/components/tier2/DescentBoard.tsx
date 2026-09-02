@@ -53,8 +53,9 @@ export default function DescentBoard({ region }: { region: Region }) {
           source.src = source.dataset.src || "";
           v.load();
         }
-        const p = v.play();
-        if (p) p.catch(() => undefined);
+        const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
+        tryPlay();
+        v.addEventListener("canplay", tryPlay, { once: true });
       } else {
         v.pause();
       }
@@ -95,7 +96,7 @@ export default function DescentBoard({ region }: { region: Region }) {
                 playsInline
                 preload="none"
                 poster={posterUrl(stop.slug, 1600)}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 z-[1] h-full w-full object-cover"
               >
                 <source data-src={videoUrl(stop.slug)} type="video/mp4" />
               </video>

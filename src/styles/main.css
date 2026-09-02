@@ -444,6 +444,11 @@ html[data-display-mode="standalone"] body {
   filter: blur(16px);
   transform: scale(1.08);
 }
+/* once a film is rendering frames, its poster still dissolves away */
+.film-under {
+  opacity: 0 !important;
+  transition: opacity 0.6s ease;
+}
 /* standalone LQIP underlay (film slots) — same soft-focus treatment */
 .lqip-layer {
   background-size: cover;

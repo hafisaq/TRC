@@ -128,8 +128,9 @@ export default function TerminalBoard({ region }: { region: Region }) {
           source.src = source.dataset.src || "";
           v.load();
         }
-        const p = v.play();
-        if (p) p.catch(() => undefined);
+        const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
+        tryPlay();
+        v.addEventListener("canplay", tryPlay, { once: true });
       } else {
         v.pause();
       }

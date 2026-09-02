@@ -55,8 +55,9 @@ export default function PostcardFan({ region }: { region: Region }) {
         src.src = src.dataset.src || "";
         el.load();
       }
-      const p = el.play();
-      if (p) p.catch(() => undefined);
+      const tryPlay = () => { const p = el.play(); if (p) p.catch(() => undefined); };
+      tryPlay();
+      el.addEventListener("canplay", tryPlay, { once: true });
     }
     // rest the others
     region.stops.forEach((s, i) => {

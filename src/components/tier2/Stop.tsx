@@ -90,7 +90,20 @@ function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; clas
           className={`media-fade absolute inset-0 w-full h-full object-cover ${className}`}
         />
       )}
-      <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+      <video
+        ref={ref}
+        muted
+        loop
+        playsInline
+        preload="none"
+        poster={near ? posterUrl(slug, posterW) : undefined}
+        onPlaying={(e) => {
+          // frames are genuinely rendering — dissolve the still under it
+          const img = e.currentTarget.parentElement?.querySelector<HTMLImageElement>("img[aria-hidden]");
+          img?.classList.add("film-under");
+        }}
+        className={`absolute inset-0 z-[1] w-full h-full object-cover ${className}`}
+      >
         <source data-src={videoUrl(slug)} type="video/mp4" />
       </video>
     </>

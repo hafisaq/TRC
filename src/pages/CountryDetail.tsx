@@ -121,8 +121,9 @@ function StaysRail({
   useEffect(() => {
     if (!near) return;
     sectionRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
-      const p = v.play();
-      if (p) p.catch(() => undefined);
+      const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
+      tryPlay();
+      v.addEventListener("canplay", tryPlay, { once: true });
     });
   }, [near]);
 
@@ -1076,8 +1077,9 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
         }
       }
       if (i === active) {
-        const p = video.play();
-        if (p) p.catch(() => undefined);
+        const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
+        tryPlay();
+        video.addEventListener("canplay", tryPlay, { once: true });
       } else {
         video.pause();
       }
@@ -1571,8 +1573,9 @@ function GallerySection({
       video.load();
     }
     video.style.opacity = "1";
-    const p = video.play();
-    if (p) p.catch(() => undefined);
+    const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
+    tryPlay();
+    video.addEventListener("canplay", tryPlay, { once: true });
   };
   const stopTile = (root: HTMLElement) => {
     const video = root.querySelector<HTMLVideoElement>("video");
