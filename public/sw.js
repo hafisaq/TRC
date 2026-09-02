@@ -1,4 +1,4 @@
-const VERSION = "trc-pwa-v6";
+const VERSION = "trc-pwa-v7";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const CACHE_PREFIX = "trc-";
@@ -8,7 +8,10 @@ const CORE_ROUTES = [
   "/asia/maldives/", "/asia/thailand/", "/asia/sri-lanka/", "/asia/india/", "/asia/malaysia/",
   "/alpine/switzerland/", "/alpine/france/", "/alpine/italy/", "/alpine/finland/", "/alpine/antarctica/",
   "/coast/italy/", "/coast/france/", "/coast/greece/", "/coast/spain/", "/coast/seychelles/", "/coast/indonesia/",
-  "/desert/oman/", "/desert/uae/", "/desert/qatar/", "/desert/saudi-arabia/", "/desert/morocco/"
+  "/desert/oman/", "/desert/uae/", "/desert/qatar/", "/desert/saudi-arabia/", "/desert/morocco/",
+  "/coast/caribbean/", "/alpine/andes/",
+  "/cities/london/", "/cities/paris/", "/cities/geneva/", "/cities/zurich/", "/cities/milan/",
+  "/cities/venice/", "/cities/florence/", "/cities/vienna-salzburg/", "/cities/dusseldorf/", "/cities/new-york/"
 ];
 
 const CORE_ASSETS = [

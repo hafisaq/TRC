@@ -22,7 +22,10 @@ const routes = [
   "coast",
   "coast/italy", "coast/france", "coast/greece", "coast/spain", "coast/seychelles", "coast/indonesia",
   "desert",
-  "desert/oman", "desert/uae", "desert/qatar", "desert/saudi-arabia", "desert/morocco"
+  "desert/oman", "desert/uae", "desert/qatar", "desert/saudi-arabia", "desert/morocco",
+  "coast/caribbean", "alpine/andes",
+  "cities/london", "cities/paris", "cities/geneva", "cities/zurich", "cities/milan",
+  "cities/venice", "cities/florence", "cities/vienna-salzburg", "cities/dusseldorf", "cities/new-york"
 ];
 
 if (!existsSync(src)) {
