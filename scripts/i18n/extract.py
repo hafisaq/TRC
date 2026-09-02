@@ -48,6 +48,10 @@ for d in q('*[_type=="destination"]|order(order asc)'):
     add(i, "statusLabel", w, d.get("statusLabel"), "'Approaching …' status text")
     add(i, "season", w, d.get("season"))
     add(i, "interest", w, d.get("interest"), "enquiry-form interest option")
+    coords = d.get("coords") or ""
+    if not any(ch.isdigit() for ch in coords):
+        add(i, "coords", w, coords, "worded coords (lat/long rows are omitted)")
+    add(i, "ctaLabel", w, d.get("ctaLabel"), "stop CTA — keep the ↓ arrow")
     for n, h in enumerate(d.get("highlights") or []):
         add(i, f"highlights[{n}]", w, h, "small tag")
 
@@ -134,6 +138,7 @@ UI = [
     ("status.approaching", "Status bar", "TRC 001 · Approaching"),
     ("stop.bestSeason", "Every stop / page", "Best season"),
     ("stop.enquireRoute", "Stop CTA", "Enquire about this route"),
+    ("stop.learnMore", "Stop CTA fallback", "Learn more"),
     ("strip.choose", "Asia selector", "Choose your route"),
     ("strip.heading", "Asia selector", "{n} countries, {n} ways in"),
     ("strip.explore", "Country cards", "Explore {country} →"),

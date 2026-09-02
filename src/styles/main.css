@@ -459,6 +459,18 @@ html[lang="ar"] {
 html[lang="ar"] * {
   letter-spacing: 0 !important;
 }
+/* Amiri is a tall Naskh face with stacked diacritics — the Latin-tuned
+   sub-1.1 heading leadings make its lines collide. Open them up. */
+html[lang="ar"] .font-serif {
+  line-height: 1.45 !important;
+}
+/* Arabic has no italics; the browser's synthesized oblique skews connected
+   glyphs into each other */
+html[lang="ar"] .italic,
+html[lang="ar"] em,
+html[lang="ar"] i {
+  font-style: normal;
+}
 /* the scroll-glide mechanics measure and translate in LTR space; keep
    their geometry LTR while the text inside stays RTL */
 html[dir="rtl"] .no-scrollbar,
