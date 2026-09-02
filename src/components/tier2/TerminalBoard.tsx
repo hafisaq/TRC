@@ -180,7 +180,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
           <div className="mb-8 flex items-end justify-between gap-6 border-b border-gold/25 pb-4 sm:mb-10 lg:mb-[clamp(14px,2.6svh,34px)]">
             <div>
               <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">{t("terminal.kicker")}</div>
-              <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,50px)] font-light leading-[1.05] text-white">
+              <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,50px)] font-light leading-[1.05] text-white lg:text-[clamp(22px,min(3.4vw,4.4svh),44px)]">
                 {isAr()
                   ? `${n} مدن، والصعود مفتوح`
                   : <>{countWord(n)} cities,<br className="sm:hidden" /> now boarding</>}
@@ -211,20 +211,22 @@ export default function TerminalBoard({ region }: { region: Region }) {
                       key={stop.id}
                       href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
                       onMouseEnter={() => setActive(i)}
-                      className="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-white/[0.07] py-4 sm:grid-cols-[64px_1fr_64px_110px] sm:gap-x-5 lg:py-[clamp(7px,1.55svh,15px)]"
+                      className="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-white/[0.07] py-4 sm:grid-cols-[64px_1fr_64px_110px] sm:gap-x-5 lg:py-[clamp(4px,1.1svh,11px)]"
                     >
                       <span className={`hidden font-mono text-[10px] tracking-[0.12em] transition-colors duration-500 sm:block ${isActive ? "text-gold" : "text-white/30"}`}>
                         TRC {String(i + 1).padStart(2, "0")}0
                       </span>
                       <span className="min-w-0">
                         <span
-                          className={`block text-[clamp(17px,2.1vw,24px)] transition-colors duration-500 lg:text-[clamp(15px,min(1.7vw,2.5svh),22px)] ${
+                          className={`block text-[clamp(17px,2.1vw,24px)] transition-colors duration-500 lg:text-[clamp(13px,min(1.6vw,2.2svh),20px)] ${
                             isActive ? "text-white" : "text-white/45"
                           }`}
                         >
                           <FlapText text={stop.country} active={isActive} />
                         </span>
-                        <span className={`mt-1 block text-[8px] uppercase tracking-[0.24em] transition-colors duration-500 ${isActive ? "text-gold-light" : "text-white/30"}`}>
+                        {/* on the pinned desktop board only the boarding row
+                            carries its eyebrow — ten full rows must fit 100svh */}
+                        <span className={`mt-1 block text-[8px] uppercase tracking-[0.24em] transition-colors duration-500 ${isActive ? "text-gold-light" : "text-white/30 lg:hidden"}`}>
                           {stop.eyebrow}
                         </span>
                         {/* mobile inline still */}
