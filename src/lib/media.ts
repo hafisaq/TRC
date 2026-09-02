@@ -9,14 +9,44 @@ const films = new Map<string, string>();
 // film lookup for content that carries a poster URL/path instead of a key
 // (stay galleries, dossier lead media)
 const filmByPoster = new Map<string, string>();
+// Sanity's ~20px base64 LQIP per image — painted as a blurred background
+// behind every media shell so a cold load never shows a blank frame
+const lqips = new Map<string, string>();
+const lqipByPoster = new Map<string, string>();
 
-export function registerMedia(key: string, urls: { poster?: string; film?: string }) {
+export function registerMedia(key: string, urls: { poster?: string; film?: string; lqip?: string }) {
   if (urls.poster) {
     posters.set(key, urls.poster);
     if (urls.film) filmByPoster.set(urls.poster, urls.film);
+    if (urls.lqip) lqipByPoster.set(urls.poster, urls.lqip);
   }
   if (urls.film) films.set(key, urls.film);
+  if (urls.lqip) lqips.set(key, urls.lqip);
 }
+
+// Inline style for a media container: the LQIP as an instant blurred
+// backdrop (undefined when none is known — demo content, missing metadata)
+export const lqipStyle = (key: string): { backgroundImage: string; backgroundSize: string; backgroundPosition: string } | undefined => {
+  const l = lqips.get(key) ?? lqipByPoster.get(posters.get(key) ?? "");
+  return l ? { backgroundImage: `url(${l})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
+};
+
+export const lqipStyleForPoster = (poster: string) => {
+  const l = lqipByPoster.get(poster);
+  return l ? { backgroundImage: `url(${l})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
+};
+
+// For .media-shell containers: sets the --lqip var the shell's ::before
+// paints under the fading image (see main.css)
+import type { CSSProperties } from "react";
+export const lqipVar = (key: string): CSSProperties | undefined => {
+  const l = lqips.get(key) ?? lqipByPoster.get(posters.get(key) ?? "");
+  return l ? ({ "--lqip": `url(${l})` } as CSSProperties) : undefined;
+};
+export const lqipVarForPoster = (poster: string): CSSProperties | undefined => {
+  const l = lqipByPoster.get(poster);
+  return l ? ({ "--lqip": `url(${l})` } as CSSProperties) : undefined;
+};
 
 // Sanity's image CDN resizes/re-encodes on the fly — a raw 2560px
 // original (~600KB+) becomes a ~100-200KB WebP/AVIF sized to what the

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 
@@ -98,7 +98,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
               key={stop.id}
               id={`caravan-sky-${stop.id}`}
               className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
-              style={{ opacity: active === i ? 1 : 0 }}
+              style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
             >
               {!near ? null : stop.slug && hasFilm(stop.slug) ? (
                 <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1600)} className="absolute inset-0 h-full w-full object-cover">
@@ -199,6 +199,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
               <a
                 key={stop.id}
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                style={stop.slug ? lqipVar(stop.slug) : undefined}
                 className="media-shell relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
               >
                 {near && stop.slug && (

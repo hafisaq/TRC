@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl, hasFilm } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm, lqipVar } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -180,6 +180,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                 <a
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : `/${region.slug}`}
+                  style={stop.slug ? lqipVar(stop.slug) : undefined}
                   className={`media-shell group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
                     goldCard ? "border-gold/50 shadow-[0_16px_44px_rgba(200,162,76,.18)]" : "border-navy/15 shadow-[0_16px_44px_rgba(22,36,60,.12)]"
                   } hover:border-gold`}

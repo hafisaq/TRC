@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 
@@ -148,7 +148,7 @@ export default function PostcardFan({ region }: { region: Region }) {
                 }`}
                 style={{ transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})` }}
               >
-                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink">
+                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
                   {!near ? null : stop.slug && hasFilm(stop.slug) ? (
                     <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 1200) : undefined} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
@@ -192,7 +192,7 @@ export default function PostcardFan({ region }: { region: Region }) {
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
                 className="block w-[80vw] shrink-0 snap-center border-8 border-white bg-white shadow-[0_18px_50px_rgba(22,36,60,.2)] sm:w-[54vw]"
               >
-                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink">
+                <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
                   {near && stop.slug && (
                     <img src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   )}

@@ -20,11 +20,11 @@ const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
 const API_VERSION = "2026-08-01";
 
-type Media = { poster?: string | null; film?: string | null };
+type Media = { poster?: string | null; film?: string | null; lqip?: string | null };
 type TitlePair = { line1?: string; line2?: string };
 type Fact = { label?: string; value?: string };
 
-const MEDIA_PROJ = `{"poster": media.poster.asset->url, "film": media.film.asset->url}`;
+const MEDIA_PROJ = `{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}`;
 
 const QUERY = `{
   "destinations": *[_type=="destination"]|order(order asc){
@@ -44,14 +44,14 @@ const QUERY = `{
         _id, name, location, description, coordinates, season, highlights,
         facts[]{_key, label, value}, assets[]{_key, title, category, "url": file.asset->url},
         "media": ${MEDIA_PROJ},
-        "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url}
+        "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url, "lqip": poster.asset->metadata.lqip}
       }
     }
   },
   "pages": *[_type=="countryPage"]{
     _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
-    "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url},
+    "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url, "lqip": heroMedia.poster.asset->metadata.lqip},
     chapters[]{_key, navLabel, eyebrow, title, paragraphs, light, "media": ${MEDIA_PROJ}},
     days[]{_key, title, copy, details, "media": ${MEDIA_PROJ}},
     essentials[]{_key, title, copy, points[]{_key, label, value}}
@@ -69,7 +69,7 @@ let mediaN = 0;
 function mediaKey(media: Media | null | undefined, fallback: string): string {
   if (!media?.poster) return fallback;
   const key = `cms-${(mediaN++).toString(36)}`;
-  registerMedia(key, { poster: media.poster, film: media.film ?? undefined });
+  registerMedia(key, { poster: media.poster, film: media.film ?? undefined, lqip: media.lqip ?? undefined });
   return key;
 }
 
@@ -89,13 +89,55 @@ export async function hydrateFromCms(): Promise<boolean> {
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
     settings?: { showLanguageSwitch?: boolean } | null;
   };
+  // Last-known payload, cached locally. On a cold or slow connection the
+  // site hydrates INSTANTLY from this copy while the network refreshes it
+  // in the background for the next load; on a fast connection the fresh
+  // response wins the race and editors still see publishes after one
+  // refresh. First-ever visits simply wait for the network as before.
+  const CACHE_KEY = "trc-cms-v1";
+  let cached: typeof data | null = null;
   try {
+    cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+  } catch {
+    cached = null;
+  }
+  const save = (d: unknown) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(d));
+    } catch {
+      /* quota/private mode — cache is best-effort */
+    }
+  };
+  const fetchFresh = (async () => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error(`sanity ${res.status}`);
-    data = (await res.json()).result;
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error(`sanity ${res.status}`);
+      return (await res.json()).result as typeof data;
+    } finally {
+      clearTimeout(timer);
+    }
+  })();
+
+  try {
+    if (cached) {
+      const fresh = await Promise.race([
+        fetchFresh.catch(() => null),
+        new Promise<null>((r) => setTimeout(() => r(null), 700))
+      ]);
+      if (fresh) {
+        data = fresh;
+        save(fresh);
+      } else {
+        data = cached;
+        console.info("[cms] hydrated from local cache; refreshing in background");
+        fetchFresh.then(save).catch(() => undefined);
+      }
+    } else {
+      data = await fetchFresh;
+      save(data);
+    }
   } catch (err) {
     console.info("[cms] using bundled content:", (err as Error).message);
     return false;

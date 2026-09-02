@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl, hasFilm, imgSized } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 
@@ -159,7 +159,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
               <div
                 key={stop.id}
                 className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
-                style={{ opacity: active === i ? 0.22 : 0 }}
+                style={{ opacity: active === i ? 0.22 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
               >
                 {stop.slug && (
                   <img
@@ -231,7 +231,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
                         </span>
                         {/* mobile inline still */}
                         {stop.slug && (
-                          <span className="media-shell mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden">
+                          <span className="media-shell relative mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden" style={lqipVar(stop.slug)}>
                             <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
                           </span>
                         )}
@@ -263,7 +263,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
                       <div
                         key={stop.id}
                         className="absolute inset-0 transition-opacity duration-700"
-                        style={{ opacity: active === i ? 1 : 0 }}
+                        style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
                       >
                         {stop.slug && hasFilm(stop.slug) ? (
                           <video
