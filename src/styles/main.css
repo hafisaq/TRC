@@ -441,6 +441,15 @@ html[data-display-mode="standalone"] body {
   background-image: var(--lqip, none);
   background-size: cover;
   background-position: center;
+  filter: blur(16px);
+  transform: scale(1.08);
+}
+/* standalone LQIP underlay (film slots) — same soft-focus treatment */
+.lqip-layer {
+  background-size: cover;
+  background-position: center;
+  filter: blur(16px);
+  transform: scale(1.08);
 }
 .media-shell {
   background-image: linear-gradient(

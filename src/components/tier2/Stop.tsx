@@ -72,13 +72,28 @@ function Meta({ season, highlights, t }: { index: number; coords: string; season
 }
 
 function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; className?: string; posterW?: number }) {
-  // the poster only downloads once the stop is approaching the viewport —
-  // the media-shell shimmer (on the wrapping container) covers the wait
+  // three-stage paint: the LQIP blur is on screen instantly, the sharp
+  // still fades in as soon as its (small) download lands, and the film
+  // takes over on top once it has frames — no blank, and no lingering
+  // blur while a heavy film buffers
   const { ref, near } = useNearViewport<HTMLVideoElement>();
   return (
-    <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} style={lqipStyle(slug)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
-      <source data-src={videoUrl(slug)} type="video/mp4" />
-    </video>
+    <>
+      <span aria-hidden="true" style={lqipStyle(slug)} className="lqip-layer absolute inset-0" />
+      {near && (
+        <img
+          src={posterUrl(slug, posterW)}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          onLoad={(e) => e.currentTarget.classList.add("media-ready")}
+          className={`media-fade absolute inset-0 w-full h-full object-cover ${className}`}
+        />
+      )}
+      <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+        <source data-src={videoUrl(slug)} type="video/mp4" />
+      </video>
+    </>
   );
 }
 

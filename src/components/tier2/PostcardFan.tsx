@@ -150,9 +150,12 @@ export default function PostcardFan({ region }: { region: Region }) {
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
                   {!near ? null : stop.slug && hasFilm(stop.slug) ? (
-                    <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 1200) : undefined} className="absolute inset-0 h-full w-full object-cover">
+                    <>
+                    <img src={posterUrl(stop.slug, 1200)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+                    <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1200)} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                     </video>
+                    </>
                   ) : stop.slug ? (
                     <img src={posterUrl(stop.slug, 1200)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   ) : null}

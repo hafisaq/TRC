@@ -545,9 +545,13 @@ function CountryDetailInner({
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
           {hasFilm(page.heroSlug) ? (
-            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} style={lqipStyle(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
+            <>
+            <span aria-hidden="true" style={lqipStyle(page.heroSlug)} className="lqip-layer absolute inset-0" />
+            <img src={posterUrl(page.heroSlug)} alt="" aria-hidden="true" decoding="async" fetchPriority="high" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
               <source src={videoUrl(page.heroSlug)} type="video/mp4" />
             </video>
+            </>
           ) : (
             <img src={posterUrl(page.heroSlug)} alt="" style={lqipStyle(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover" />
           )}
@@ -643,9 +647,12 @@ function CountryDetailInner({
                 </div>
                 <div data-stop-video style={lqipVar(ch.slug)} className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
                   <NearGate>{(near) => hasFilm(ch.slug) ? (
+                    <>
+                    {near && <img src={posterUrl(ch.slug)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />}
                     <video muted loop playsInline preload="none" poster={near ? posterUrl(ch.slug) : undefined} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(ch.slug)} type="video/mp4" />
                     </video>
+                    </>
                   ) : (
                     <img src={posterUrl(ch.slug, 1100)} alt="" loading="lazy" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   )}</NearGate>
