@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import type { Destination } from "../../data/tier2Destinations";
 import { submitEnquiry } from "../../lib/enquiry";
+import { t } from "../../lib/i18n";
 
 export type EnquiryOption = Pick<Destination, "id" | "interest"> & Partial<Pick<Destination, "gate">>;
 
@@ -82,9 +83,9 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
     <section id="tier2-enquire" data-tier2-stop="tier2-enquire" className="relative min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-6 pt-16 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:py-24">
       <div data-stop-text className="w-full max-w-[820px] opacity-0">
         <div className="text-center mb-7 sm:mb-9">
-          <div className="text-[9px] sm:text-[10.5px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-gold-light">Journey's end</div>
+          <div className="text-[9px] sm:text-[10.5px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-gold-light">{t("enq.journeysEnd")}</div>
           <h2 className="mt-3 sm:mt-4 font-serif font-light text-white text-[clamp(34px,12vw,58px)] leading-[1.08]">
-            Get in touch,<br className="sm:hidden" /> <span className="italic text-gold-light">we'll draw the route</span>
+            {t("enq.headline1")}<br className="sm:hidden" /> <span className="italic text-gold-light">{t("enq.headline2")}</span>
           </h2>
         </div>
 
@@ -103,7 +104,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.35em] uppercase text-navy/50">The Retreat Collection</div>
-                <div className="mt-1 text-[15px] sm:text-[17px] tracking-[0.1em] uppercase text-navy font-bold">Boarding Pass</div>
+                <div className="mt-1 text-[15px] sm:text-[17px] tracking-[0.1em] uppercase text-navy font-bold">{t("enq.boardingPass")}</div>
               </div>
               {/* No static plane icon on the card — the flight path's own
                   animated plane is the only plane, and this empty slot on
@@ -114,24 +115,24 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
 
             <div className="mt-6 sm:mt-7 flex items-center gap-2.5 sm:gap-3">
               <div>
-                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">From</div>
-                <div className="mt-1 text-[20px] sm:text-[26px] tracking-[0.04em] sm:tracking-[0.05em] text-navy">HERE</div>
+                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.from")}</div>
+                <div className="mt-1 text-[20px] sm:text-[26px] tracking-[0.04em] sm:tracking-[0.05em] text-navy">{t("enq.here")}</div>
               </div>
               <div className="flex-1 h-px bg-navy/20 relative top-3.5 mx-1">
                 <div className="absolute -top-[3px] right-0 w-0 h-0" style={{ borderTop: "4px solid transparent", borderBottom: "4px solid transparent", borderLeft: "6px solid rgba(22,36,60,.4)" }} />
               </div>
               <div className="text-right">
-                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">To</div>
-                <div className="mt-1 text-[20px] sm:text-[26px] tracking-[0.04em] sm:tracking-[0.05em] text-navy">ANYWHERE</div>
+                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.to")}</div>
+                <div className="mt-1 text-[20px] sm:text-[26px] tracking-[0.04em] sm:tracking-[0.05em] text-navy">{t("enq.anywhere")}</div>
               </div>
             </div>
 
             <label className="block mt-6 sm:mt-7">
-              <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Passenger name</div>
+              <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.passengerName")}</div>
               <input
                 name="name"
                 type="text"
-                placeholder="YOUR NAME"
+                placeholder={t("enq.yourName")}
                 required
                 autoComplete="name"
                 disabled={status !== "idle"}
@@ -141,7 +142,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             </label>
 
             <label className="block mt-5">
-              <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Contact email</div>
+              <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.contactEmail")}</div>
               <input
                 name="email"
                 type="email"
@@ -154,7 +155,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               />
             </label>
 
-            <div className="mt-6 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Cabin — where to</div>
+            <div className="mt-6 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.cabinWhereTo")}</div>
             <div className="mt-2.5 grid max-h-44 grid-cols-1 gap-2 overflow-y-auto overscroll-contain rounded-sm border border-navy/10 bg-white/20 p-2 min-[380px]:grid-cols-2 sm:max-h-none sm:flex sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0">
               {destinations.map((destination) => (
                 <button
@@ -190,23 +191,23 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             <div>
               <div className="grid grid-cols-3 gap-3 sm:block">
                 <div>
-                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Flight</div>
+                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.flight")}</div>
                   <div className="mt-1 text-[13px] sm:text-[15px] tracking-[0.06em] sm:tracking-[0.08em] text-navy">TRC · 001</div>
                 </div>
 
                 <div>
-                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Gate</div>
-                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{selectedDestination?.gate ?? "OPEN"}</div>
+                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.gate")}</div>
+                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{selectedDestination?.gate ?? t("enq.open")}</div>
                 </div>
                 <div>
-                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Seat</div>
+                  <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.seat")}</div>
                   <div className="mt-1 text-[13px] sm:text-[14px] text-navy">1A</div>
                 </div>
               </div>
 
               <div className="mt-4 sm:mt-4">
-                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">Class</div>
-                <div className="mt-1 text-[12.5px] sm:text-[13px] text-navy leading-snug">{cabin || "To be arranged"}</div>
+                <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.class")}</div>
+                <div className="mt-1 text-[12.5px] sm:text-[13px] text-navy leading-snug">{cabin || t("enq.toBeArranged")}</div>
               </div>
             </div>
 
@@ -225,15 +226,15 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             disabled={status !== "idle"}
             className="relative magnetic mt-4 sm:mt-6 w-full bg-gold border-0 text-white text-[10px] sm:text-[11px] tracking-[0.22em] sm:tracking-[0.3em] uppercase py-4.5 sm:py-5 cursor-pointer transition-colors duration-400 hover:bg-[#b08d3f] disabled:cursor-default overflow-hidden"
           >
-            <span ref={buttonTextRef} className="inline-block">Confirm enquiry</span>
+            <span ref={buttonTextRef} className="inline-block">{t("enq.confirm")}</span>
             <div ref={confirmedRef} className="absolute inset-0 flex items-center justify-center opacity-0">
-              Sent — we'll be in touch within 24 hours
+              {t("enq.sent")}
             </div>
           </button>
         </form>
 
         <div className="mt-7 sm:mt-8 pt-5 sm:pt-6 border-t border-white/12 text-center text-[8.5px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.26em] uppercase text-white/35">
-          London · Cape Town · Kyoto
+          {t("enq.cities")}
         </div>
       </div>
     </section>
