@@ -93,7 +93,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
   );
   const idx = `${String(index).padStart(2, "0")} / ${String(total).padStart(2, "0")} · ${coords}`;
   const cta = ctaHref
-    ? { href: ctaHref, onClick: undefined, label: ctaLabel ?? "Learn more" }
+    ? { href: ctaHref, onClick: undefined, label: ctaLabel ?? tr("stop.learnMore") }
     : { href: "#tier2-enquire", onClick: handleEnquireClick, label: tr("stop.enquireRoute") };
 
   if (layout === "cinematic") {

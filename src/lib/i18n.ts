@@ -28,6 +28,7 @@ const EN: Record<string, string> = {
   "status.approaching": "TRC 001 · Approaching",
   "stop.bestSeason": "Best season",
   "stop.enquireRoute": "Enquire about this route",
+  "stop.learnMore": "Learn more",
   "strip.choose": "Choose your route",
   "strip.explore": "Explore {country} →",
   "board.choose": "Choose your altitude",
