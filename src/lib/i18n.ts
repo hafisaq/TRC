@@ -92,7 +92,28 @@ const EN: Record<string, string> = {
   "gen.routing": "Routing",
   "gen.custom": "Custom",
   "gen.pace": "Pace",
-  "gen.yours": "Yours"
+  "gen.yours": "Yours",
+  "enq.journeysEnd": "Journey's end",
+  "enq.headline1": "Get in touch,",
+  "enq.headline2": "we'll draw the route",
+  "enq.boardingPass": "Boarding Pass",
+  "enq.from": "From",
+  "enq.here": "HERE",
+  "enq.to": "To",
+  "enq.anywhere": "ANYWHERE",
+  "enq.passengerName": "Passenger name",
+  "enq.yourName": "YOUR NAME",
+  "enq.contactEmail": "Contact email",
+  "enq.cabinWhereTo": "Cabin — where to",
+  "enq.flight": "Flight",
+  "enq.gate": "Gate",
+  "enq.open": "OPEN",
+  "enq.seat": "Seat",
+  "enq.class": "Class",
+  "enq.toBeArranged": "To be arranged",
+  "enq.confirm": "Confirm enquiry",
+  "enq.sent": "Sent — we'll be in touch within 24 hours",
+  "enq.cities": "London · Cape Town · Kyoto"
 };
 
 let ui: Record<string, string> = { ...EN };

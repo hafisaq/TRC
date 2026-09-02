@@ -203,9 +203,39 @@ UI = [
     ("gen.custom", "Generated pages", "Custom"),
     ("gen.pace", "Generated pages", "Pace"),
     ("gen.yours", "Generated pages", "Yours"),
+    ("enq.journeysEnd", "Enquiry form", "Journey's end"),
+    ("enq.headline1", "Enquiry form", "Get in touch,"),
+    ("enq.headline2", "Enquiry form", "we'll draw the route"),
+    ("enq.boardingPass", "Enquiry form", "Boarding Pass"),
+    ("enq.from", "Enquiry form", "From"),
+    ("enq.here", "Enquiry form", "HERE"),
+    ("enq.to", "Enquiry form", "To"),
+    ("enq.anywhere", "Enquiry form", "ANYWHERE"),
+    ("enq.passengerName", "Enquiry form", "Passenger name"),
+    ("enq.yourName", "Enquiry form", "YOUR NAME"),
+    ("enq.contactEmail", "Enquiry form", "Contact email"),
+    ("enq.cabinWhereTo", "Enquiry form", "Cabin — where to"),
+    ("enq.flight", "Enquiry form", "Flight"),
+    ("enq.gate", "Enquiry form", "Gate"),
+    ("enq.open", "Enquiry form", "OPEN"),
+    ("enq.seat", "Enquiry form", "Seat"),
+    ("enq.class", "Enquiry form", "Class"),
+    ("enq.toBeArranged", "Enquiry form", "To be arranged"),
+    ("enq.confirm", "Enquiry form", "Confirm enquiry"),
+    ("enq.sent", "Enquiry form", "Sent — we'll be in touch within 24 hours"),
+    ("enq.cities", "Enquiry form", "London · Cape Town · Kyoto"),
 ]
 for key, where, en in UI:
     rows.append(("ui", key, f"UI · {where}", en, "{...} placeholders stay as-is"))
+
+# ---- prefill Arabic from the live translation docs ----
+# The workbook doubles as the review sheet: whatever Arabic is currently on
+# the site appears in the yellow column, so the copywriter approves or
+# corrects in place and the same file re-imports in one shot.
+AR = {}
+for tdoc in q('*[_type=="translation" && lang=="ar"]{source, strings[]{path, value}}'):
+    for s in tdoc.get("strings") or []:
+        AR[(tdoc["source"], s["path"])] = s["value"]
 
 # ------------------------------------------------------------------ xlsx
 wb = Workbook()
@@ -262,7 +292,7 @@ for r, (doc_id, path, where, en, note) in enumerate(rows, start=2):
     c = ws.cell(row=r, column=4, value=en)
     c.font = BASE
     c.alignment = wrap
-    a = ws.cell(row=r, column=5)
+    a = ws.cell(row=r, column=5, value=AR.get((doc_id, path)))
     a.fill = AR_FILL
     a.font = Font(name=ARIAL, size=11)
     a.alignment = wrap_rtl
