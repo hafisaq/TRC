@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react";
-import { posterUrl, videoUrl } from "../../lib/media";
+import { posterUrl, videoUrl, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { t as tr } from "../../lib/i18n";
 
@@ -76,7 +76,7 @@ function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; clas
   // the media-shell shimmer (on the wrapping container) covers the wait
   const { ref, near } = useNearViewport<HTMLVideoElement>();
   return (
-    <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
+    <video ref={ref} muted loop playsInline preload="none" poster={near ? posterUrl(slug, posterW) : undefined} style={lqipStyle(slug)} className={`absolute inset-0 w-full h-full object-cover ${className}`}>
       <source data-src={videoUrl(slug)} type="video/mp4" />
     </video>
   );

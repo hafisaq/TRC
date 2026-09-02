@@ -7,7 +7,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
-import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized } from "../lib/media";
+import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, lqipVar, lqipVarForPoster, lqipStyle } from "../lib/media";
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
@@ -157,7 +157,7 @@ function StaysRail({
           >
             <div ref={pin ? innerRef : undefined} className={pin ? "flex gap-6 will-change-transform" : "contents"}>
               {entries.map((entry, i) => (
-                <div key={entry.name} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
+                <div key={entry.name} style={lqipVarForPoster(entry.poster)} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
                   {near && filmForPoster(entry.poster) ? (
                     <video
                       muted
@@ -545,11 +545,11 @@ function CountryDetailInner({
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
           {hasFilm(page.heroSlug) ? (
-            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
+            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} style={lqipStyle(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
               <source src={videoUrl(page.heroSlug)} type="video/mp4" />
             </video>
           ) : (
-            <img src={posterUrl(page.heroSlug)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={posterUrl(page.heroSlug)} alt="" style={lqipStyle(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover" />
           )}
           <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
@@ -641,7 +641,7 @@ function CountryDetailInner({
                     {t("page.speakToUs", { country: page.country })}
                   </button>
                 </div>
-                <div data-stop-video className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
+                <div data-stop-video style={lqipVar(ch.slug)} className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
                   <NearGate>{(near) => hasFilm(ch.slug) ? (
                     <video muted loop playsInline preload="none" poster={near ? posterUrl(ch.slug) : undefined} className="absolute inset-0 h-full w-full object-cover">
                       <source data-src={videoUrl(ch.slug)} type="video/mp4" />
@@ -903,7 +903,7 @@ function StayDossier({
         {/* the file: film + frames on the left, the reading matter on the right */}
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12">
           <div>
-            <div className="media-shell moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
+            <div style={lqipVarForPoster(gallery[0])} className="media-shell moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
               {filmForPoster(gallery[0]) || gallery[0].startsWith("/media/poster/") ? (
                 <video autoPlay muted loop playsInline poster={imgSized(gallery[0], 1400)} className="absolute inset-0 h-full w-full object-cover">
                   <source src={videoForPoster(gallery[0])} type="video/mp4" />
@@ -1093,7 +1093,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
         <div className="mt-14 grid items-start gap-10 lg:grid-cols-[0.92fr_1.08fr]">
           {/* sticky film — follows the day being read */}
           <div className="hidden lg:sticky lg:top-[120px] lg:block">
-            <div className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
+            <div style={lqipVar(days[0]?.slug ?? "")} className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
               <NearGate>{(near) => days.map((day, i) =>
                 hasFilm(day.slug) ? (
                   <video
@@ -1611,6 +1611,7 @@ function GallerySection({
                 onMouseLeave={(e) => stopTile(e.currentTarget)}
                 onFocus={(e) => playTile(e.currentTarget)}
                 onBlur={(e) => stopTile(e.currentTarget)}
+                style={lqipVarForPoster(item.poster)}
                 className={`media-shell group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
               >
                 <img

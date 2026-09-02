@@ -427,6 +427,21 @@ html[data-display-mode="standalone"] body {
 
 /* media loading: a quiet gold shimmer under any media shell, and the
    media itself fades in once its first frame is ready */
+/* blur-up: when a shell carries --lqip (Sanity's tiny base64 preview),
+   it paints instantly UNDER the fading full image — a cold load shows the
+   blurred frame, never a blank */
+.media-shell {
+  isolation: isolate;
+}
+.media-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--lqip, none);
+  background-size: cover;
+  background-position: center;
+}
 .media-shell {
   background-image: linear-gradient(
     110deg,
