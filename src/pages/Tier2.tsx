@@ -63,18 +63,21 @@ export default function Tier2() {
   // cream strip, without the hold ever becoming the nav's "active stop".
   // Built at render time (after CMS hydration), inserted after Asia by id.
   const animationStops = useMemo(() => {
-    const holds: Record<string, { id: string; mapPos: [number, number] }> = {
-      "tier2-asia": { id: "tier2-asia-hold-in", mapPos: [0.66, 0.44] },
-      "tier2-alpine": { id: "tier2-alpine-hold-in", mapPos: [0.5, 0.3] },
-      "tier2-bali": { id: "tier2-coast-hold-in", mapPos: [0.52, 0.48] },
-      "tier2-desert": { id: "tier2-desert-hold-in", mapPos: [0.55, 0.42] },
-      "tier2-cities": { id: "tier2-cities-hold-in", mapPos: [0.47, 0.3] }
+    // hold PAIRS: the -in and -out spans share an x (right-[6vw]), so the
+    // path flies each pinned selector as one dead-straight vertical lane
+    // instead of drifting across the board on a single long segment.
+    const holds: Record<string, { ids: [string, string]; mapPos: [number, number] }> = {
+      "tier2-asia": { ids: ["tier2-asia-hold-in", "tier2-asia-hold-out"], mapPos: [0.66, 0.44] },
+      "tier2-alpine": { ids: ["tier2-alpine-hold-in", "tier2-alpine-hold-out"], mapPos: [0.5, 0.3] },
+      "tier2-bali": { ids: ["tier2-coast-hold-in", "tier2-coast-hold-out"], mapPos: [0.52, 0.48] },
+      "tier2-desert": { ids: ["tier2-desert-hold-in", "tier2-desert-hold-out"], mapPos: [0.55, 0.42] },
+      "tier2-cities": { ids: ["tier2-cities-hold-in", "tier2-cities-hold-out"], mapPos: [0.47, 0.3] }
     };
     const out: typeof DESTINATIONS extends Array<infer T> ? Array<T | { id: string; mapPos: [number, number]; theme: "white"; coords: string; passive: true }> : never = [];
     for (const d of DESTINATIONS) {
       out.push(d);
       const h = holds[d.id];
-      if (h) out.push({ id: h.id, mapPos: h.mapPos, theme: "white" as const, coords: "", passive: true });
+      if (h) for (const id of h.ids) out.push({ id, mapPos: h.mapPos, theme: "white" as const, coords: "", passive: true });
     }
     return out;
   }, []);
