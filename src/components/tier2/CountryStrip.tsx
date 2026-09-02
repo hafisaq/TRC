@@ -190,9 +190,12 @@ export default function CountryStrip({ region }: { region: Region }) {
                   {!stop.slug ? (
                     <div className="absolute inset-0 bg-ink" />
                   ) : hasFilm(stop.slug) ? (
+                    <>
+                    {near && <img src={posterUrl(stop.slug, 900)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />}
                     <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 900) : undefined} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
                       <source data-src={videoUrl(stop.slug)} type="video/mp4" />
                     </video>
+                    </>
                   ) : (
                     near ? <img src={posterUrl(stop.slug, 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" /> : <span className="absolute inset-0" />
                   )}

@@ -84,6 +84,8 @@ export default function DescentBoard({ region }: { region: Region }) {
             style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
           >
             {!near ? null : stop.slug && hasFilm(stop.slug) ? (
+              <>
+              <img src={posterUrl(stop.slug, 1600)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
               <video
                 ref={(el) => {
                   videoRefs.current[i] = el;
@@ -97,6 +99,7 @@ export default function DescentBoard({ region }: { region: Region }) {
               >
                 <source data-src={videoUrl(stop.slug)} type="video/mp4" />
               </video>
+              </>
             ) : stop.slug ? (
               <img
                 src={posterUrl(stop.slug, 1600)}
