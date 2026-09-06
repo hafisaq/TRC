@@ -41,7 +41,6 @@ const LOADER_STARS = Array.from({ length: 46 }, (_, i) => {
 export default function Tier2() {
   const dotMapRef = useRef<DotMapHandle>(null);
   const [activeStopId, setActiveStopId] = useState(DESTINATIONS[0].id);
-  const [routeProgress, setRouteProgress] = useState(0);
   const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,9 +51,11 @@ export default function Tier2() {
   const stopTotal = DESTINATIONS.length;
 
   useEffect(() => {
-    // long enough for one full orbit of the plane to read (2.4s spin —
-    // the fade-out overlaps its second lap)
-    const timer = window.setTimeout(() => setIsLoading(false), 1700);
+    // Content is already hydrated, so this is a brand beat, not a wait:
+    // just long enough for the plane's orbit and one shooting star to read
+    // (the star launches at 0.25s and crosses in ~0.45s; the fade-out
+    // overlaps the tail). Below ~1s neither animation registers at all.
+    const timer = window.setTimeout(() => setIsLoading(false), 1250);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -84,7 +85,6 @@ export default function Tier2() {
 
   useTier2Animations(dotMapRef, animationStops, {
     onActiveStopChange: setActiveStopId,
-    onProgressChange: setRouteProgress,
     heroReady: !isLoading
   });
 
@@ -145,7 +145,6 @@ export default function Tier2() {
       <Tier2Nav
         destinations={DESTINATIONS}
         activeStopId={activeStopId}
-        routeProgress={routeProgress}
         statusText={`${t("status.approaching")} ${activeDestination.statusLabel}`}
         onEnquire={() => handleEnquire()}
       />

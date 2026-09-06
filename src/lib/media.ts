@@ -52,10 +52,23 @@ export const lqipVarForPoster = (poster: string): CSSProperties | undefined => {
 // original (~600KB+) becomes a ~100-200KB WebP/AVIF sized to what the
 // layout actually needs. Applied to any cdn.sanity.io image URL; local
 // demo files pass through untouched.
-export const imgSized = (url: string, w = 1600) =>
-  url.includes("cdn.sanity.io/images") && !url.includes("?")
-    ? `${url}?auto=format&q=75&w=${w}`
-    : url;
+export function imgSized(url: string, w = 1600): string {
+  if (!url.startsWith("https://cdn.sanity.io/images/")) return url;
+  const image = new URL(url);
+  image.searchParams.set("auto", "format");
+  image.searchParams.set("q", "75");
+  image.searchParams.set("w", String(Math.max(1, Math.round(w))));
+  if (!image.searchParams.has("fit")) image.searchParams.set("fit", "max");
+  return image.toString();
+}
+
+export function imageSrcSet(url: string, maxWidth = 1600): string | undefined {
+  if (!url.startsWith("https://cdn.sanity.io/images/")) return undefined;
+  const originalWidth = Number(new URL(url).pathname.match(/-(\d+)x\d+\./)?.[1]) || maxWidth;
+  const limit = Math.min(originalWidth, maxWidth);
+  const widths = [...new Set([320, 480, 640, 800, 1100, 1440, limit].filter(w => w <= limit))];
+  return widths.sort((a, b) => a - b).map(w => `${imgSized(url, w)} ${w}w`).join(", ");
+}
 
 export const posterUrl = (key: string, w = 1600) => imgSized(posters.get(key) ?? `/media/poster/${key}.jpg`, w);
 
@@ -65,7 +78,9 @@ export const videoUrl = (key: string) => films.get(key) ?? `/media/video/${key}.
 // demo convention (poster path -> sibling mp4).
 export const videoForPoster = (poster: string) =>
   filmByPoster.get(poster) ??
-  poster.replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4");
+  (poster.startsWith("/media/poster/")
+    ? poster.replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")
+    : undefined);
 
 // Derive a registry key from a poster path/URL: demo paths map back to
 // their slug; anything else (a CMS URL) registers itself under a stable

@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { MediaImage, MediaVideo } from "../Media";
 
 // The Grand Cities selector — a split-flap departures board. Where the
 // mountains got an altimeter and the desert a caravan line, the cities
@@ -81,7 +82,6 @@ function FlapText({ text, active }: { text: string; active: boolean }) {
 export default function TerminalBoard({ region }: { region: Region }) {
   const [active, setActive] = useState(0);
   const [clock, setClock] = useState("");
-  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const sectionRef = useRef<HTMLElement | null>(null);
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
@@ -118,25 +118,6 @@ export default function TerminalBoard({ region }: { region: Region }) {
     return () => window.clearInterval(id);
   }, []);
 
-  // only the active window's film runs
-  useEffect(() => {
-    videoRefs.current.forEach((v, j) => {
-      if (!v) return;
-      if (j === active) {
-        const source = v.querySelector<HTMLSourceElement>("source[data-src]");
-        if (source && !source.src) {
-          source.src = source.dataset.src || "";
-          v.load();
-        }
-        const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
-        tryPlay();
-        v.addEventListener("canplay", tryPlay, { once: true });
-      } else {
-        v.pause();
-      }
-    });
-  }, [active, near]);
-
   if (!n) return null;
   const activeStop = region.stops[active];
   const gidOf = (country: string) =>
@@ -162,8 +143,8 @@ export default function TerminalBoard({ region }: { region: Region }) {
                 className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
                 style={{ opacity: active === i ? 0.22 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
               >
-                {stop.slug && (
-                  <img
+                {Math.abs(active - i) <= 1 && stop.slug && (
+                  <MediaImage
                     src={posterUrl(stop.slug, 1600)}
                     alt=""
                     loading="lazy"
@@ -233,7 +214,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
                         {/* mobile inline still */}
                         {stop.slug && (
                           <span className="media-shell relative mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden" style={lqipVar(stop.slug)}>
-                            <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
+                            <MediaImage src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
                           </span>
                         )}
                       </span>
@@ -266,32 +247,9 @@ export default function TerminalBoard({ region }: { region: Region }) {
                         className="absolute inset-0 transition-opacity duration-700"
                         style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
                       >
-                        {stop.slug && hasFilm(stop.slug) ? (
-                          <>
-                          <img src={posterUrl(stop.slug, 1280)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                          <video
-                            ref={(el) => {
-                              videoRefs.current[i] = el;
-                            }}
-                            muted
-                            loop
-                            playsInline
-                            preload="none"
-                            poster={posterUrl(stop.slug, 1280)}
-                            className="absolute inset-0 h-full w-full object-cover"
-                          >
-                            <source data-src={videoUrl(stop.slug)} type="video/mp4" />
-                          </video>
-                          </>
-                        ) : stop.slug ? (
-                          <img
-                            src={posterUrl(stop.slug, 1280)}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
-                        ) : null}
+                        {Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
+                          src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
+                          poster={posterUrl(stop.slug, 1280)} active={active === i} sizes="40vw" />}
                       </div>
                     ))}
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_50%,rgba(14,13,12,.82))]" />

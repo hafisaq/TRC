@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, lqipVar } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
+import { MediaVideo } from "../Media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -14,7 +15,6 @@ const countWord = (n: number) => WORDS[n] ?? String(n);
 // row of country cards horizontally past the viewport. Hovering a card wakes
 // its footage; clicking flies you to that country's own page.
 export default function CountryStrip({ region }: { region: Region }) {
-  const [near, setNear] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const rowRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -37,6 +37,7 @@ export default function CountryStrip({ region }: { region: Region }) {
     // offsetWidth (layout truth, immune to both transforms and the
     // scrollWidth-collapses-under-overflow-visible quirk) — not scrollWidth.
     const measure = () => {
+      current = -1;
       const inner = innerRef.current;
       const outer = rowRef.current;
       if (!inner || !outer || window.innerWidth < 1024) {
@@ -59,10 +60,11 @@ export default function CountryStrip({ region }: { region: Region }) {
       const rect = section.getBoundingClientRect();
       const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
       target = clamp(-rect.top / scrollable, 0, 1);
+      if (!raf) raf = requestAnimationFrame(tick);
     };
 
     const tick = () => {
-      raf = requestAnimationFrame(tick);
+      raf = 0;
       // ease toward the target; snap when close so the loop idles cheaply
       const next = reducedMotion ? target : current + (target - current) * 0.14;
       const settled = Math.abs(next - target) < 0.0004;
@@ -75,11 +77,11 @@ export default function CountryStrip({ region }: { region: Region }) {
       if (barRef.current) {
         barRef.current.style.width = `${current * 100}%`;
       }
+      if (!settled) raf = requestAnimationFrame(tick);
     };
 
     measure();
     readTarget();
-    tick();
     const onResize = () => {
       measure();
       readTarget();
@@ -94,50 +96,6 @@ export default function CountryStrip({ region }: { region: Region }) {
       window.removeEventListener("load", onResize);
     };
   }, []);
-
-  // Warm the card films before anyone hovers: once the strip is within a
-  // viewport of scrolling, attach each film's src with preload="metadata"
-  // so the browser fetches the moov atom (a few KB). Hover playback then
-  // starts from a primed pipeline instead of a cold URL.
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-        setNear(true);
-        section.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
-          const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-          if (source && !source.src) {
-            source.src = source.dataset.src || "";
-            video.preload = "metadata";
-            video.load();
-          }
-        });
-      },
-      { rootMargin: "100% 0px" }
-    );
-    io.observe(section);
-    return () => io.disconnect();
-  }, []);
-
-  const wakeVideo = (card: HTMLElement, play: boolean) => {
-    const video = card.querySelector<HTMLVideoElement>("video");
-    if (!video) return;
-    const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-    if (source && !source.src) {
-      source.src = source.dataset.src || "";
-      video.load();
-    }
-    if (play) {
-      const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
-      tryPlay();
-      video.addEventListener("canplay", tryPlay, { once: true });
-    } else {
-      video.pause();
-    }
-  };
 
   return (
     <section ref={sectionRef} id="tier2-asia-countries" className="relative bg-cream-deep text-navy lg:h-[280svh]">
@@ -185,20 +143,13 @@ export default function CountryStrip({ region }: { region: Region }) {
                   className={`media-shell group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
                     goldCard ? "border-gold/50 shadow-[0_16px_44px_rgba(200,162,76,.18)]" : "border-navy/15 shadow-[0_16px_44px_rgba(22,36,60,.12)]"
                   } hover:border-gold`}
-                  onMouseEnter={(e) => wakeVideo(e.currentTarget, true)}
-                  onMouseLeave={(e) => wakeVideo(e.currentTarget, false)}
                 >
                   {!stop.slug ? (
                     <div className="absolute inset-0 bg-ink" />
-                  ) : hasFilm(stop.slug) ? (
-                    <>
-                    {near && <img src={posterUrl(stop.slug, 900)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />}
-                    <video muted loop playsInline preload="none" poster={near ? posterUrl(stop.slug, 900) : undefined} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]">
-                      <source data-src={videoUrl(stop.slug)} type="video/mp4" />
-                    </video>
-                    </>
                   ) : (
-                    near ? <img src={posterUrl(stop.slug, 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" /> : <span className="absolute inset-0" />
+                    <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 900)}
+                      hover sizes="(min-width: 1024px) 34vw, (min-width: 640px) 52vw, 76vw"
+                      className="transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" />
                   )}
                   {/* lighter than before — just enough for legibility */}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.72),rgba(14,13,12,.06)_52%,rgba(14,13,12,.16))] transition-opacity duration-500 group-hover:opacity-75" />

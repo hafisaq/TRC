@@ -1,10 +1,6 @@
-// Sanity hydration: one GROQ round-trip at boot pulls every content
-// surface (home stops, the Asia region + stays, country pages) and
-// rewrites the bundled data stores IN PLACE before first render — so
-// every component keeps its exact types and code, and the bundled demo
-// content remains the automatic fallback whenever Sanity is unreachable,
-// slow (3s budget), or missing a piece. Media flows through the registry
-// in lib/media.ts, so posters/films become CDN-managed transparently.
+// Hydrate only the current route, preserving the existing data stores.
+// Cached published content renders immediately while a fresh copy is saved
+// for the next visit; applying it mid-scroll would move the flight path.
 import { DESTINATIONS, type Destination } from "../data/tier2Destinations";
 import { ASIA } from "../data/regions/asia";
 import { ALPINE } from "../data/regions/alpine";
@@ -27,12 +23,12 @@ type Fact = { label?: string; value?: string };
 const MEDIA_PROJ = `{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}`;
 
 const QUERY = `{
-  "destinations": *[_type=="destination"]|order(order asc){
+  "destinations": *[_type=="destination" && $home]|order(order asc){
     _id, navLabel, eyebrow, title, copy, coords, season, highlights, theme,
     layout, mapPos, interest, gate, statusLabel, ctaLabel, ctaHref,
     "media": ${MEDIA_PROJ}
   },
-  "regions": *[_type=="region"]{
+  "regions": *[_type=="region" && ($home || slug.current == $region)]{
     _id, "slug": slug.current, title, intro, focus,
     stops[]{
       _key, country, eyebrow, title, copy, coords, season, highlights, mapPos, theme,
@@ -40,15 +36,15 @@ const QUERY = `{
     },
     catalog[]{
       _key, id, label,
-      entries[]->{
+      "entries": select(!$home && id == $country => entries[]->{
         _id, name, location, description, coordinates, season, highlights,
         facts[]{_key, label, value}, assets[]{_key, title, category, "url": file.asset->url},
         "media": ${MEDIA_PROJ},
         "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url, "lqip": poster.asset->metadata.lqip}
-      }
+      }, [])
     }
   },
-  "pages": *[_type=="countryPage"]{
+  "pages": *[_type=="countryPage" && !$home && slug.current == $country]{
     _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
     "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url, "lqip": heroMedia.poster.asset->metadata.lqip},
@@ -56,7 +52,13 @@ const QUERY = `{
     days[]{_key, title, copy, details, "media": ${MEDIA_PROJ}},
     essentials[]{_key, title, copy, points[]{_key, label, value}}
   },
-  "translations": *[_type=="translation" && lang=="ar"]{source, strings[]{path, value}},
+  "translations": *[_type=="translation" && lang=="ar" && $arabic && (
+    source == "ui" ||
+    source in *[_type=="destination" && $home]._id ||
+    source in *[_type=="region" && ($home || slug.current == $region)]._id ||
+    source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
+    source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref
+  )]{source, strings[]{path, value}},
   "settings": *[_id=="siteSettings"][0]{showLanguageSwitch}
 }`;
 
@@ -101,9 +103,18 @@ function frameFocus(stops: Array<{ mapPos: [number, number] }>) {
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export async function hydrateFromCms(): Promise<boolean> {
+  const route = window.location.pathname.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/);
+  const params = new URLSearchParams({
+    query: QUERY,
+    perspective: "published",
+    $home: JSON.stringify(!route),
+    $region: JSON.stringify(route?.[1] ?? ""),
+    $country: JSON.stringify(route?.[2] ?? ""),
+    $arabic: JSON.stringify(isAr())
+  });
   const url =
     `https://${PROJECT_ID}.apicdn.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
-    `?query=${encodeURIComponent(QUERY)}&perspective=published`;
+    `?${params}`;
   let data: {
     destinations?: Array<Record<string, unknown> & { _id: string; media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
     regions?: Array<Record<string, unknown>> | null;
@@ -111,32 +122,40 @@ export async function hydrateFromCms(): Promise<boolean> {
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
     settings?: { showLanguageSwitch?: boolean } | null;
   };
-  // Last-known payload, cached locally. On a cold or slow connection the
-  // site hydrates INSTANTLY from this copy while the network refreshes it
-  // in the background for the next load; on a fast connection the fresh
-  // response wins the race and editors still see publishes after one
-  // refresh. First-ever visits simply wait for the network as before.
-  const CACHE_KEY = "trc-cms-v1";
+  // Reuse this route's last published response when the network is slow;
+  // a fast response still wins (see the race below).
+  const CACHE_PREFIX = `trc-cms-v2:${PROJECT_ID}:${DATASET}:`;
+  const CACHE_KEY = `${CACHE_PREFIX}${isAr() ? "ar" : "en"}:${route ? `${route[1]}/${route[2]}` : "home"}`;
   let cached: typeof data | null = null;
   try {
-    cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    const entry = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (entry?.data && Date.now() - entry.savedAt < 7 * 24 * 60 * 60 * 1000) cached = entry.data;
   } catch {
     cached = null;
   }
   const save = (d: unknown) => {
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(d));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data: d, savedAt: Date.now() }));
+      const keys = Object.keys(localStorage).filter(key => key.startsWith(CACHE_PREFIX));
+      // Keep browsing many countries from exhausting mobile storage.
+      if (keys.length > 12) {
+        const oldest = keys.filter(key => key !== CACHE_KEY).sort((a, b) =>
+          JSON.parse(localStorage.getItem(a) || "{}").savedAt - JSON.parse(localStorage.getItem(b) || "{}").savedAt);
+        oldest.slice(0, keys.length - 12).forEach(key => localStorage.removeItem(key));
+      }
     } catch {
       /* quota/private mode — cache is best-effort */
     }
   };
   const fetchFresh = (async () => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(`sanity ${res.status}`);
-      return (await res.json()).result as typeof data;
+      const result = (await res.json()).result;
+      if (!result || !Array.isArray(result.regions)) throw new Error("invalid CMS response");
+      return result as typeof data;
     } finally {
       clearTimeout(timer);
     }
@@ -144,6 +163,10 @@ export async function hydrateFromCms(): Promise<boolean> {
 
   try {
     if (cached) {
+      // race: a fast network (the common case) wins and editors see their
+      // publish after one refresh; a slow one falls back to the cached copy
+      // instantly and refreshes it for next time. This all happens before
+      // first render, so nothing shifts mid-scroll.
       const fresh = await Promise.race([
         fetchFresh.catch(() => null),
         new Promise<null>((r) => setTimeout(() => r(null), 700))
@@ -153,7 +176,6 @@ export async function hydrateFromCms(): Promise<boolean> {
         save(fresh);
       } else {
         data = cached;
-        console.info("[cms] hydrated from local cache; refreshing in background");
         fetchFresh.then(save).catch(() => undefined);
       }
     } else {

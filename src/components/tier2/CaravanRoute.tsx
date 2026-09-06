@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { MediaImage, MediaVideo } from "../Media";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -39,26 +40,6 @@ export default function CaravanRoute({ region }: { region: Region }) {
       window.removeEventListener("resize", readTarget);
     };
   }, [n]);
-
-  // wake the active country's film, rest the others
-  useEffect(() => {
-    region.stops.forEach((s, i) => {
-      const v = document.querySelector<HTMLVideoElement>(`#caravan-sky-${s.id} video`);
-      if (!v) return;
-      if (i === active) {
-        const src = v.querySelector<HTMLSourceElement>("source[data-src]");
-        if (src && !src.src) {
-          src.src = src.dataset.src || "";
-          v.load();
-        }
-        const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
-        tryPlay();
-        v.addEventListener("canplay", tryPlay, { once: true });
-      } else {
-        v.pause();
-      }
-    });
-  }, [active, region.stops, near]);
 
   if (!n) return null;
 
@@ -101,16 +82,9 @@ export default function CaravanRoute({ region }: { region: Region }) {
               className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
               style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
             >
-              {!near ? null : stop.slug && hasFilm(stop.slug) ? (
-                <>
-                <img src={posterUrl(stop.slug, 1600)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1600)} className="absolute inset-0 h-full w-full object-cover">
-                  <source data-src={videoUrl(stop.slug)} type="video/mp4" />
-                </video>
-                </>
-              ) : stop.slug ? (
-                <img src={posterUrl(stop.slug, 1600)} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
-              ) : null}
+              {near && Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
+                src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
+                poster={posterUrl(stop.slug)} active={active === i} />}
             </div>
           ))}
           {/* dusk veil for legibility */}
@@ -207,7 +181,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
                 className="media-shell relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
               >
                 {near && stop.slug && (
-                  <img src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+                  <MediaImage src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.78),rgba(14,13,12,.08)_55%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-5">

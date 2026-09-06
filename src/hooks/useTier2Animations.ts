@@ -11,24 +11,6 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 const $ = <T extends Element>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
 const $$ = <T extends Element>(selector: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(selector));
 
-const safePlay = (video: HTMLVideoElement) => {
-  const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-  if (source) {
-    source.src = source.dataset.src || "";
-    source.removeAttribute("data-src");
-    video.load();
-  }
-  const tryPlay = () => {
-    const play = video.play();
-    if (play) play.catch(() => undefined);
-  };
-  tryPlay();
-  // Safari can reject a play() issued in the same tick as load() (resource
-  // selection hasn't run yet) and never recovers on its own — retry once
-  // the element says it actually has playable frames.
-  video.addEventListener("canplay", tryPlay, { once: true });
-};
-
 export type Tier2Stop = {
   id: string;
   mapPos: [number, number];
@@ -162,27 +144,9 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             { opacity: 0, scale: prefersReducedMotion ? 1 : 0.92 },
             { opacity: 1, scale: 1, duration: prefersReducedMotion ? 0 : 1, delay: revealDelay, ease: "power3.out" }
           );
-          const video = videoWrap.querySelector<HTMLVideoElement>("video");
-          if (video) safePlay(video);
         });
         dotMapRef.current?.burst(stop.mapPos[0], stop.mapPos[1], accent);
 
-        // lookahead: start buffering the NEXT stop's film now, so by the
-        // time the user scrolls there it plays instead of holding on its
-        // poster. One section ahead keeps at most one film in flight.
-        const at = watched.findIndex((w) => w.stop.id === stop.id);
-        const next = watched[at + 1];
-        if (next && !revealed.has(next.stop.id)) {
-          $$<HTMLVideoElement>("[data-stop-video] video", next.section).forEach((video) => {
-            const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-            if (source) {
-              source.src = source.dataset.src || "";
-              source.removeAttribute("data-src");
-              video.preload = "auto";
-              video.load();
-            }
-          });
-        }
       };
 
       const watched: Array<{ stop: Tier2Stop; section: HTMLElement }> = [];
@@ -342,6 +306,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
 
         if (prefersReducedMotion) {
           planeTween.progress(1);
+          document.documentElement.style.setProperty("--route-progress", "1");
           options.onProgressChange?.(1);
         } else {
           // The plane is ALWAYS scroll-scrubbed — it never takes over and
@@ -376,6 +341,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           let trailShown = true;
           let pulsed = false;
           const applyProgress = (progress: number) => {
+            document.documentElement.style.setProperty("--route-progress", String(progress));
             options.onProgressChange?.(progress);
             const scrollP = Math.min(1, progress / LAND_AT);
             // where the scroll says the plane should BE, in document Y —

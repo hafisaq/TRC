@@ -135,9 +135,13 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       preserveAspectRatio="none"
       aria-hidden="true"
     >
+      {/* both start invisible: the scrub in useTier2Animations sets the
+          dash/offset and fades them in once it has bound — otherwise the
+          fully-stroked path paints for a frame before it is "un-drawn" */}
       <path
         id="tier2-flight-path"
         d={geometry.d}
+        opacity={0}
         stroke="#c9a24d"
         strokeWidth={geometry.w >= 1440 ? 2 : 1.5}
         fill="none"
@@ -152,7 +156,7 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
         </g>
       ))}
 
-      <g id="tier2-flight-plane">
+      <g id="tier2-flight-plane" opacity={0}>
         <g transform={`scale(${geometry.w < 640 ? 0.62 : geometry.w < 1024 ? 0.82 : 1})`}>
         <g transform="rotate(90 12 12) translate(-14 -14) scale(1)">
           <path
