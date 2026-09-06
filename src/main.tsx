@@ -1,9 +1,5 @@
-import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/main.css";
-import Tier2 from "./pages/Tier2";
-
-const CountryDetailRoute = lazy(() => import("./pages/CountryDetailRoute"));
 
 const path = window.location.pathname.replace(/\/+$/, "");
 const routeMatch = path.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)$/);
@@ -24,17 +20,12 @@ if (path === "/desert") {
 if (path === "/cities") {
   window.location.replace("/#tier2-cities-countries");
 }
-const page = routeMatch ? (
-  <Suspense fallback={null}>
-    <CountryDetailRoute regionSlug={routeMatch[1]} slug={routeMatch[2]} />
-  </Suspense>
-) : (
-  <Tier2 />
-);
+// Start the selected page chunk and CMS request together.
+const page = routeMatch
+  ? import("./pages/CountryDetailRoute").then(({ default: Page }) => <Page regionSlug={routeMatch[1]} slug={routeMatch[2]} />)
+  : import("./pages/Tier2").then(({ default: Page }) => <Page />);
 
-// Hydrate content from Sanity BEFORE first render (3s budget) — on any
-// failure the bundled demo content renders unchanged. The home page's own
-// loader covers the wait.
+// The HTML loading mark covers the network wait, before React is ready.
 import { hydrateFromCms } from "./lib/cms";
 import { isAr } from "./lib/i18n";
 
@@ -47,8 +38,11 @@ if (isAr()) {
   link.href = "https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@200;300;400;500&display=swap";
   document.head.appendChild(link);
 }
-hydrateFromCms().finally(() => {
-  createRoot(document.getElementById("root")!).render(page);
+Promise.all([hydrateFromCms(), page]).then(([, content]) => {
+  createRoot(document.getElementById("root")!).render(content);
+}).catch(() => {
+  const status = document.getElementById("boot-status");
+  if (status) status.textContent = "The route could not load. Please refresh to try again.";
 });
 
 const standalone =

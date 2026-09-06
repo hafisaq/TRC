@@ -7,12 +7,11 @@ import { t } from "../../lib/i18n";
 type Tier2NavProps = {
   destinations: Destination[];
   activeStopId: string;
-  routeProgress: number;
   statusText: string;
   onEnquire: () => void;
 };
 
-export default function Tier2Nav({ destinations, activeStopId, routeProgress, statusText, onEnquire }: Tier2NavProps) {
+export default function Tier2Nav({ destinations, activeStopId, statusText, onEnquire }: Tier2NavProps) {
   const handleClick = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (href === "#tier2-enquire") {
@@ -84,7 +83,7 @@ export default function Tier2Nav({ destinations, activeStopId, routeProgress, st
         <div className="absolute left-0 right-0 top-0 h-px bg-white/10">
           <div
             className="h-full bg-gold shadow-[0_0_14px_rgba(227,198,130,.75)] transition-[width] duration-200"
-            style={{ width: `${Math.max(0, Math.min(1, routeProgress)) * 100}%` }}
+            style={{ width: "100%", transformOrigin: "left", transform: "scaleX(var(--route-progress, 0))" }}
           />
         </div>
         <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-white/42">{statusText}</div>

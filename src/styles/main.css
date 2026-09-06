@@ -389,7 +389,7 @@ html[data-display-mode="standalone"] body {
   background: linear-gradient(90deg, transparent, rgba(227, 198, 130, 0.9));
   transform: rotate(14deg);
   opacity: 0;
-  animation: loader-shoot 2.8s ease-in 0.7s infinite;
+  animation: loader-shoot 2.8s ease-in 0.25s infinite;
 }
 
 @keyframes loader-shoot {

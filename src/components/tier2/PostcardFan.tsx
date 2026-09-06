@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { MediaImage, MediaVideo } from "../Media";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -43,28 +44,6 @@ export default function PostcardFan({ region }: { region: Region }) {
       window.removeEventListener("resize", readTarget);
     };
   }, [n]);
-
-  // the front card's film wakes when it comes forward
-  useEffect(() => {
-    const stop = region.stops[active];
-    if (!stop) return;
-    const el = document.querySelector<HTMLVideoElement>(`#postcard-${stop.id} video`);
-    if (el) {
-      const src = el.querySelector<HTMLSourceElement>("source[data-src]");
-      if (src && !src.src) {
-        src.src = src.dataset.src || "";
-        el.load();
-      }
-      const tryPlay = () => { const p = el.play(); if (p) p.catch(() => undefined); };
-      tryPlay();
-      el.addEventListener("canplay", tryPlay, { once: true });
-    }
-    // rest the others
-    region.stops.forEach((s, i) => {
-      if (i === active) return;
-      document.querySelector<HTMLVideoElement>(`#postcard-${s.id} video`)?.pause();
-    });
-  }, [active, region.stops, near]);
 
   if (!n) return null;
 
@@ -150,16 +129,8 @@ export default function PostcardFan({ region }: { region: Region }) {
                 style={{ transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})` }}
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
-                  {!near ? null : stop.slug && hasFilm(stop.slug) ? (
-                    <>
-                    <img src={posterUrl(stop.slug, 1200)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                    <video muted loop playsInline preload="none" poster={posterUrl(stop.slug, 1200)} className="absolute inset-0 h-full w-full object-cover">
-                      <source data-src={videoUrl(stop.slug)} type="video/mp4" />
-                    </video>
-                    </>
-                  ) : stop.slug ? (
-                    <img src={posterUrl(stop.slug, 1200)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                  ) : null}
+                  {near && stop.slug && <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
+                    poster={posterUrl(stop.slug, 1200)} active={isActive} sizes="(min-width: 1024px) 44vw, 100vw" />}
                   <div className={`absolute inset-0 bg-ink/35 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`} />
                   {/* postmark — coords in a dashed ring, like a cancelled stamp */}
                   <div className="absolute right-4 top-4 grid h-20 w-20 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center backdrop-blur-[2px]">
@@ -198,7 +169,7 @@ export default function PostcardFan({ region }: { region: Region }) {
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
                   {near && stop.slug && (
-                    <img src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+                    <MediaImage src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
                   )}
                   <div className="absolute right-3 top-3 grid h-14 w-14 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center">
                     <div className="font-mono text-[6px] uppercase leading-[1.5] tracking-[0.12em] text-white/90">TRC<br />{stop.coords}</div>

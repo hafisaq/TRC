@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
-import { posterUrl, videoUrl, lqipStyle } from "../../lib/media";
-import { useNearViewport } from "../../lib/useNearViewport";
+import { posterUrl, videoUrl, hasFilm, lqipStyle } from "../../lib/media";
+import { MediaVideo } from "../Media";
 import { t as tr } from "../../lib/i18n";
 
 export type StopTheme = "gold" | "white";
@@ -76,36 +76,12 @@ function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; clas
   // still fades in as soon as its (small) download lands, and the film
   // takes over on top once it has frames — no blank, and no lingering
   // blur while a heavy film buffers
-  const { ref, near } = useNearViewport<HTMLVideoElement>();
   return (
     <>
       <span aria-hidden="true" style={lqipStyle(slug)} className="lqip-layer absolute inset-0" />
-      {near && (
-        <img
-          src={posterUrl(slug, posterW)}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          onLoad={(e) => e.currentTarget.classList.add("media-ready")}
-          className={`media-fade absolute inset-0 w-full h-full object-cover ${className}`}
-        />
-      )}
-      <video
-        ref={ref}
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={near ? posterUrl(slug, posterW) : undefined}
-        onPlaying={(e) => {
-          // frames are genuinely rendering — dissolve the still under it
-          const img = e.currentTarget.parentElement?.querySelector<HTMLImageElement>("img[aria-hidden]");
-          img?.classList.add("film-under");
-        }}
-        className={`absolute inset-0 z-[1] w-full h-full object-cover ${className}`}
-      >
-        <source data-src={videoUrl(slug)} type="video/mp4" />
-      </video>
+      <MediaVideo src={hasFilm(slug) ? videoUrl(slug) : undefined} poster={posterUrl(slug, posterW)}
+        sizes={posterW <= 640 ? "300px" : posterW <= 1200 ? "(min-width: 1024px) 560px, 100vw" : "100vw"}
+        className={className} />
     </>
   );
 }

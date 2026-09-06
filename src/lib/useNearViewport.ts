@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 // stays true. Media gated behind this defers its poster/image download
 // until the user is actually approaching, instead of everything on the
 // page loading at boot. SSR/observer-less environments resolve to true.
-export function useNearViewport<T extends Element>(margin = "120%") {
+export function useNearViewport<T extends Element>(margin = "400px") {
   const ref = useRef<T | null>(null);
   const [near, setNear] = useState(false);
 
@@ -26,7 +26,7 @@ export function useNearViewport<T extends Element>(margin = "120%") {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [near]);
+  }, [near, margin]);
 
   return { ref, near };
 }

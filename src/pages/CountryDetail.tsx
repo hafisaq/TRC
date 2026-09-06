@@ -11,6 +11,7 @@ import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, 
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
+import { MediaImage, MediaVideo } from "../components/Media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -21,19 +22,6 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 // the home selectors: the section holds still while vertical scroll slides
 // the rail sideways. Falls back to a plain swipe row on mobile / when the
 // content already fits. Media defers until the section approaches.
-
-// Render-prop gate for inline use inside maps (hooks can't live in loops):
-// a zero-size sentinel marks the spot; children get `near` once the user
-// approaches, deferring poster/film downloads until then.
-function NearGate({ children }: { children: (near: boolean) => React.ReactNode }) {
-  const { ref, near } = useNearViewport<HTMLSpanElement>();
-  return (
-    <>
-      <span ref={ref} aria-hidden="true" />
-      {children(near)}
-    </>
-  );
-}
 
 function StaysRail({
   entries,
@@ -68,6 +56,7 @@ function StaysRail({
     let raf = 0;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const measure = () => {
+      current = -1;
       const inner = innerRef.current;
       const outer = rowRef.current;
       if (!inner || !outer || window.innerWidth < 1024) {
@@ -87,9 +76,10 @@ function StaysRail({
       const rect = section.getBoundingClientRect();
       const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
       target = clamp(-rect.top / scrollable, 0, 1);
+      if (!raf) raf = requestAnimationFrame(tick);
     };
     const tick = () => {
-      raf = requestAnimationFrame(tick);
+      raf = 0;
       const next = reducedMotion ? target : current + (target - current) * 0.14;
       const settled = Math.abs(next - target) < 0.0004;
       const value = settled ? target : next;
@@ -98,10 +88,10 @@ function StaysRail({
       if (maxShift > 0 && innerRef.current) {
         innerRef.current.style.transform = `translate3d(${-maxShift * current}px, 0, 0)`;
       }
+      if (!settled) raf = requestAnimationFrame(tick);
     };
     measure();
     readTarget();
-    tick();
     const onResize = () => {
       measure();
       readTarget();
@@ -116,16 +106,6 @@ function StaysRail({
       window.removeEventListener("load", onResize);
     };
   }, [entries.length, isLg]);
-
-  // rail films wake once the section is near
-  useEffect(() => {
-    if (!near) return;
-    sectionRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
-      const tryPlay = () => { const p = v.play(); if (p) p.catch(() => undefined); };
-      tryPlay();
-      v.addEventListener("canplay", tryPlay, { once: true });
-    });
-  }, [near]);
 
   const pin = isLg && entries.length > 3;
   const pinHeight = pin ? `${Math.min(120 + entries.length * 35, 300)}svh` : undefined;
@@ -159,29 +139,8 @@ function StaysRail({
             <div ref={pin ? innerRef : undefined} className={pin ? "flex gap-6 will-change-transform" : "contents"}>
               {entries.map((entry, i) => (
                 <div key={entry.name} style={lqipVarForPoster(entry.poster)} className="media-shell group relative aspect-[4/5] w-[300px] shrink-0 snap-start overflow-hidden rounded-lg border border-navy/15 shadow-[0_22px_54px_rgba(22,36,60,.16)] sm:w-[340px]">
-                  {near && filmForPoster(entry.poster) ? (
-                    <video
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      poster={imgSized(entry.poster, 900)}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                    >
-                      <source src={filmForPoster(entry.poster)} type="video/mp4" />
-                    </video>
-                  ) : near ? (
-                    <img
-                      src={imgSized(entry.poster, 900)}
-                      alt=""
-                      width={1080}
-                      height={608}
-                      loading="lazy"
-                      decoding="async"
-                      onLoad={(e) => e.currentTarget.classList.add("media-ready")}
-                      className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
-                    />
-                  ) : null}
+                  {near && <MediaVideo src={filmForPoster(entry.poster)} poster={imgSized(entry.poster, 900)} hover
+                    sizes="(min-width: 640px) 340px, 300px" className="transition-transform duration-700 ease-out group-hover:scale-[1.07]" />}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.9),rgba(14,13,12,.15)_55%)]" />
                   <div className="absolute top-3 left-3 font-mono text-[9px] uppercase tracking-[0.2em] text-gold-light/85">{String(i + 1).padStart(2, "0")}</div>
                   <div className="absolute inset-x-0 bottom-0 p-5">
@@ -237,7 +196,7 @@ function usePinProgress(ref: React.RefObject<HTMLElement | null>) {
 }
 
 function useIsSmallScreen() {
-  const [isSmall, setIsSmall] = useState(false);
+  const [isSmall, setIsSmall] = useState(() => window.matchMedia("(max-width: 639px)").matches);
   useEffect(() => {
     const query = window.matchMedia("(max-width: 639px)");
     const update = () => setIsSmall(query.matches);
@@ -313,8 +272,7 @@ function CountryDetailInner({
     [flightStops]
   );
 
-  const [routeProgress, setRouteProgress] = useState(0);
-  useTier2Animations(dotMapRef, flightStops, { heroReady: true, onProgressChange: setRouteProgress });
+  useTier2Animations(dotMapRef, flightStops, { heroReady: true });
 
   // Scroll-spy for the sticky section chips (White Desert's in-page nav).
   const sections = useMemo(
@@ -379,18 +337,31 @@ function CountryDetailInner({
 
   // closing transition on the hero: its copy fades and lifts away as you
   // leave, instead of being scrolled off abruptly
-  const [heroFade, setHeroFade] = useState(0);
+  const heroCopyRef = useRef<HTMLDivElement>(null);
+  const heroVeilRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const onScroll = () => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       const vh = window.innerHeight || 1;
-      setHeroFade((c) => {
-        const n = clamp(window.scrollY / (vh * 0.72), 0, 1);
-        return Math.abs(c - n) > 0.01 ? n : c;
-      });
+      const fade = clamp(window.scrollY / (vh * 0.72), 0, 1);
+      if (heroCopyRef.current) {
+        heroCopyRef.current.style.opacity = String(1 - fade);
+        heroCopyRef.current.style.transform = `translateY(${-fade * 34}px)`;
+      }
+      if (heroVeilRef.current) heroVeilRef.current.style.opacity = String(fade);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   return (
@@ -459,7 +430,7 @@ function CountryDetailInner({
         className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/92 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl sm:flex sm:items-center sm:gap-8 sm:px-8 sm:py-5"
       >
         <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit sm:mx-0">
-          <img
+          <MediaImage
             src="/media/brand/01143b.png"
             alt="The Retreat Collection"
             width={2101}
@@ -514,7 +485,7 @@ function CountryDetailInner({
         <div className="absolute left-0 right-0 top-0 h-px bg-navy/10">
           <div
             className="h-full bg-gold shadow-[0_0_14px_rgba(200,162,76,.6)] transition-[width] duration-200"
-            style={{ width: `${Math.max(0, Math.min(1, routeProgress)) * 100}%` }}
+            style={{ width: "100%", transformOrigin: "left", transform: "scaleX(var(--route-progress, 0))" }}
           />
         </div>
         <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-navy/45">{page.country}</div>
@@ -545,17 +516,9 @@ function CountryDetailInner({
 
         {/* HERO — the country name with the footage seeping through the letters */}
         <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
-          {hasFilm(page.heroSlug) ? (
-            <>
-            <span aria-hidden="true" style={lqipStyle(page.heroSlug)} className="lqip-layer absolute inset-0" />
-            <img src={posterUrl(page.heroSlug)} alt="" aria-hidden="true" decoding="async" fetchPriority="high" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-            <video autoPlay muted loop playsInline poster={posterUrl(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover">
-              <source src={videoUrl(page.heroSlug)} type="video/mp4" />
-            </video>
-            </>
-          ) : (
-            <img src={posterUrl(page.heroSlug)} alt="" style={lqipStyle(page.heroSlug)} className="absolute inset-0 h-full w-full object-cover" />
-          )}
+          <span aria-hidden="true" style={lqipStyle(page.heroSlug)} className="lqip-layer absolute inset-0" />
+          <MediaVideo src={hasFilm(page.heroSlug) ? videoUrl(page.heroSlug) : undefined}
+            poster={posterUrl(page.heroSlug)} priority active={!openStay} />
           <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <defs>
               <mask id={maskId}>
@@ -584,8 +547,8 @@ function CountryDetailInner({
             </text>
           </svg>
           <div
+            ref={heroCopyRef}
             className="pointer-events-none absolute inset-x-0 top-[58%] flex flex-col items-center px-5 text-center sm:top-[62%]"
-            style={{ opacity: 1 - heroFade, transform: `translateY(${-heroFade * 34}px)` }}
           >
             <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.3em] text-gold-light sm:gap-4 sm:text-[10px]">
               <span className="h-px w-8 bg-gold/60 sm:w-10" />
@@ -606,9 +569,10 @@ function CountryDetailInner({
           {/* dawn veil — the light atlas world rises into the dark hero as
               you scroll, so the two worlds hand over instead of hard-cutting */}
           <div
+            ref={heroVeilRef}
             className="pointer-events-none absolute inset-0"
             style={{
-              opacity: heroFade,
+              opacity: 0,
               background: "linear-gradient(180deg, rgba(243,239,231,0) 22%, rgba(243,239,231,.55) 62%, rgba(243,239,231,.92) 88%, #f3efe7 100%)"
             }}
           />
@@ -647,16 +611,8 @@ function CountryDetailInner({
                   </button>
                 </div>
                 <div data-stop-video style={lqipVar(ch.slug)} className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
-                  <NearGate>{(near) => hasFilm(ch.slug) ? (
-                    <>
-                    {near && <img src={posterUrl(ch.slug)} alt="" aria-hidden="true" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />}
-                    <video muted loop playsInline preload="none" poster={near ? posterUrl(ch.slug) : undefined} className="absolute inset-0 h-full w-full object-cover">
-                      <source data-src={videoUrl(ch.slug)} type="video/mp4" />
-                    </video>
-                    </>
-                  ) : (
-                    <img src={posterUrl(ch.slug, 1100)} alt="" loading="lazy" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-                  )}</NearGate>
+                  <MediaVideo src={hasFilm(ch.slug) ? videoUrl(ch.slug) : undefined} poster={posterUrl(ch.slug, 1100)}
+                    sizes="(min-width: 1024px) 50vw, 100vw" active={!openStay} />
                 </div>
               </div>
             </section>
@@ -706,7 +662,7 @@ function CountryDetailInner({
                   return (
                     <a
                       key={c.id}
-                      href={gid ? `/asia/${gid}` : "/asia"}
+                      href={gid ? `/${region.slug}/${gid}` : `/${region.slug}`}
                       className="group border border-navy/20 bg-cream/60 px-5 py-3 transition-colors hover:border-gold"
                     >
                       <span className="block font-mono text-[8px] uppercase tracking-[0.18em] text-gold-deep/80">{c.eyebrow}</span>
@@ -768,7 +724,6 @@ function ExpandChapter({
   const ref = useRef<HTMLElement | null>(null);
   const p = usePinProgress(ref);
   const isSmall = useIsSmallScreen();
-  const { ref: gateRef, near } = useNearViewport<HTMLSpanElement>();
 
   const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1); // film opens to full-bleed
   const insetX = (1 - open) * (isSmall ? 8 : 24);
@@ -780,7 +735,6 @@ function ExpandChapter({
 
   return (
     <section ref={ref} id={id} data-tier2-stop={id} className="relative h-[180svh] w-full sm:h-[220svh]">
-      <span ref={gateRef} aria-hidden="true" />
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* the word the film opens over */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center" style={{ opacity: titleOut }}>
@@ -800,9 +754,8 @@ function ExpandChapter({
           className="absolute inset-0"
           style={{ clipPath: `inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${radius}px)` }}
         >
-          <video autoPlay muted loop playsInline preload={near ? "metadata" : "none"} poster={near ? posterUrl(chapter.slug) : undefined} className="kenburns absolute inset-0 h-full w-full object-cover">
-            {near && <source src={videoUrl(chapter.slug)} type="video/mp4" />}
-          </video>
+          <MediaVideo src={hasFilm(chapter.slug) ? videoUrl(chapter.slug) : undefined}
+            poster={posterUrl(chapter.slug)} className="kenburns" />
           <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
         </div>
 
@@ -912,13 +865,8 @@ function StayDossier({
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-12">
           <div>
             <div style={lqipVarForPoster(gallery[0])} className="media-shell moment-in moment-in-1 relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/30 shadow-[0_34px_90px_rgba(0,0,0,.5)] sm:aspect-[16/10] lg:sticky lg:top-10">
-              {filmForPoster(gallery[0]) || gallery[0].startsWith("/media/poster/") ? (
-                <video autoPlay muted loop playsInline poster={imgSized(gallery[0], 1400)} className="absolute inset-0 h-full w-full object-cover">
-                  <source src={videoForPoster(gallery[0])} type="video/mp4" />
-                </video>
-              ) : (
-                <img src={imgSized(gallery[0], 1400)} alt="" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
-              )}
+              <MediaVideo src={videoForPoster(gallery[0])} poster={imgSized(gallery[0], 1400)}
+                priority sizes="(min-width: 1024px) 50vw, 100vw" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="pointer-events-none absolute inset-2 rounded-lg border border-gold-light/20" />
               {entry.coordinates && (
@@ -938,7 +886,7 @@ function StayDossier({
                 <div className="mt-3 grid grid-cols-4 gap-2">
                   {gallery.map((src, i) => (
                     <div key={src + i} className="group relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
-                      <img
+                      <MediaImage
                         src={imgSized(src, 600)}
                         alt=""
                         width={1080}
@@ -1036,7 +984,6 @@ function StayDossier({
 function JourneySection({ days, country }: { days: CountryDay[]; country: string }) {
   const [active, setActive] = useState(0);
   const rowRefs = useRef<Array<HTMLLIElement | null>>([]);
-  const filmRefs = useRef<Array<HTMLVideoElement | null>>([]);
 
   // active day = the row nearest the reading line (45% down the viewport);
   // pure rect measurement, nothing cached to go stale
@@ -1065,27 +1012,6 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
     };
   }, []);
 
-  // wake/pause the films as the active day changes
-  useEffect(() => {
-    filmRefs.current.forEach((video, i) => {
-      if (!video) return;
-      if (Math.abs(i - active) <= 1) {
-        const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-        if (source && !source.src) {
-          source.src = source.dataset.src || "";
-          video.load();
-        }
-      }
-      if (i === active) {
-        const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
-        tryPlay();
-        video.addEventListener("canplay", tryPlay, { once: true });
-      } else {
-        video.pause();
-      }
-    });
-  }, [active]);
-
   return (
     <section className="relative w-full px-5 pt-24 pb-10 sm:px-10 lg:px-16">
       <div className="mx-auto max-w-[1280px]">
@@ -1103,39 +1029,9 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
           {/* sticky film — follows the day being read */}
           <div className="hidden lg:sticky lg:top-[120px] lg:block">
             <div style={lqipVar(days[0]?.slug ?? "")} className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
-              <NearGate>{(near) => days.map((day, i) =>
-                hasFilm(day.slug) ? (
-                  <video
-                    key={day.title}
-                    ref={(el) => {
-                      filmRefs.current[i] = el;
-                    }}
-                    muted
-                    loop
-                    playsInline
-                    preload={near && i === 0 ? "metadata" : "none"}
-                    poster={near ? posterUrl(day.slug, 1000) : undefined}
-                    className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
-                      i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
-                    }`}
-                  >
-                    <source data-src={videoUrl(day.slug)} type="video/mp4" />
-                  </video>
-                ) : (
-                  // no footage for this signature — a still, never a video
-                  // element whose 404 source would blank its own poster
-                  <img
-                    key={day.title}
-                    src={posterUrl(day.slug, 1000)}
-                    alt=""
-                    loading="lazy"
-                    onLoad={(e) => e.currentTarget.classList.add("media-ready")}
-                    className={`absolute inset-0 h-full w-full object-cover transition-all duration-[900ms] ease-out ${
-                      i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"
-                    }`}
-                  />
-                )
-              )}</NearGate>
+              {days.map((day, i) => Math.abs(i - active) <= 1 && <MediaVideo key={day.title}
+                src={hasFilm(day.slug) ? videoUrl(day.slug) : undefined} poster={posterUrl(day.slug, 1000)} active={i === active}
+                sizes="45vw" className={`transition-all duration-[900ms] ease-out ${i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"}`} />)}
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
               <div className="absolute bottom-4 left-4 flex items-center gap-2.5 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
@@ -1200,7 +1096,7 @@ function JourneySection({ days, country }: { days: CountryDay[]; country: string
                     ) : null}
                     {/* the film inline on mobile, where there's no sticky panel */}
                     <div className="relative mt-5 aspect-[16/9] w-full max-w-[440px] overflow-hidden rounded-lg border border-navy/15 lg:hidden">
-                      <img
+                      <MediaImage
                         src={posterUrl(day.slug, 800)}
                         alt=""
                         width={1080}
@@ -1562,28 +1458,6 @@ function GallerySection({
     };
   }, [open, items.length]);
 
-  // hover-to-play: the source attaches lazily on first hover, then the
-  // film fades in over its own poster frame
-  const playTile = (root: HTMLElement) => {
-    const video = root.querySelector<HTMLVideoElement>("video");
-    if (!video) return;
-    const source = video.querySelector<HTMLSourceElement>("source[data-src]");
-    if (source && !source.src) {
-      source.src = source.dataset.src || "";
-      video.load();
-    }
-    video.style.opacity = "1";
-    const tryPlay = () => { const p = video.play(); if (p) p.catch(() => undefined); };
-    tryPlay();
-    video.addEventListener("canplay", tryPlay, { once: true });
-  };
-  const stopTile = (root: HTMLElement) => {
-    const video = root.querySelector<HTMLVideoElement>("video");
-    if (!video) return;
-    video.style.opacity = "0";
-    video.pause();
-  };
-
   // the grid's repeating rhythm: one wide feature, a tall frame, and
   // supporting stills — dense flow packs any count without holes
   const SPANS = [
@@ -1617,35 +1491,11 @@ function GallerySection({
                 key={item.poster}
                 type="button"
                 onClick={() => setOpen(i)}
-                onMouseEnter={(e) => playTile(e.currentTarget)}
-                onMouseLeave={(e) => stopTile(e.currentTarget)}
-                onFocus={(e) => playTile(e.currentTarget)}
-                onBlur={(e) => stopTile(e.currentTarget)}
                 style={lqipVarForPoster(item.poster)}
                 className={`media-shell group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
               >
-                <img
-                  src={imgSized(item.poster, 900)}
-                  alt=""
-                  width={1080}
-                  height={608}
-                  loading="lazy"
-                  decoding="async"
-                  onLoad={(e) => e.currentTarget.classList.add("media-ready")}
-                  className="media-fade absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]"
-                />
-                {item.video && (
-                  <video
-                    muted
-                    loop
-                    playsInline
-                    preload="none"
-                    poster={imgSized(item.poster, 900)}
-                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
-                  >
-                    <source data-src={item.video} type="video/mp4" />
-                  </video>
-                )}
+                <MediaVideo src={item.video} poster={imgSized(item.poster, 900)} hover active={open === null}
+                  sizes="(min-width: 768px) 50vw, 100vw" className="transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]" />
                 {/* quiet dim + gold hairline frame, revealed on hover */}
                 <span className="pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-500 group-hover:bg-ink/10" />
                 <span className="pointer-events-none absolute inset-2 rounded-md border border-gold-light/0 transition-colors duration-500 group-hover:border-gold-light/55" />
@@ -1702,13 +1552,14 @@ function GallerySection({
                 muted
                 loop
                 playsInline
-                poster={items[open].poster}
+                poster={imgSized(items[open].poster, 1600)}
+                controls
                 className="max-h-[76svh] w-auto rounded-lg border border-white/15 object-contain shadow-[0_40px_120px_rgba(0,0,0,.6)]"
               >
                 <source src={items[open].video} type="video/mp4" />
               </video>
             ) : (
-              <img
+              <MediaImage
                 src={imgSized(items[open].poster, 1920)}
                 alt=""
                 width={1080}

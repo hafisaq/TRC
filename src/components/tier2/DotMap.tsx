@@ -85,7 +85,8 @@ export type DotMapFocus = { cx: number; cy: number; zoom: number };
 const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocus }>(function DotMap({ className = "", focus }, ref) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useMemo(() => window.matchMedia("(max-width: 640px)").matches, []);
-  const dotsRef = useRef<Dot[]>(buildDots(isMobile));
+  const dotsRef = useRef<Dot[] | null>(null);
+  if (!dotsRef.current) dotsRef.current = buildDots(isMobile);
   const pingsRef = useRef<Ping[]>([]);
   const rafRef = useRef(0);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
@@ -124,7 +125,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       const { x: bx, y: by } = toScreen(xPct, yPct, w, h);
       const zoom = focusRef.current?.zoom ?? 1;
       const rgb = hexToRgb(color);
-      dotsRef.current.forEach((d) => {
+      dotsRef.current!.forEach((d) => {
         const dist = Math.hypot(d.x - bx, d.y - by);
         const falloff = Math.max(0, 1 - dist / (w * 0.16 * zoom));
         if (falloff > 0) {
@@ -156,7 +157,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      dotsRef.current.forEach((d) => {
+      dotsRef.current!.forEach((d) => {
         const p = toScreen(d.xPct, d.yPct, w, h);
         d.x = p.x;
         d.y = p.y;
@@ -169,10 +170,11 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       ctx.clearRect(0, 0, w, h);
       const zoom = focusRef.current?.zoom ?? 1;
 
-      dotsRef.current.forEach((d) => {
+      const waves = Array.from({ length: 8 }, (_, band) => staticFrame || prefersReducedMotion ? 0 : getBandWave(time, band));
+      dotsRef.current!.forEach((d) => {
         // off-canvas dots (the map overflows the viewport) cost nothing
         if (d.x < -6 || d.x > w + 6 || d.y < -6 || d.y > h + 6) return;
-        const wave = staticFrame || prefersReducedMotion ? 0 : getBandWave(time, d.band);
+        const wave = waves[d.band] ?? 0;
         const twinkle = staticFrame || prefersReducedMotion ? 0 : Math.max(0, Math.sin(time * 0.00125 + d.phase)) * d.twinkle;
         const alpha = d.shimmer + wave * 0.6 + twinkle * 0.72 + d.excite * 0.62;
         const radius = d.r * Math.sqrt(zoom) * (1 + wave * 1.4 + twinkle * 3.2 + d.excite * 2.2);
@@ -204,6 +206,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
     };
 
     const tick = (time: number) => {
+      if (document.hidden) return;
       if (time - lastFrameRef.current >= targetFrameMs) {
         lastFrameRef.current = time;
         draw(time);
@@ -214,6 +217,11 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
 
     resize();
     window.addEventListener("resize", resize);
+    const onVisibility = () => {
+      cancelAnimationFrame(rafRef.current);
+      if (!document.hidden && !prefersReducedMotion) rafRef.current = requestAnimationFrame(tick);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     if (!prefersReducedMotion) {
       const startTimer = window.setTimeout(() => {
         rafRef.current = requestAnimationFrame(tick);
@@ -222,12 +230,14 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
         window.clearTimeout(startTimer);
         cancelAnimationFrame(rafRef.current);
         window.removeEventListener("resize", resize);
+        document.removeEventListener("visibilitychange", onVisibility);
       };
     }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
