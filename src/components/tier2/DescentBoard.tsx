@@ -6,6 +6,7 @@ const countWord = (n: number) => WORDS[n] ?? String(n);
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
 
 // The Mountain & Ice country selector — deliberately NOT the Asia strip.
@@ -15,12 +16,16 @@ import { MediaImage, MediaVideo } from "../Media";
 // section. Vertical, typographic, lit from within — read by headlamp.
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
-export default function DescentBoard({ region }: { region: Region }) {
+export default function DescentBoard({ region, onMore }: { region: Region; onMore?: () => void }) {
+  // every list ends with a trailing "More" item that opens the enquiry
+  const stops = withMore(region);
+  // when More is the active row, the backdrop keeps the last real country
+  const bgActiveOf = (i: number) => (isMoreStop(stops[i]) ? Math.max(0, i - 1) : i);
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
-  const n = region.stops.length;
+  const n = stops.length;
 
   // scroll drives the descent: the section pins and vertical scroll walks
   // the rows top to bottom (same pattern as the postcard fan and caravan)
@@ -59,11 +64,11 @@ export default function DescentBoard({ region }: { region: Region }) {
       <div ref={nearRef} className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
       {/* footage layer — one media element per country, crossfaded by row */}
       <div aria-hidden="true" className="absolute inset-0">
-        {region.stops.map((stop, i) => (
+        {stops.map((stop, i) => (
           <div
             key={stop.id}
             className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
-            style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
+            style={{ opacity: bgActiveOf(active) === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
           >
             {near && Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
               src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
@@ -83,18 +88,18 @@ export default function DescentBoard({ region }: { region: Region }) {
             {t("board.choose")}
           </div>
           <div className="relative w-px flex-1 bg-gold/25">
-            {region.stops.map((_, i) => (
+            {stops.map((_, i) => (
               <span
                 key={i}
                 className={`absolute left-1/2 h-px -translate-x-1/2 transition-all duration-500 ${
                   active === i ? "w-5 bg-gold shadow-[0_0_8px_rgba(200,162,76,.7)]" : "w-2.5 bg-gold/40"
                 }`}
-                style={{ top: `${((i + 0.5) / region.stops.length) * 100}%` }}
+                style={{ top: `${((i + 0.5) / stops.length) * 100}%` }}
               />
             ))}
           </div>
           <div className="font-mono text-[8px] tracking-[0.2em] text-white/35 [writing-mode:vertical-rl]">
-            {region.stops[active]?.coords}
+            {stops[active]?.coords}
           </div>
         </div>
 
@@ -102,20 +107,19 @@ export default function DescentBoard({ region }: { region: Region }) {
           <div className="mb-10 sm:mb-12 lg:mb-[clamp(12px,3svh,40px)]">
             <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light lg:hidden">{t("board.choose")}</div>
             <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white lg:mt-0">
-              {isAr()
-                ? `${region.stops.length} دول، من الألب إلى الجليد`
-                : <>{countWord(region.stops.length)} countries,<br className="sm:hidden" /> from the Alps to the ice</>}
+              {region.title}
             </h3>
           </div>
 
           <div className="flex flex-col">
-            {region.stops.map((stop, i) => {
+            {stops.map((stop, i) => {
               const gid = region.catalog.find((g) => g.label.toLowerCase() === stop.country.toLowerCase())?.id;
               const isActive = active === i;
               return (
                 <a
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                  onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
                   className={`group grid grid-cols-[auto_1fr] items-baseline gap-x-5 border-t border-white/[0.09] py-6 transition-colors duration-500 last:border-b sm:grid-cols-[auto_1fr_auto] sm:gap-x-8 sm:py-7 lg:py-[clamp(10px,2.4svh,26px)] ${
                     isActive ? "" : "opacity-100"
                   }`}
@@ -158,7 +162,7 @@ export default function DescentBoard({ region }: { region: Region }) {
                         isActive ? "border-gold-light text-gold-light" : "border-transparent text-white/0"
                       }`}
                     >
-                      {t("strip.explore", { country: stop.country })}
+                      {exploreLabel(stop)}
                     </span>
                   </span>
                 </a>

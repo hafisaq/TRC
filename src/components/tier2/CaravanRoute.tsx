@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
@@ -15,12 +16,16 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 // waypoints strung along its crest, and the active country's footage
 // filling the whole sky above. Scroll walks the caravan from marker to
 // marker (pinned, like the others).
-export default function CaravanRoute({ region }: { region: Region }) {
+export default function CaravanRoute({ region, onMore }: { region: Region; onMore?: () => void }) {
+  // every list ends with a trailing "More" item that opens the enquiry
+  const stops = withMore(region);
+  // when More is the active row, the backdrop keeps the last real country
+  const bgActiveOf = (i: number) => (isMoreStop(stops[i]) ? Math.max(0, i - 1) : i);
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
-  const n = region.stops.length;
+  const n = stops.length;
 
   useEffect(() => {
     if (!n) return;
@@ -59,7 +64,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
     [12, 58], [30, 34], [50, 52], [68, 28], [86, 46],
     [22, 40], [58, 38], [78, 52], [40, 30], [92, 34]
   ];
-  const activeStop = region.stops[active];
+  const activeStop = stops[active];
   const activeGid = activeStop ? gidOf(activeStop.country) : undefined;
 
   return (
@@ -75,12 +80,12 @@ export default function CaravanRoute({ region }: { region: Region }) {
       <div ref={nearRef} className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-0 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
         {/* THE SKY — active country's footage, crossfaded */}
         <div aria-hidden="true" className="absolute inset-0">
-          {region.stops.map((stop, i) => (
+          {stops.map((stop, i) => (
             <div
               key={stop.id}
               id={`caravan-sky-${stop.id}`}
               className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
-              style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
+              style={{ opacity: bgActiveOf(active) === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
             >
               {near && Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
                 src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
@@ -95,7 +100,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">{t("caravan.kicker")}</div>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white">
-              {isAr() ? `${n} دول، محطةً بعد محطة` : <>{countWord(n)} countries,<br className="sm:hidden" /> waypoint by waypoint</>}
+              {region.title}
             </h3>
             <span className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/50 lg:block">Scroll ↓</span>
           </div>
@@ -120,9 +125,10 @@ export default function CaravanRoute({ region }: { region: Region }) {
               <div className="mt-4 flex items-center gap-4">
                 <a
                   href={activeGid ? `/${region.slug}/${activeGid}` : "#tier2-enquire"}
+                  onClick={(e) => { if (isMoreStop(activeStop)) { e.preventDefault(); onMore?.(); } }}
                   className="border-b border-gold-light/60 pb-0.5 text-[9.5px] uppercase tracking-[0.24em] text-gold-light transition-colors hover:border-gold-light hover:text-white"
                 >
-                  {t("strip.explore", { country: activeStop.country })}
+                  {exploreLabel(activeStop)}
                 </a>
               </div>
             </div>
@@ -137,7 +143,7 @@ export default function CaravanRoute({ region }: { region: Region }) {
           </svg>
           {/* waypoints along the crest */}
           <div className="absolute inset-0">
-            {region.stops.map((stop, i) => {
+            {stops.map((stop, i) => {
               const [x, y] = CREST[i % CREST.length];
               const isActive = i === active;
               return (
@@ -170,12 +176,13 @@ export default function CaravanRoute({ region }: { region: Region }) {
 
         {/* mobile: waypoint cards in a snap row */}
         <div className="relative mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
-          {region.stops.map((stop, i) => {
+          {stops.map((stop, i) => {
             const gid = gidOf(stop.country);
             return (
               <a
                 key={stop.id}
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
                 style={stop.slug ? lqipVar(stop.slug) : undefined}
                 className="media-shell relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
               >
