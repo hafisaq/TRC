@@ -153,7 +153,6 @@ export default function DescentBoard({ region }: { region: Region }) {
                     <span className={`block font-mono text-[8.5px] tracking-[0.2em] transition-colors duration-500 ${isActive ? "text-gold-light" : "text-white/30"}`}>
                       {stop.coords}
                     </span>
-                    <span className="mt-1.5 block text-[8.5px] uppercase tracking-[0.2em] text-white/35">{stop.season}</span>
                     <span
                       className={`mt-2 inline-block border-b pb-0.5 text-[9px] uppercase tracking-[0.22em] transition-all duration-500 ${
                         isActive ? "border-gold-light text-gold-light" : "border-transparent text-white/0"

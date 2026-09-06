@@ -187,7 +187,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
       title: e.name,
       copy: e.description ?? t("gen.dayFallback", { name: e.name, location: e.location }),
       slug: keyForPoster(e.poster),
-      details: e.highlights?.slice(0, 3) ?? [e.location]
+      details: []
     })),
     essentials: [
       {
@@ -197,15 +197,6 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
           [t("gen.arrival"), t("gen.metAirside")],
           [t("gen.transfer"), t("gen.private")],
           [t("gen.checkin"), t("gen.handled")]
-        ]
-      },
-      {
-        title: t("gen.whenToGo"),
-        copy: t("gen.whenCopy", { season: stop.season }),
-        points: [
-          [t("stop.bestSeason"), stop.season],
-          [t("gen.bookedAhead"), t("gen.months36")],
-          [t("gen.flexible"), t("gen.always")]
         ]
       },
       {

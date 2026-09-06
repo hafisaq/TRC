@@ -145,7 +145,6 @@ export default function PostcardFan({ region }: { region: Region }) {
                     <div className="mt-0.5 font-serif text-[30px] font-light leading-[1.05] text-navy">{stop.country}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-navy/45">{stop.season}</div>
                     <div className={`mt-1 border-b pb-0.5 text-[9px] uppercase tracking-[0.22em] transition-colors duration-300 ${isActive ? "border-gold text-gold-deep" : "border-transparent text-navy/0"}`}>
                       {t("strip.explore", { country: stop.country })}
                     </div>
@@ -178,7 +177,6 @@ export default function PostcardFan({ region }: { region: Region }) {
                 <div className="px-3 pb-2 pt-2.5">
                   <div className="text-[8px] uppercase tracking-[0.24em] text-gold-deep">{stop.eyebrow}</div>
                   <div className="mt-0.5 font-serif text-[24px] font-light leading-[1.05] text-navy">{stop.country}</div>
-                  <div className="mt-1 font-mono text-[7.5px] uppercase tracking-[0.16em] text-navy/45">{stop.season}</div>
                 </div>
               </a>
             );

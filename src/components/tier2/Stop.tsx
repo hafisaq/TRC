@@ -56,21 +56,6 @@ const THEME_STYLES: Record<
   }
 };
 
-function Meta({ season, highlights, t }: { index: number; coords: string; season: string; highlights: string[]; t: typeof THEME_STYLES.gold }) {
-  return (
-    <>
-      <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
-      <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
-        {highlights.map((h) => (
-          <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
-            {h}
-          </span>
-        ))}
-      </div>
-    </>
-  );
-}
-
 function VideoTag({ slug, className = "", posterW = 1600 }: { slug: string; className?: string; posterW?: number }) {
   // three-stage paint: the LQIP blur is on screen instantly, the sharp
   // still fades in as soon as its (small) download lands, and the film
@@ -115,14 +100,6 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             {title[0]}<br />{title[1]}
           </h2>
           <p className="mt-4 sm:mt-5 max-w-[440px] text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] text-white/78">{copy}</p>
-          <div className="mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-white/70">{tr("stop.bestSeason")} · {season}</div>
-          <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
-            {highlights.map((h) => (
-              <span key={h} className="text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border border-white/30 text-white/80">
-                {h}
-              </span>
-            ))}
-          </div>
           <a href={cta.href} onClick={cta.onClick} className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
             {cta.label}
           </a>
@@ -155,14 +132,6 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
               {title[0]}<br />{title[1]}
             </h2>
             <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
-            <div className={`mt-4 sm:mt-5 text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
-            <div className="mt-3 sm:mt-4 flex flex-wrap justify-center gap-2">
-              {highlights.map((h) => (
-                <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
-                  {h}
-                </span>
-              ))}
-            </div>
             <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
               {cta.label}
             </a>
@@ -195,14 +164,6 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             </div>
             <p className={`text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
             <div>
-              <div className={`text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase ${t.seasonText}`}>{tr("stop.bestSeason")} · {season}</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {highlights.map((h) => (
-                  <span key={h} className={`text-[8.5px] sm:text-[9.5px] tracking-[0.12em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3 py-1.5 border ${t.tagBorder} ${t.tagText}`}>
-                    {h}
-                  </span>
-                ))}
-              </div>
               <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-5 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
                 {cta.label}
               </a>
@@ -225,9 +186,6 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
             {title[0]}<br />{title[1]}
           </h2>
           <p className={`mt-4 sm:mt-5 max-w-[420px] mx-auto lg:mx-0 text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
-          <div className="text-center lg:text-left">
-            <Meta index={index} coords={coords} season={season} highlights={highlights} t={t} />
-          </div>
           <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
             {cta.label}
           </a>
