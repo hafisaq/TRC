@@ -238,7 +238,9 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
     // whenElementsExist above) rather than assuming effect-ordering timing.
     const stopFlightWatch = whenElementsExist(["tier2-journey", "tier2-flight-path", "tier2-flight-plane"], () => {
       let flightCtx: gsap.Context | null = null;
+      let flightHoldObserver: ResizeObserver | null = null;
       const initFlight = () => {
+        flightHoldObserver?.disconnect();
         flightCtx?.revert();
         flightCtx = gsap.context(() => {
         const journey = $<HTMLElement>("#tier2-journey")!;
@@ -340,13 +342,40 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           const LAND_AT = Math.min(1, Math.max(0.6, (enquireDocTop - journeyDocTop) / scrollSpan));
           let trailShown = true;
           let pulsed = false;
+          // A scroll-held country film keeps the same plane beside its
+          // image. Blend into/out of this lane; all other sections retain
+          // their existing page-wide flight timing.
+          const flightHolds = $$<HTMLElement>("[data-flight-hold]").flatMap(hold => {
+            const stage = hold.querySelector<HTMLElement>("[data-flight-stage]");
+            const film = hold.querySelector<HTMLElement>("[data-flight-focus]");
+            if (!stage || !film) return [];
+            const top = parseFloat(getComputedStyle(stage).top) || 0;
+            const start = hold.getBoundingClientRect().top + window.scrollY - top;
+            return [{ start, end: start + hold.offsetHeight - stage.offsetHeight, top, film, focus: top + film.offsetHeight * 0.55 }];
+          });
+          flightHoldObserver = new ResizeObserver(() => {
+            flightHolds.forEach(hold => { hold.focus = hold.top + hold.film.offsetHeight * 0.55; });
+          });
+          flightHolds.forEach(hold => flightHoldObserver?.observe(hold.film));
           const applyProgress = (progress: number) => {
             document.documentElement.style.setProperty("--route-progress", String(progress));
             options.onProgressChange?.(progress);
             const scrollP = Math.min(1, progress / LAND_AT);
             // where the scroll says the plane should BE, in document Y —
             // then convert to the arc fraction that actually sits there
-            const flightP = fractionAtY(startY + scrollP * (endY - startY));
+            let flightY = startY + scrollP * (endY - startY);
+            for (const hold of flightHolds) {
+              const normalY = (scroll: number) => startY + Math.min(1, Math.max(0, (scroll - journeyDocTop) / (scrollSpan * LAND_AT))) * (endY - startY);
+              // Give a large vertical correction enough runway so the
+              // plane never reverses while entering a short-screen hold.
+              const correction = Math.max(Math.abs(hold.start + hold.focus - normalY(hold.start)), Math.abs(hold.end + hold.focus - normalY(hold.end)));
+              const blendSpan = Math.max(vh * 0.55, correction * 2.5);
+              const distance = Math.max(hold.start - window.scrollY, window.scrollY - hold.end, 0);
+              const blend = Math.max(0, 1 - distance / blendSpan);
+              const eased = blend * blend * (3 - 2 * blend);
+              flightY += (window.scrollY + hold.focus - flightY) * eased;
+            }
+            const flightP = fractionAtY(flightY);
             gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
             planeTween.progress(flightP);
 
@@ -412,6 +441,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
 
       cleanups.push(() => {
         rebind.disconnect();
+        flightHoldObserver?.disconnect();
         flightCtx?.revert();
       });
     });

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DotMapHandle } from "../components/tier2/DotMap";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
@@ -6,12 +6,13 @@ import Tier2Enquire, { type EnquiryOption } from "../components/tier2/Tier2Enqui
 import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
-import { getCountryPage, type CountryChapter, type CountryDay, type EssentialCard } from "../data/regions/countryContent";
+import { getCountryPage, type CountryChapter, type EssentialCard } from "../data/regions/countryContent";
 import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, lqipVar, lqipVarForPoster, lqipStyle } from "../lib/media";
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import { MediaImage, MediaVideo } from "../components/Media";
+import SignatureJourney from "../components/SignatureJourney";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -279,7 +280,7 @@ function CountryDetailInner({
     () => [
       { id: heroId, label: t("page.overview") },
       ...page.chapters.map((ch, i) => ({ id: `cd-ch-${i}`, label: ch.navLabel })),
-      { id: "cd-day-0", label: t("page.signatures") },
+      ...(page.days.length ? [{ id: "cd-day-0", label: t("page.signatures") }] : []),
       { id: "cd-essentials", label: t("page.essentials") },
       { id: "cd-gallery", label: t("page.gallery") },
       { id: "cd-stays", label: t("page.theStays") }
@@ -330,10 +331,49 @@ function CountryDetailInner({
   const otherCountries = region.stops.filter((s) => s.country !== stop.country);
   const maskId = "cd-hero-mask";
   const isSmall = useIsSmallScreen();
-  const heroViewBox = isSmall ? "0 0 390 844" : "0 0 1000 560";
-  const heroTextX = isSmall ? 195 : 500;
-  const heroTextY = isSmall ? 386 : 308;
-  const heroFontSize = isSmall ? (page.country.length > 8 ? 54 : page.country.length > 5 ? 66 : 96) : page.country.length > 8 ? 130 : page.country.length > 5 ? 165 : 220;
+  // The cut-out name is sized from the hero's REAL pixel box (a viewBox
+  // that matches it exactly, so nothing is ever cropped by aspect-ratio
+  // slicing) and from the name's own length — long names such as
+  // "Vienna & Salzburg" break onto two lines on narrow screens instead of
+  // running off both edges.
+  const heroRef = useRef<HTMLElement | null>(null);
+  const [heroBox, setHeroBox] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
+  useLayoutEffect(() => {
+    const el = heroRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setHeroBox((b) => (Math.abs(b.w - width) < 1 && Math.abs(b.h - height) < 1 ? b : { w: width, h: height }));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const heroName = page.country.toUpperCase();
+  const heroLines = (() => {
+    if (heroBox.w >= 900 || heroName.length <= 9 || !heroName.includes(" ")) return [heroName];
+    // break at the space nearest the middle ("VIENNA & SALZBURG" → "VIENNA &" / "SALZBURG")
+    const spaces = [...heroName].map((c, i) => (c === " " ? i : -1)).filter((i) => i > 0);
+    const cut = spaces.reduce((best, i) => (Math.abs(i - heroName.length / 2) < Math.abs(best - heroName.length / 2) ? i : best), spaces[0]);
+    return [heroName.slice(0, cut).trim(), heroName.slice(cut + 1).trim()];
+  })();
+  const heroLongest = Math.max(...heroLines.map((l) => l.length));
+  // Cormorant light caps advance ≈0.66em at this tracking; fit 90% of the
+  // width, then cap by height and by an absolute ceiling
+  const heroFontSize = Math.floor(
+    Math.min((heroBox.w * 0.9) / (heroLongest * 0.66), (heroBox.h * 0.42) / heroLines.length, heroBox.w * 0.22, 240)
+  );
+  const heroViewBox = `0 0 ${Math.max(1, Math.round(heroBox.w))} ${Math.max(1, Math.round(heroBox.h))}`;
+  const heroTextX = heroBox.w / 2;
+  // vertically: the block of lines is centred slightly below the middle
+  // (deeper on phones, where the copy sits lower)
+  // (a two-line block sits higher so it clears the copy that follows)
+  const heroCentre = heroLines.length > 1 ? (isSmall ? 0.4 : 0.47) : isSmall ? 0.46 : 0.52;
+  const heroTextY = heroBox.h * heroCentre - ((heroLines.length - 1) * heroFontSize * 1.02) / 2 + heroFontSize * 0.36;
+  const heroTspans = heroLines.map((line, i) => (
+    <tspan key={line} x={heroTextX} dy={i === 0 ? 0 : heroFontSize * 1.02}>
+      {line}
+    </tspan>
+  ));
 
   // closing transition on the hero: its copy fades and lifts away as you
   // leave, instead of being scrolled off abruptly
@@ -427,9 +467,9 @@ function CountryDetailInner({
           bar on mobile, where it's the established idiom site-wide. */}
       <header
         id="tier2-nav"
-        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/92 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl sm:flex sm:items-center sm:gap-8 sm:px-8 sm:py-5"
+        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/92 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
       >
-        <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit sm:mx-0">
+        <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit xl:mx-0">
           <MediaImage
             src="/media/brand/01143b.png"
             alt="The Retreat Collection"
@@ -439,7 +479,7 @@ function CountryDetailInner({
             className="h-auto w-[132px] sm:w-[152px]"
           />
         </a>
-        <nav className="mt-3 hidden flex-1 items-center justify-center gap-6 sm:flex sm:justify-end lg:gap-7" aria-label="Page sections">
+        <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label="Page sections">
           <a
             href="/"
             className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
@@ -479,8 +519,9 @@ function CountryDetailInner({
           mobile pattern; this is where boxed chips + a route progress
           thread belong, not the top header */}
       <nav
+        data-country-bottom-nav
         aria-label="Page sections"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-gold/20 bg-cream-deep/94 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(22,36,60,.14)] backdrop-blur-xl sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-gold/20 bg-cream-deep/94 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(22,36,60,.14)] backdrop-blur-xl xl:hidden"
       >
         <div className="absolute left-0 right-0 top-0 h-px bg-navy/10">
           <div
@@ -515,16 +556,16 @@ function CountryDetailInner({
         <Tier2FlightPath stops={pathStops} startId={heroId} />
 
         {/* HERO — the country name with the footage seeping through the letters */}
-        <section id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
+        <section ref={heroRef} id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
           <span aria-hidden="true" style={lqipStyle(page.heroSlug)} className="lqip-layer absolute inset-0" />
           <MediaVideo src={hasFilm(page.heroSlug) ? videoUrl(page.heroSlug) : undefined}
             poster={posterUrl(page.heroSlug)} priority active={!openStay} />
-          <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <mask id={maskId}>
                 <rect width="100%" height="100%" fill="white" />
                 <text x={heroTextX} y={heroTextY} textAnchor="middle" fontFamily="var(--font-serif)" fontWeight="300" fontSize={heroFontSize} letterSpacing="2" fill="black">
-                  {page.country.toUpperCase()}
+                  {heroTspans}
                 </text>
               </mask>
             </defs>
@@ -543,7 +584,7 @@ function CountryDetailInner({
               stroke="rgba(227,198,130,0.45)"
               strokeWidth="1"
             >
-              {page.country.toUpperCase()}
+              {heroTspans}
             </text>
           </svg>
           <div
@@ -558,8 +599,6 @@ function CountryDetailInner({
             <p className="mt-5 max-w-[520px] text-[13px] font-light leading-[1.85] text-white/75 sm:text-[14.5px]">{page.tagline}</p>
             <div className="mt-4 flex items-center gap-4 font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/50">
               <span>{page.coords}</span>
-              <span className="h-px w-6 bg-white/25" />
-              <span>Best season · {page.season}</span>
             </div>
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 text-white/50">
@@ -633,9 +672,7 @@ function CountryDetailInner({
             a soft glow that breathes in when the plane lands, not a slab. */}
         <SignedQuote text={page.quote.text} attribution={page.quote.attribution} />
 
-        {/* DAY-BY-DAY — dense White Desert-style timeline: sticky film left,
-            every day stacked compactly on a gold route line right */}
-        <JourneySection days={page.days} country={page.country} />
+        <SignatureJourney days={page.days} country={page.country} />
 
         {/* THE ESSENTIALS — information deck, dealt card over card */}
         <EssentialsStack cards={page.essentials} country={page.country} />
@@ -817,8 +854,7 @@ function StayDossier({
     ? entry.facts
     : [
         { label: "Location", value: entry.location },
-        { label: "Country", value: country },
-        { label: "Season", value: entry.season ?? "On request" }
+        { label: "Country", value: country }
       ];
 
   useEffect(() => {
@@ -911,16 +947,6 @@ function StayDossier({
               </p>
             )}
 
-            {entry.highlights?.length ? (
-              <div className="moment-in moment-in-2 mt-6 flex flex-wrap gap-2">
-                {entry.highlights.map((h) => (
-                  <span key={h} className="border border-gold/35 bg-gold/[0.08] px-3 py-1.5 text-[8.5px] uppercase tracking-[0.16em] text-gold-light/90">
-                    {h}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-
             {/* the facts, as a ruled ledger */}
             <div className="moment-in moment-in-3 mt-8 border-t border-gold/25">
               {facts.map((fact) => (
@@ -973,148 +999,6 @@ function StayDossier({
         </div>
       </div>
     </div>
-  );
-}
-
-// The journey as White Desert actually builds it: dense, scannable, zero
-// dead space. A sticky film panel on the left crossfades to follow whichever
-// day you're reading; every day stacks compactly on a gold route line with
-// nodes on the right. Scales to any number of days — 5 or 15 — because each
-// day is a row, not a viewport.
-function JourneySection({ days, country }: { days: CountryDay[]; country: string }) {
-  const [active, setActive] = useState(0);
-  const rowRefs = useRef<Array<HTMLLIElement | null>>([]);
-
-  // active day = the row nearest the reading line (45% down the viewport);
-  // pure rect measurement, nothing cached to go stale
-  useEffect(() => {
-    const update = () => {
-      const vh = window.innerHeight || 1;
-      let best = 0;
-      let bestDist = Infinity;
-      rowRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        const d = Math.abs(r.top + r.height / 2 - vh * 0.45);
-        if (d < bestDist) {
-          bestDist = d;
-          best = i;
-        }
-      });
-      setActive((a) => (a === best ? a : best));
-    };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
-  return (
-    <section className="relative w-full px-5 pt-24 pb-10 sm:px-10 lg:px-16">
-      <div className="mx-auto max-w-[1280px]">
-        <div className="text-center">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.theSignatures")}</div>
-          <h2 className="mt-3 font-serif text-[clamp(36px,6vw,68px)] font-light leading-[1.0]">
-            {t("page.signatureBySignature", { country })}
-          </h2>
-          <p className="mx-auto mt-4 max-w-[480px] text-[13px] font-light leading-[1.85] text-navy/60">
-            {t("page.notItinerary")}
-          </p>
-        </div>
-
-        <div className="mt-14 grid items-start gap-10 lg:grid-cols-[0.92fr_1.08fr]">
-          {/* sticky film — follows the day being read */}
-          <div className="hidden lg:sticky lg:top-[120px] lg:block">
-            <div style={lqipVar(days[0]?.slug ?? "")} className="media-shell relative aspect-[4/5] w-full overflow-hidden rounded-xl border border-gold/50 shadow-[0_30px_80px_rgba(22,36,60,.2)]">
-              {days.map((day, i) => Math.abs(i - active) <= 1 && <MediaVideo key={day.title}
-                src={hasFilm(day.slug) ? videoUrl(day.slug) : undefined} poster={posterUrl(day.slug, 1000)} active={i === active}
-                sizes="45vw" className={`transition-all duration-[900ms] ease-out ${i === active ? "opacity-100 scale-100" : "opacity-0 scale-[1.04]"}`} />)}
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.45))]" />
-              <div className="absolute bottom-4 left-4 flex items-center gap-2.5 border border-white/20 bg-ink/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-gold-light backdrop-blur-md">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-                {country} — {String(active + 1).padStart(2, "0")} / {String(days.length).padStart(2, "0")}
-              </div>
-              <div className="absolute right-4 top-4 flex flex-col gap-1.5">
-                {days.map((_, i) => (
-                  <span key={i} className={`h-1 w-5 rounded-full transition-colors duration-300 ${i === active ? "bg-gold" : i < active ? "bg-gold/45" : "bg-white/20"}`} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* the route line — every day, compact, connected */}
-          <ol className="relative">
-            <span aria-hidden="true" className="absolute bottom-6 left-[13px] top-6 w-px bg-gradient-to-b from-gold/50 via-gold/25 to-gold/50" />
-            {days.map((day, i) => {
-              const isActive = i === active;
-              const passed = i < active;
-              return (
-                <li
-                  key={day.title}
-                  ref={(el) => {
-                    rowRefs.current[i] = el;
-                  }}
-                  id={`cd-day-${i}`}
-                  data-tier2-stop={`cd-day-${i}`}
-                  className={`relative border-b border-navy/10 py-8 pl-14 transition-opacity duration-500 last:border-b-0 sm:py-9 ${
-                    isActive ? "opacity-100" : "opacity-50"
-                  }`}
-                >
-                  {/* node on the route line — also the flight path's exact landing anchor */}
-                  <span
-                    aria-hidden="true"
-                    data-flight-node
-                    className={`absolute left-[6px] top-11 grid h-4 w-4 place-items-center rounded-full border transition-colors duration-400 ${
-                      isActive ? "border-gold bg-gold/25 shadow-[0_0_16px_rgba(200,162,76,.55)]" : passed ? "border-gold/60 bg-gold/15" : "border-navy/30"
-                    }`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full transition-colors duration-400 ${isActive || passed ? "bg-gold" : "bg-navy/20"}`} />
-                  </span>
-
-                  <div data-stop-text className="opacity-0">
-                    <div className="flex items-baseline gap-4">
-                      <span className={`font-mono text-[22px] font-light leading-none ${isActive ? "text-gold-deep" : "text-navy/35"}`}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-navy/45">Signature</span>
-                    </div>
-                    <h3 className={`mt-2.5 font-serif text-[clamp(24px,3.2vw,38px)] font-light leading-[1.05] transition-colors duration-400 ${isActive ? "text-navy" : "text-navy/60"}`}>
-                      {day.title}
-                    </h3>
-                    <p className="mt-3 max-w-[520px] text-[13.5px] font-light leading-[1.8] text-navy/70">{day.copy}</p>
-                    {day.details?.length ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {day.details.map((d) => (
-                          <span key={d} className="border border-gold/50 bg-gold/10 px-2.5 py-1 text-[8px] uppercase tracking-[0.15em] text-gold-deep">
-                            {d}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                    {/* the film inline on mobile, where there's no sticky panel */}
-                    <div className="relative mt-5 aspect-[16/9] w-full max-w-[440px] overflow-hidden rounded-lg border border-navy/15 lg:hidden">
-                      <MediaImage
-                        src={posterUrl(day.slug, 800)}
-                        alt=""
-                        width={1080}
-                        height={608}
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(14,13,12,.4))]" />
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </div>
-    </section>
   );
 }
 

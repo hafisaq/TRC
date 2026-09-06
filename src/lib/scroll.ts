@@ -16,10 +16,14 @@ export function scrollToHash(hash: string, extraOffset = 0) {
   const isMobile = window.matchMedia("(max-width: 639px)").matches;
   const navClearance = nav && !isMobile ? nav.getBoundingClientRect().height + 12 : 0;
   const offset = -navClearance + extraOffset;
+  // Scroll-held scenes declare their exact clearance. A numeric Lenis
+  // target avoids subtracting CSS scroll-padding a second time.
+  const sceneClearance = target.getAttribute("data-scroll-clearance");
+  const sceneY = sceneClearance === null ? null : target.getBoundingClientRect().top + window.scrollY - Number(sceneClearance) + extraOffset;
   if (activeLenis) {
-    activeLenis.scrollTo(target, { offset, duration: isMobile ? 0.95 : 1.2 });
+    activeLenis.scrollTo(sceneY ?? target, { offset: sceneY === null ? offset : 0, duration: isMobile ? 0.95 : 1.2 });
   } else {
-    const y = target.getBoundingClientRect().top + window.scrollY + offset;
+    const y = sceneY ?? target.getBoundingClientRect().top + window.scrollY + offset;
     window.scrollTo({ top: y, behavior: "smooth" });
   }
 }

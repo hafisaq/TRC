@@ -167,7 +167,6 @@ export default function CountryStrip({ region }: { region: Region }) {
                       <span className="border-b border-white/50 pb-0.5 transition-colors group-hover:border-gold-light group-hover:text-gold-light">
                         {t("strip.explore", { country: stop.country })}
                       </span>
-                      <span className="font-mono text-[8px] text-white/50">{stop.season}</span>
                     </div>
                   </div>
                 </a>

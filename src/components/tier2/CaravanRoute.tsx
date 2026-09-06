@@ -124,7 +124,6 @@ export default function CaravanRoute({ region }: { region: Region }) {
                 >
                   {t("strip.explore", { country: activeStop.country })}
                 </a>
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/45">{t("stop.bestSeason")} · {activeStop.season}</span>
               </div>
             </div>
           )}
@@ -190,7 +189,6 @@ export default function CaravanRoute({ region }: { region: Region }) {
                     {String(i + 1).padStart(2, "0")} · {stop.eyebrow}
                   </div>
                   <div className="mt-1.5 font-serif text-[32px] font-light leading-[1.0] text-white">{stop.country}</div>
-                  <div className="mt-2 text-[8.5px] uppercase tracking-[0.2em] text-white/70">{stop.season}</div>
                 </div>
               </a>
             );

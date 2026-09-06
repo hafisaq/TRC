@@ -258,18 +258,10 @@ export default function TerminalBoard({ region }: { region: Region }) {
                       <div className="font-mono text-[8px] uppercase tracking-[0.26em] text-gold-light">{activeStop?.coords}</div>
                       <div className="mt-1 font-serif text-[26px] font-light leading-tight text-white">{activeStop?.country}</div>
                     </div>
-                    <div className="text-right text-[8.5px] uppercase tracking-[0.2em] text-white/60">{activeStop?.season}</div>
                   </div>
                 </div>
                 <div className="p-5">
                   <p className="text-[12.5px] font-light leading-[1.8] text-white/70">{activeStop?.copy}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {activeStop?.highlights?.slice(0, 3).map((h) => (
-                      <span key={h} className="border border-white/15 px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] text-white/60">
-                        {h}
-                      </span>
-                    ))}
-                  </div>
                   {gidOf(activeStop?.country ?? "") && (
                     <a
                       href={`/${region.slug}/${gidOf(activeStop.country)}`}
