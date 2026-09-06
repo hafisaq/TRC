@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
@@ -15,12 +16,16 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 // Asia strip, the section PINS and vertical scroll does the work: each
 // notch of scroll deals the next postcard to the front. Clicking the
 // front card mails you to that country.
-export default function PostcardFan({ region }: { region: Region }) {
+export default function PostcardFan({ region, onMore }: { region: Region; onMore?: () => void }) {
+  // every list ends with a trailing "More" item that opens the enquiry
+  const stops = withMore(region);
+  // when More is the active row, the backdrop keeps the last real country
+  const bgActiveOf = (i: number) => (isMoreStop(stops[i]) ? Math.max(0, i - 1) : i);
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
-  const n = region.stops.length;
+  const n = stops.length;
 
   // scroll drives the deal: progress through the pinned section maps to
   // the active card index (same pin pattern as the Asia country strip —
@@ -81,10 +86,10 @@ export default function PostcardFan({ region }: { region: Region }) {
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("fan.kicker")}</div>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-navy">
-              {isAr() ? `${n} دول، ليتك كنت هنا` : <>{countWord(n)} countries,<br className="sm:hidden" /> wish you were here</>}
+              {region.title}
             </h3>
             <div className="hidden items-center gap-6 lg:flex">
-              {region.stops.map((stop, i) => (
+              {stops.map((stop, i) => (
                 <button
                   key={stop.id}
                   type="button"
@@ -103,7 +108,7 @@ export default function PostcardFan({ region }: { region: Region }) {
 
         {/* THE FAN — desktop: stacked, rotated postcards, dealt by scroll */}
         <div className="relative hidden min-h-0 flex-1 items-center justify-center lg:flex">
-          {region.stops.map((stop, i) => {
+          {stops.map((stop, i) => {
             const gid = gidOf(stop.country);
             const off = i - active;
             const isActive = off === 0;
@@ -114,11 +119,14 @@ export default function PostcardFan({ region }: { region: Region }) {
             return (
               <a
                 key={stop.id}
-                href={isActive && gid ? `/${region.slug}/${gid}` : undefined}
+                href={isActive ? (gid ? `/${region.slug}/${gid}` : "#tier2-enquire") : undefined}
                 onClick={(e) => {
                   if (!isActive) {
                     e.preventDefault();
                     jumpTo(i);
+                  } else if (isMoreStop(stop)) {
+                    e.preventDefault();
+                    onMore?.();
                   }
                 }}
                 id={`postcard-${stop.id}`}
@@ -131,6 +139,11 @@ export default function PostcardFan({ region }: { region: Region }) {
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
                   {near && stop.slug && <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
                     poster={posterUrl(stop.slug, 1200)} active={isActive} sizes="(min-width: 1024px) 44vw, 100vw" />}
+                  {isMoreStop(stop) && (
+                    <div className="absolute inset-0 grid place-items-center bg-cream-deep">
+                      <span className="font-serif text-[clamp(30px,3.4vw,52px)] font-light text-navy">{stop.country}</span>
+                    </div>
+                  )}
                   <div className={`absolute inset-0 bg-ink/35 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`} />
                   {/* postmark — coords in a dashed ring, like a cancelled stamp */}
                   <div className="absolute right-4 top-4 grid h-20 w-20 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center backdrop-blur-[2px]">
@@ -146,7 +159,7 @@ export default function PostcardFan({ region }: { region: Region }) {
                   </div>
                   <div className="text-right">
                     <div className={`mt-1 border-b pb-0.5 text-[9px] uppercase tracking-[0.22em] transition-colors duration-300 ${isActive ? "border-gold text-gold-deep" : "border-transparent text-navy/0"}`}>
-                      {t("strip.explore", { country: stop.country })}
+                      {exploreLabel(stop)}
                     </div>
                   </div>
                 </div>
@@ -158,12 +171,13 @@ export default function PostcardFan({ region }: { region: Region }) {
         {/* mobile / tablet: the postcards in a snap row (same idiom as the
             Asia strip's mobile behavior) */}
         <div className="relative mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
-          {region.stops.map((stop) => {
+          {stops.map((stop) => {
             const gid = gidOf(stop.country);
             return (
               <a
                 key={stop.id}
                 href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
                 className="block w-[80vw] shrink-0 snap-center border-8 border-white bg-white shadow-[0_18px_50px_rgba(22,36,60,.2)] sm:w-[54vw]"
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>

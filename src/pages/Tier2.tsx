@@ -172,16 +172,16 @@ export default function Tier2() {
               ctaHref={s.ctaHref}
             />
             {/* right after the Asia stop: the scroll-glide country selector */}
-            {s.id === "tier2-asia" && <CountryStrip region={ASIA} />}
+            {s.id === "tier2-asia" && <CountryStrip region={ASIA} onMore={() => handleEnquire(s.interest)} />}
             {/* after the Mountain & Ice stop: the descent board — its own
                 idiom, dark and vertical (renders only once CMS content is in) */}
-            {s.id === "tier2-alpine" && <DescentBoard region={ALPINE} />}
+            {s.id === "tier2-alpine" && <DescentBoard region={ALPINE} onMore={() => handleEnquire(s.interest)} />}
             {/* after the Coast & Islands stop: the postcard fan */}
-            {s.id === "tier2-bali" && <PostcardFan region={COAST} />}
+            {s.id === "tier2-bali" && <PostcardFan region={COAST} onMore={() => handleEnquire(s.interest)} />}
             {/* after the Open Country stop: the caravan route */}
-            {s.id === "tier2-desert" && <CaravanRoute region={DESERT} />}
+            {s.id === "tier2-desert" && <CaravanRoute region={DESERT} onMore={() => handleEnquire(s.interest)} />}
             {/* after the Grand Cities stop: the departures board */}
-            {s.id === "tier2-cities" && <TerminalBoard region={CITIES} />}
+            {s.id === "tier2-cities" && <TerminalBoard region={CITIES} onMore={() => handleEnquire(s.interest)} />}
           </div>
         ))}
         {/* inside main so the journey's scroll range — and the flight

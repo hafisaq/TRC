@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
+import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
 
 // The Grand Cities selector — a split-flap departures board. Where the
@@ -79,13 +80,17 @@ function FlapText({ text, active }: { text: string; active: boolean }) {
   );
 }
 
-export default function TerminalBoard({ region }: { region: Region }) {
+export default function TerminalBoard({ region, onMore }: { region: Region; onMore?: () => void }) {
+  // every list ends with a trailing "More" item that opens the enquiry
+  const stops = withMore(region);
+  // when More is the active row, the backdrop keeps the last real country
+  const bgActiveOf = (i: number) => (isMoreStop(stops[i]) ? Math.max(0, i - 1) : i);
   const [active, setActive] = useState(0);
   const [clock, setClock] = useState("");
   const sectionRef = useRef<HTMLElement | null>(null);
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
-  const n = region.stops.length;
+  const n = stops.length;
 
   // scroll pins the hall and walks BOARDING down the rows
   useEffect(() => {
@@ -119,7 +124,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
   }, []);
 
   if (!n) return null;
-  const activeStop = region.stops[active];
+  const activeStop = stops[active];
   const gidOf = (country: string) =>
     region.catalog.find((g) => g.label.toLowerCase() === country.toLowerCase())?.id;
 
@@ -137,11 +142,11 @@ export default function TerminalBoard({ region }: { region: Region }) {
         {/* hall backdrop — a faint wash of the active city behind the board */}
         <div aria-hidden="true" className="absolute inset-0">
           {near &&
-            region.stops.map((stop, i) => (
+            stops.map((stop, i) => (
               <div
                 key={stop.id}
                 className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
-                style={{ opacity: active === i ? 0.22 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
+                style={{ opacity: bgActiveOf(active) === i ? 0.22 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
               >
                 {Math.abs(active - i) <= 1 && stop.slug && (
                   <MediaImage
@@ -163,9 +168,7 @@ export default function TerminalBoard({ region }: { region: Region }) {
             <div>
               <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">{t("terminal.kicker")}</div>
               <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,50px)] font-light leading-[1.05] text-white lg:text-[clamp(22px,min(3.4vw,4.4svh),44px)]">
-                {isAr()
-                  ? `${n} مدن، والصعود مفتوح`
-                  : <>{countWord(n)} cities,<br className="sm:hidden" /> now boarding</>}
+                {region.title}
               </h3>
             </div>
             <div className="hidden text-right sm:block">
@@ -185,13 +188,14 @@ export default function TerminalBoard({ region }: { region: Region }) {
                 <span className="text-right">{t("terminal.status")}</span>
               </div>
               <div className="flex flex-col">
-                {region.stops.map((stop, i) => {
+                {stops.map((stop, i) => {
                   const gid = gidOf(stop.country);
                   const isActive = active === i;
                   return (
                     <a
                       key={stop.id}
                       href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                      onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
                       onMouseEnter={() => setActive(i)}
                       className="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-white/[0.07] py-4 sm:grid-cols-[64px_1fr_64px_110px] sm:gap-x-5 lg:py-[clamp(4px,1.1svh,11px)]"
                     >
@@ -241,11 +245,11 @@ export default function TerminalBoard({ region }: { region: Region }) {
               <div className="relative overflow-hidden rounded-xl border border-white/12 bg-ink shadow-[0_30px_80px_rgba(0,0,0,.5)]">
                 <div className="media-shell relative aspect-[16/10]">
                   {near &&
-                    region.stops.map((stop, i) => (
+                    stops.map((stop, i) => (
                       <div
                         key={stop.id}
                         className="absolute inset-0 transition-opacity duration-700"
-                        style={{ opacity: active === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
+                        style={{ opacity: bgActiveOf(active) === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
                       >
                         {Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
                           src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
@@ -262,12 +266,13 @@ export default function TerminalBoard({ region }: { region: Region }) {
                 </div>
                 <div className="p-5">
                   <p className="text-[12.5px] font-light leading-[1.8] text-white/70">{activeStop?.copy}</p>
-                  {gidOf(activeStop?.country ?? "") && (
+                  {(gidOf(activeStop?.country ?? "") || isMoreStop(activeStop)) && (
                     <a
-                      href={`/${region.slug}/${gidOf(activeStop.country)}`}
+                      href={isMoreStop(activeStop) ? "#tier2-enquire" : `/${region.slug}/${gidOf(activeStop.country)}`}
+                      onClick={(e) => { if (isMoreStop(activeStop)) { e.preventDefault(); onMore?.(); } }}
                       className="mt-4 inline-block border-b border-gold-light pb-0.5 text-[9px] uppercase tracking-[0.22em] text-gold-light"
                     >
-                      {t("strip.explore", { country: activeStop.country })}
+                      {exploreLabel(activeStop)}
                     </a>
                   )}
                 </div>

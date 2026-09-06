@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, lqipVar } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
+import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaVideo } from "../Media";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -14,7 +15,11 @@ const countWord = (n: number) => WORDS[n] ?? String(n);
 // cream band (the brand's white-bg/gold-text side) where scrolling glides a
 // row of country cards horizontally past the viewport. Hovering a card wakes
 // its footage; clicking flies you to that country's own page.
-export default function CountryStrip({ region }: { region: Region }) {
+export default function CountryStrip({ region, onMore }: { region: Region; onMore?: () => void }) {
+  // every list ends with a trailing "More" item that opens the enquiry
+  const stops = withMore(region);
+  // when More is the active row, the backdrop keeps the last real country
+  const bgActiveOf = (i: number) => (isMoreStop(stops[i]) ? Math.max(0, i - 1) : i);
   const sectionRef = useRef<HTMLElement | null>(null);
   const rowRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -116,9 +121,7 @@ export default function CountryStrip({ region }: { region: Region }) {
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("strip.choose")}</div>
           <div className="mt-2 flex items-end justify-between gap-6">
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-navy">
-              {isAr()
-                ? `${region.stops.length} دول، و${region.stops.length} مداخل`
-                : <>{countWord(region.stops.length)} countries,<br className="sm:hidden" /> {countWord(region.stops.length).toLowerCase()} ways in</>}
+              {region.title}
             </h3>
             <div className="hidden h-px flex-1 bg-gold/25 lg:block">
               <div ref={barRef} className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)]" style={{ width: "0%" }} />
@@ -132,13 +135,14 @@ export default function CountryStrip({ region }: { region: Region }) {
             className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 no-scrollbar sm:gap-6 sm:px-10 lg:snap-none lg:overflow-visible lg:px-16"
         >
           <div ref={innerRef} className="flex gap-4 sm:gap-6 lg:will-change-transform">
-            {region.stops.map((stop, i) => {
+            {stops.map((stop, i) => {
               const gid = region.catalog.find((g) => g.label.toLowerCase() === stop.country.toLowerCase())?.id;
               const goldCard = i % 2 === 0;
               return (
                 <a
                   key={stop.id}
-                  href={gid ? `/${region.slug}/${gid}` : `/${region.slug}`}
+                  href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
+                  onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
                   style={stop.slug ? lqipVar(stop.slug) : undefined}
                   className={`media-shell group relative h-[48svh] min-h-[310px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_60px_rgba(22,36,60,.22)] sm:h-[54svh] sm:min-h-[340px] sm:w-[52vw] lg:w-[34vw] ${
                     goldCard ? "border-gold/50 shadow-[0_16px_44px_rgba(200,162,76,.18)]" : "border-navy/15 shadow-[0_16px_44px_rgba(22,36,60,.12)]"
@@ -165,7 +169,7 @@ export default function CountryStrip({ region }: { region: Region }) {
                     <div className="mt-2 font-serif text-[clamp(34px,4.4vw,58px)] font-light leading-[0.98] text-white">{stop.country}</div>
                     <div className="mt-3 flex items-center gap-3 text-[9px] uppercase tracking-[0.22em] text-white/80">
                       <span className="border-b border-white/50 pb-0.5 transition-colors group-hover:border-gold-light group-hover:text-gold-light">
-                        {t("strip.explore", { country: stop.country })}
+                        {exploreLabel(stop)}
                       </span>
                     </div>
                   </div>
