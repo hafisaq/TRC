@@ -67,11 +67,11 @@ export default function Tier2() {
     // path flies each pinned selector as one dead-straight vertical lane
     // instead of drifting across the board on a single long segment.
     const holds: Record<string, { ids: [string, string]; mapPos: [number, number] }> = {
-      "tier2-asia": { ids: ["tier2-asia-hold-in", "tier2-asia-hold-out"], mapPos: [0.66, 0.44] },
-      "tier2-alpine": { ids: ["tier2-alpine-hold-in", "tier2-alpine-hold-out"], mapPos: [0.5, 0.3] },
-      "tier2-bali": { ids: ["tier2-coast-hold-in", "tier2-coast-hold-out"], mapPos: [0.52, 0.48] },
-      "tier2-desert": { ids: ["tier2-desert-hold-in", "tier2-desert-hold-out"], mapPos: [0.55, 0.42] },
-      "tier2-cities": { ids: ["tier2-cities-hold-in", "tier2-cities-hold-out"], mapPos: [0.47, 0.3] }
+      "tier2-asia": { ids: ["tier2-asia-hold-in", "tier2-asia-hold-out"], mapPos: [0.74, 0.44] },
+      "tier2-alpine": { ids: ["tier2-alpine-hold-in", "tier2-alpine-hold-out"], mapPos: [0.53, 0.24] },
+      "tier2-bali": { ids: ["tier2-coast-hold-in", "tier2-coast-hold-out"], mapPos: [0.53, 0.28] },
+      "tier2-desert": { ids: ["tier2-desert-hold-in", "tier2-desert-hold-out"], mapPos: [0.65, 0.36] },
+      "tier2-cities": { ids: ["tier2-cities-hold-in", "tier2-cities-hold-out"], mapPos: [0.51, 0.23] }
     };
     const out: typeof DESTINATIONS extends Array<infer T> ? Array<T | { id: string; mapPos: [number, number]; theme: "white"; coords: string; passive: true }> : never = [];
     for (const d of DESTINATIONS) {

@@ -76,7 +76,14 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
         const r = el.getBoundingClientRect();
         return r.top + window.scrollY + r.height * frac;
       };
-      const heroPoint: Point = { x: w / 2, y: docY(hero, 0.42) };
+      // start on the hero reticle's gold dot when it declares one
+      const heroAnchor = hero.querySelector<HTMLElement>("[data-flight-node]");
+      const heroPoint: Point = heroAnchor
+        ? (() => {
+            const r = heroAnchor.getBoundingClientRect();
+            return { x: r.left + window.scrollX + r.width / 2, y: r.top + window.scrollY + r.height / 2 };
+          })()
+        : { x: w / 2, y: docY(hero, 0.42) };
       const stopPoints: Point[] = stops.map((s, i) => {
         const el = document.getElementById(s.id);
         if (!el) return { x: w / 2, y: heroPoint.y };

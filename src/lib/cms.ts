@@ -76,6 +76,28 @@ function mediaKey(media: Media | null | undefined, fallback: string): string {
 const pair = (t: TitlePair | null | undefined, fallback: [string, string]): [string, string] =>
   t?.line1 ? [t.line1, t.line2 ?? ""] : fallback;
 
+// The dot map is a real equirectangular world map now, so a stop's map
+// position is derived from its printed coordinates ("13.7°N 100.5°E") —
+// x = longitude fraction, y = latitude fraction. Hand-set mapPos is only
+// the fallback for entries without parseable coordinates (e.g. About us).
+function geoPos(coords: unknown, fallback: [number, number]): [number, number] {
+  const m = typeof coords === "string" ? coords.match(/(\d+(?:\.\d+)?)°\s*([NS])[^\d]+(\d+(?:\.\d+)?)°\s*([EW])/) : null;
+  if (!m) return fallback;
+  const lat = Number(m[1]) * (m[2] === "S" ? -1 : 1);
+  const lon = Number(m[3]) * (m[4] === "W" ? -1 : 1);
+  return [(lon + 180) / 360, (90 - lat) / 180];
+}
+
+// Auto-frame a region on the map: centre on its stops, zoom to their spread.
+function frameFocus(stops: Array<{ mapPos: [number, number] }>) {
+  if (!stops.length) return undefined;
+  const xs = stops.map((s) => s.mapPos[0]);
+  const ys = stops.map((s) => s.mapPos[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const spread = Math.max(maxX - minX, (maxY - minY) * 0.5) + 0.08;
+  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, zoom: Math.min(3.2, Math.max(1.6, 0.5 / spread)) };
+}
+
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export async function hydrateFromCms(): Promise<boolean> {
@@ -186,7 +208,7 @@ export async function hydrateFromCms(): Promise<boolean> {
         const id = `tier2-${d._id.replace(/^destination-/, "")}`;
         const mapped: Destination = {
           id,
-          mapPos: [d.mapPos?.x ?? 0.5, d.mapPos?.y ?? 0.5],
+          mapPos: geoPos(d.coords, [d.mapPos?.x ?? 0.5, d.mapPos?.y ?? 0.5]),
           eyebrow: (d.eyebrow as string) ?? "",
           title: pair(d.title, ["", ""]),
           copy: (d.copy as string) ?? "",
@@ -230,14 +252,13 @@ export async function hydrateFromCms(): Promise<boolean> {
       if (!target) continue;
       if (r.title) target.title = typeof r.title === "string" ? r.title : `${(r.title as TitlePair).line1 ?? ""} ${(r.title as TitlePair).line2 ?? ""}`.trim();
       if (r.intro) target.intro = r.intro;
-      if (r.focus) target.focus = r.focus;
       if (r.stops?.length) {
         const stops: RegionStop[] = r.stops.map((s) => {
           const country = (s.country as string) ?? "";
           const bundled = target.stops.find((b) => b.country.toLowerCase() === country.toLowerCase());
           return {
             id: bundled?.id ?? `${target.slug}-${slugify(country)}`,
-            mapPos: [s.mapPos?.x ?? 0.5, s.mapPos?.y ?? 0.5],
+            mapPos: geoPos(s.coords, [s.mapPos?.x ?? 0.5, s.mapPos?.y ?? 0.5]),
             country,
             eyebrow: (s.eyebrow as string) ?? "",
             title: pair(s.title, [country, ""]),
@@ -252,6 +273,7 @@ export async function hydrateFromCms(): Promise<boolean> {
           };
         });
         target.stops.splice(0, target.stops.length, ...stops);
+        target.focus = frameFocus(stops) ?? target.focus;
       }
       if (r.catalog?.length) {
         const groups: CatalogGroup[] = r.catalog.map((g) => ({

@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { NIGHT_LIGHTS } from "../../data/nightLights";
 
 export type DotMapHandle = {
-  /** Trigger a landing burst at a normalized (0-1, 0-1) point on the canvas. */
+  /** Trigger a landing burst at a map point (equirectangular 0-1 fractions). */
   burst: (xPct: number, yPct: number, color?: string) => void;
 };
 
@@ -15,7 +16,7 @@ type Dot = {
   shimmer: number;
   twinkle: number;
   color: [number, number, number];
-  continent: number;
+  band: number;
   excite: number;
   exciteR: number;
   exciteG: number;
@@ -31,55 +32,50 @@ type Ping = {
   color: string;
 };
 
-// Rough, stylized "continent" blobs — not geographically literal, just enough
-// scattered dot mass in the right neighborhoods to read as a world map.
-const CONTINENTS: Array<{ cx: number; cy: number; rx: number; ry: number; count: number }> = [
-  { cx: 0.22, cy: 0.34, rx: 0.1, ry: 0.16, count: 150 }, // the Americas (north)
-  { cx: 0.26, cy: 0.62, rx: 0.07, ry: 0.16, count: 110 }, // the Americas (south)
-  { cx: 0.48, cy: 0.28, rx: 0.09, ry: 0.1, count: 105 }, // Europe
-  { cx: 0.52, cy: 0.5, rx: 0.11, ry: 0.16, count: 150 }, // Africa
-  { cx: 0.68, cy: 0.32, rx: 0.16, ry: 0.14, count: 180 }, // Asia
-  { cx: 0.78, cy: 0.62, rx: 0.08, ry: 0.09, count: 90 } // Oceania
-];
-
-const MOBILE_DOT_RATIO = 0.62;
-const CITY_LIGHTS: Array<[number, number, number]> = [
+// The world at night. Dot positions come from NASA's Black Marble composite
+// (see data/nightLights.ts): metropolitan corridors glow warm, town light
+// is fainter, and unlit land carries a barely-there stipple so the
+// continents keep their shape. Everything is projected as a 2:1
+// equirectangular map that COVERS the viewport, so mapPos/focus values
+// are real longitude/latitude fractions.
+const MOBILE_DOT_RATIO = 0.75;
+const WARM: Array<[number, number, number]> = [
   [255, 236, 184],
   [238, 188, 92],
   [205, 149, 58],
-  [184, 214, 255],
   [255, 255, 245]
 ];
+const COOL: [number, number, number] = [184, 214, 255];
+const LAND: [number, number, number] = [138, 150, 178];
 
 function buildDots(isMobile: boolean): Dot[] {
   const dots: Dot[] = [];
-  CONTINENTS.forEach((c, continent) => {
-    const count = Math.round(c.count * (isMobile ? MOBILE_DOT_RATIO : 1));
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radiusFalloff = Math.pow(Math.random(), 0.5);
-      const jitter = 0.55 + Math.random() * 0.45;
-      const metropolitan = Math.random() > 0.86;
-      const color = CITY_LIGHTS[Math.floor(Math.random() * CITY_LIGHTS.length)];
-      const xPct = c.cx + Math.cos(angle) * c.rx * radiusFalloff * jitter;
-      const yPct = c.cy + Math.sin(angle) * c.ry * radiusFalloff * jitter;
-      dots.push({
-        xPct,
-        yPct,
-        x: 0,
-        y: 0,
-        r: metropolitan ? 1.05 + Math.random() * 0.95 : 0.55 + Math.random() * 0.72,
-        phase: Math.random() * Math.PI * 2,
-        shimmer: metropolitan ? 0.34 + Math.random() * 0.2 : 0.14 + Math.random() * 0.18,
-        twinkle: metropolitan ? 0.13 + Math.random() * 0.12 : 0.04 + Math.random() * 0.075,
-        color,
-        continent,
-        excite: 0,
-        exciteR: 255,
-        exciteG: 255,
-        exciteB: 255
-      });
-    }
+  NIGHT_LIGHTS.forEach((d, i) => {
+    if (isMobile && i % 5 >= MOBILE_DOT_RATIO * 5) return;
+    const metro = d.tier === 2;
+    const land = d.tier === 0;
+    const color: [number, number, number] = land
+      ? LAND
+      : Math.random() > 0.82
+        ? COOL
+        : WARM[Math.floor(Math.random() * WARM.length)];
+    dots.push({
+      xPct: d.x,
+      yPct: d.y,
+      x: 0,
+      y: 0,
+      r: metro ? 1.4 + Math.random() * 1.0 : land ? 0.7 + Math.random() * 0.4 : 0.9 + Math.random() * 0.7,
+      phase: Math.random() * Math.PI * 2,
+      shimmer: metro ? 0.4 + Math.random() * 0.2 : land ? 0.11 + Math.random() * 0.06 : 0.2 + Math.random() * 0.16,
+      twinkle: metro ? 0.12 + Math.random() * 0.1 : land ? 0.02 : 0.05 + Math.random() * 0.06,
+      color,
+      // longitude band drives the slow "time-zone" wave rolling across the map
+      band: Math.floor(d.x * 8),
+      excite: 0,
+      exciteR: 255,
+      exciteG: 255,
+      exciteB: 255
+    });
   });
   return dots;
 }
@@ -99,13 +95,27 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
   const focusRef = useRef(focus);
   focusRef.current = focus;
 
+  // The 2:1 map box that covers the viewport (centred; overflow is clipped
+  // by the canvas). The inhabited band (roughly 60°N to 40°S, map y≈0.45)
+  // is what gets centred, not the equator — so the north isn't cropped
+  // while the empty Southern Ocean fills the bottom of the screen.
+  const mapBox = (w: number, h: number) => {
+    // phones: the map spans the viewport height (Atlantic to India across
+    // the width) so whole continents stay legible instead of a sliver
+    const mw = isMobile ? Math.max(w * 2.6, h * 2) : Math.max(w, h * 2) * 1.08;
+    const mh = mw / 2;
+    return { mw, mh, ox: (w - mw) / 2, oy: h / 2 - mh * (isMobile ? 0.42 : 0.45) };
+  };
+
   const toScreen = (xPct: number, yPct: number, w: number, h: number) => {
+    const { mw, mh, ox, oy } = mapBox(w, h);
+    const sx = ox + xPct * mw;
+    const sy = oy + yPct * mh;
     const f = focusRef.current;
-    if (!f) return { x: xPct * w, y: yPct * h };
-    return {
-      x: (xPct * w - f.cx * w) * f.zoom + w / 2,
-      y: (yPct * h - f.cy * h) * f.zoom + h / 2
-    };
+    if (!f) return { x: sx, y: sy };
+    const fx = ox + f.cx * mw;
+    const fy = oy + f.cy * mh;
+    return { x: (sx - fx) * f.zoom + w / 2, y: (sy - fy) * f.zoom + h / 2 };
   };
 
   useImperativeHandle(ref, () => ({
@@ -116,7 +126,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       const rgb = hexToRgb(color);
       dotsRef.current.forEach((d) => {
         const dist = Math.hypot(d.x - bx, d.y - by);
-        const falloff = Math.max(0, 1 - dist / (w * 0.22 * zoom));
+        const falloff = Math.max(0, 1 - dist / (w * 0.16 * zoom));
         if (falloff > 0) {
           d.excite = Math.max(d.excite, falloff);
           d.exciteR = rgb.r;
@@ -160,11 +170,12 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       const zoom = focusRef.current?.zoom ?? 1;
 
       dotsRef.current.forEach((d) => {
-        const wave = staticFrame || prefersReducedMotion ? 0 : getContinentWave(time, d.continent);
+        // off-canvas dots (the map overflows the viewport) cost nothing
+        if (d.x < -6 || d.x > w + 6 || d.y < -6 || d.y > h + 6) return;
+        const wave = staticFrame || prefersReducedMotion ? 0 : getBandWave(time, d.band);
         const twinkle = staticFrame || prefersReducedMotion ? 0 : Math.max(0, Math.sin(time * 0.00125 + d.phase)) * d.twinkle;
-        const light = wave + twinkle;
-        const alpha = d.shimmer + wave * 0.78 + twinkle * 0.72 + d.excite * 0.62;
-        const radius = d.r * zoom * (1 + wave * 2 + twinkle * 3.2 + d.excite * 2.2);
+        const alpha = d.shimmer + wave * 0.6 + twinkle * 0.72 + d.excite * 0.62;
+        const radius = d.r * Math.sqrt(zoom) * (1 + wave * 1.4 + twinkle * 3.2 + d.excite * 2.2);
         const cr = d.color[0] + (d.exciteR - d.color[0]) * d.excite;
         const cg = d.color[1] + (d.exciteG - d.color[1]) * d.excite;
         const cb = d.color[2] + (d.exciteB - d.color[2]) * d.excite;
@@ -229,9 +240,11 @@ function hexToRgb(hex: string) {
   return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
 
-function getContinentWave(time: number, continent: number) {
-  const phase = continent * 0.92;
-  const slowWave = Math.max(0, Math.sin(time * 0.00062 + phase));
+// a slow wave of brightness rolling west→east across the longitude bands,
+// like dusk sweeping the planet, plus a faster glint
+function getBandWave(time: number, band: number) {
+  const phase = band * 0.7;
+  const slowWave = Math.max(0, Math.sin(time * 0.00062 - phase));
   const glint = Math.max(0, Math.sin(time * 0.0017 + phase * 1.7));
   return slowWave * slowWave * 0.3 + glint * glint * 0.1;
 }
