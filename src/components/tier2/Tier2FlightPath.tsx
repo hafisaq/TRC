@@ -34,7 +34,10 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       const hero = document.getElementById(startId);
       if (!main || !hero) return;
       const w = window.innerWidth;
-      const h = main.scrollHeight;
+      // The absolute SVG contributes to scrollHeight itself. Measuring it
+      // back into its own height prevents the drawing from ever shrinking
+      // when a desktop layout collapses to mobile.
+      const h = main.offsetHeight;
       // A 0-sized viewport (e.g. a not-yet-visible tab) would bake a
       // degenerate zero-length path in permanently, since nothing else
       // forces a re-measure once it's set. Skip and wait for a real size.
@@ -108,17 +111,28 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
     // The guard above makes measure() a cheap no-op when nothing moved, so
     // it can run per scroll tick — this is what catches internal layout
     // shifts that never change the document's total size.
-    window.addEventListener("scroll", measure, { passive: true });
+    // ...but throttled: each measure forces layout (rects) right after
+    // GSAP has written transforms, and on phones that thrash shows up as
+    // dropped frames. Drift is caught within a quarter second either way.
+    let scrollMeasure = 0;
+    const onScroll = () => {
+      if (scrollMeasure) return;
+      scrollMeasure = window.setTimeout(() => { scrollMeasure = 0; measure(); }, 250);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     // ResizeObserver as the recovery path instead of requestAnimationFrame:
     // rAF is suspended for hidden/backgrounded tabs, so a tab that becomes
     // visible/sized later would otherwise never get a corrected geometry.
     const ro = new ResizeObserver(() => measure());
     ro.observe(document.documentElement);
+    const main = document.querySelector("main");
+    if (main) ro.observe(main);
 
     return () => {
       window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure);
+      window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(scrollMeasure);
       ro.disconnect();
     };
   }, [stops, startId]);

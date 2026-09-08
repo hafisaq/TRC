@@ -744,6 +744,19 @@ function ExpandChapter({
   const ref = useRef<HTMLElement | null>(null);
   const p = usePinProgress(ref);
   const isSmall = useIsSmallScreen();
+  // A nav jump should land on the OPENED film with the editorial showing,
+  // not at the closed window the scroll-scene starts from. scrollToHash
+  // honours data-scroll-clearance live, so publish the (negative) offset
+  // that puts the scene at the point where the text has fully faded in.
+  const landAt = isSmall ? 0.56 : 0.68;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const sync = () => el.setAttribute("data-scroll-clearance", String(-Math.round((el.offsetHeight - window.innerHeight) * landAt)));
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, [landAt]);
 
   const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1); // film opens to full-bleed
   const insetX = (1 - open) * (isSmall ? 8 : 24);
@@ -776,7 +789,9 @@ function ExpandChapter({
         >
           <MediaVideo src={hasFilm(chapter.slug) ? videoUrl(chapter.slug) : undefined}
             poster={posterUrl(chapter.slug)} className="kenburns" />
-          <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
+          {/* phones stack title + copy + CTA over most of the frame, so the
+              scrim has to climb with them; wider screens keep the lighter lift */}
+          <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.88)_0%,rgba(14,13,12,.72)_42%,rgba(14,13,12,.28)_72%,rgba(14,13,12,.16)_100%)] sm:bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
         </div>
 
         {/* editorial over the opened film — fades in, then closes out */}
@@ -1309,6 +1324,7 @@ function GallerySection({
     return [...map.values()];
   }, [page, group]);
   const [open, setOpen] = useState<number | null>(null);
+  const swipeX = useRef<number | null>(null);
 
   useEffect(() => {
     if (open === null) return;
@@ -1391,12 +1407,20 @@ function GallerySection({
           fixed overlay in their stacking context (nav bleeds through, media
           clips under it). */}
       {open !== null && createPortal(
-        <div data-lenis-prevent className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/[0.96] p-6 backdrop-blur-md" onClick={() => setOpen(null)}>
+        <div data-lenis-prevent className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/[0.96] p-6 backdrop-blur-md" onClick={() => setOpen(null)}
+          onTouchStart={(e) => { swipeX.current = e.touches[0]?.clientX ?? null; }}
+          onTouchEnd={(e) => {
+            const start = swipeX.current;
+            swipeX.current = null;
+            const end = e.changedTouches[0]?.clientX;
+            if (start === null || end === undefined || Math.abs(end - start) < 48) return;
+            setOpen((o) => (o === null ? o : (o + (end < start ? 1 : items.length - 1)) % items.length));
+          }}>
           <button
             type="button"
             aria-label="Close"
             onClick={() => setOpen(null)}
-            className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full border border-white/25 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light"
+            className="absolute right-5 top-5 z-10 grid h-11 w-11 place-items-center rounded-full border border-white/25 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light"
           >
             <span className="text-[13px]">✕</span>
           </button>
@@ -1407,7 +1431,7 @@ function GallerySection({
               e.stopPropagation();
               setOpen((o) => (o === null ? o : (o - 1 + items.length) % items.length));
             }}
-            className="absolute left-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:left-8"
+            className="absolute left-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/60 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:left-8"
           >
             ←
           </button>
@@ -1427,7 +1451,9 @@ function GallerySection({
               </video>
             ) : (
               <MediaImage
+                key={items[open].poster}
                 src={imgSized(items[open].poster, 1920)}
+                sizes="86vw"
                 alt=""
                 width={1080}
                 height={608}
@@ -1449,7 +1475,7 @@ function GallerySection({
               e.stopPropagation();
               setOpen((o) => (o === null ? o : (o + 1) % items.length));
             }}
-            className="absolute right-4 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:right-8"
+            className="absolute right-4 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-ink/60 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:right-8"
           >
             →
           </button>

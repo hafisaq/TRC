@@ -76,6 +76,27 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
       // Chrome's "3g" estimate fires on plenty of healthy Wi-Fi/4G sessions
       // and would silently switch films off for those visitors
       && !motion.matches && !connection?.saveData && !["slow-2g", "2g"].includes(connection?.effectiveType || "");
+    // iOS only autoplays inline films that are muted at the element level
+    // (React sets the property, not the attribute) — and Low Power Mode
+    // refuses every autoplay until the visitor touches the page, so the
+    // first gesture retries any film that was refused.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("autoplay", "");
+    let retryArmed = false;
+    const armGestureRetry = () => {
+      if (retryArmed) return;
+      retryArmed = true;
+      const retry = () => {
+        retryArmed = false;
+        window.removeEventListener("touchend", retry);
+        window.removeEventListener("pointerdown", retry);
+        if (wanted()) video.play()?.catch(() => undefined);
+      };
+      window.addEventListener("touchend", retry, { once: true, passive: true });
+      window.addEventListener("pointerdown", retry, { once: true, passive: true });
+    };
     const play = () => {
       clearTimeout(releaseTimer);
       if (!wanted()) {
@@ -93,7 +114,7 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
         video.src = src;
         video.load();
       }
-      video.play()?.catch(() => undefined);
+      video.play()?.catch(() => armGestureRetry());
     };
     video.addEventListener("canplay", play);
     document.addEventListener("visibilitychange", play);
