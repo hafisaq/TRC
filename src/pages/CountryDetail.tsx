@@ -11,6 +11,7 @@ import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, 
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
+import MobileAppTools from "../components/MobileAppTools";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
 
@@ -479,6 +480,8 @@ function CountryDetailInner({
             className="h-auto w-[132px] sm:w-[152px]"
           />
         </a>
+        <MobileAppTools tone="dark" />
+        <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>
         <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label="Page sections">
           <a
             href="/"

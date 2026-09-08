@@ -6,6 +6,15 @@ export function setActiveLenis(instance: Lenis | null) {
   activeLenis = instance;
 }
 
+export function pauseSmoothScroll() {
+  const instance = activeLenis;
+  const wasStopped = instance?.isStopped;
+  instance?.stop();
+  return () => {
+    if (instance === activeLenis && !wasStopped) instance?.start();
+  };
+}
+
 export function scrollToHash(hash: string, extraOffset = 0) {
   const target = document.querySelector<HTMLElement>(hash);
   if (!target) return;

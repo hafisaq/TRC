@@ -1,5 +1,8 @@
 import { createRoot } from "react-dom/client";
 import "./styles/main.css";
+import { initializeAppFeatures } from "./lib/pwa";
+
+initializeAppFeatures();
 
 const path = window.location.pathname.replace(/\/+$/, "");
 const routeMatch = path.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)$/);
@@ -44,12 +47,6 @@ Promise.all([hydrateFromCms(), page]).then(([, content]) => {
   const status = document.getElementById("boot-status");
   if (status) status.textContent = "The route could not load. Please refresh to try again.";
 });
-
-const standalone =
-  window.matchMedia("(display-mode: standalone)").matches ||
-  ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
-
-document.documentElement.dataset.displayMode = standalone ? "standalone" : "browser";
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {

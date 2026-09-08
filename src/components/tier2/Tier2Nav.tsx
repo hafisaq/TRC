@@ -3,6 +3,7 @@ import type { Destination } from "../../data/tier2Destinations";
 import { scrollToHash } from "../../lib/scroll";
 import LanguageSwitch from "./LanguageSwitch";
 import { t } from "../../lib/i18n";
+import MobileAppTools from "../MobileAppTools";
 
 type Tier2NavProps = {
   destinations: Destination[];
@@ -30,12 +31,12 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
     <>
       <header
         id="tier2-nav"
-        className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-ink/72 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl sm:flex sm:items-center sm:gap-8 sm:px-8 sm:py-5"
+        className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-ink/72 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
       >
         <a
           href="#tier2-hero"
           onClick={(e) => handleClick(e, "#tier2-hero")}
-          className="mx-auto block w-fit sm:mx-0"
+          className="mx-auto block w-fit xl:mx-0"
           aria-label="The Retreat Collection"
         >
           <img
@@ -45,13 +46,14 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
             height={226}
             decoding="async"
             fetchPriority="high"
-            className="w-[154px] h-auto sm:w-[190px]"
+            className="w-[154px] h-auto xl:w-[190px]"
           />
         </a>
-        <div className="absolute right-4 top-[calc(env(safe-area-inset-top)+16px)] sm:hidden">
+        <MobileAppTools />
+        <div className="mobile-language-switch">
           <LanguageSwitch tone="light" />
         </div>
-        <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 sm:flex sm:justify-end">
+        <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 xl:flex xl:justify-end">
           <div className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-white/45 lg:flex">
             <span className="h-px w-8 bg-gold/45" />
             <span>{statusText}</span>
@@ -78,7 +80,7 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
 
       <nav
         aria-label="Destination navigation"
-        className="fixed inset-x-0 bottom-0 z-50 sm:hidden border-t border-white/10 bg-ink/88 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(0,0,0,.28)] backdrop-blur-xl"
+        className="fixed inset-x-0 bottom-0 z-50 xl:hidden border-t border-white/10 bg-ink/88 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(0,0,0,.28)] backdrop-blur-xl"
       >
         <div className="absolute left-0 right-0 top-0 h-px bg-white/10">
           <div
