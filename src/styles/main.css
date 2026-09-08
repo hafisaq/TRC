@@ -243,7 +243,8 @@ a {
   }
 }
 
-html[data-display-mode="standalone"] body {
+html[data-display-mode="standalone"] body,
+html[data-display-mode="fullscreen"] body {
   overscroll-behavior-y: contain;
 }
 
