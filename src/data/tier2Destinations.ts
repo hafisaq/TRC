@@ -104,7 +104,7 @@ export const DESTINATIONS: Destination[] = [
     season: "Jun - Sep",
     highlights: ["Mobile camp", "Star-bed nights", "4x4 included"],
     theme: "white",
-    layout: "portal",
+    layout: "horizon",
     navLabel: "Desert",
     interest: "Desert & plain",
     gate: "D1",

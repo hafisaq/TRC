@@ -1,0 +1,97 @@
+.open-country {
+  --horizon-ink: #243238;
+  --horizon-gold: #8f7231;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  padding-block: 96px 60px;
+  background: #f9faf8;
+  color: var(--horizon-ink);
+  letter-spacing: 0;
+}
+.open-country[data-stop-theme="gold"] { background: #1c2220; --horizon-ink: #fff; --horizon-gold: #e3c682; }
+.open-country[data-stop-theme="gold"] .open-country-aperture { background: #263230; }
+.open-country-masthead, .open-country-caption {
+  position: relative;
+  z-index: 3;
+  width: min(88%, 1440px);
+  margin-inline: auto;
+  /* the flight lane descends along the physical right edge (the film's
+     flight node + the caravan hold both sit ~6–9% in) — keep the type
+     clear of it in both directions: coords/CTA in LTR, the title in RTL */
+  padding-right: clamp(44px, 8%, 130px);
+}
+.open-country-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px 36px;
+  color: var(--horizon-gold);
+  font-size: 11px;
+}
+.open-country-meta span:first-child { text-transform: uppercase; }
+.open-country-meta span:last-child { font-family: var(--font-mono); font-size: 10px; }
+.open-country-masthead h2 {
+  margin: 22px 0 30px;
+  font: 400 112px/.98 var(--font-serif);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.open-country-masthead em { font-weight: 400; color: var(--horizon-gold); }
+.open-country-film { position: relative; width: 100%; height: 50svh; min-height: 320px; max-height: 640px; }
+.open-country-aperture { position: absolute; inset: 0; overflow: hidden; background: #e2e7e3; }
+.open-country-media { position: absolute; inset: 0; overflow: hidden; }
+.open-country-flight-node { position: absolute; right: 9%; top: 48%; width: 1px; height: 1px; }
+.open-country-caption {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 680px) 1fr;
+  align-items: start;
+  gap: 32px;
+  padding-top: 32px;
+}
+.open-country-rule { height: 1px; background: var(--horizon-gold); margin-top: 13px; }
+.open-country-caption p { margin: 0; font-size: 15px; font-weight: 400; line-height: 1.85; overflow-wrap: anywhere; }
+.open-country-caption a {
+  justify-self: end;
+  align-self: center;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 230px;
+  padding-block: 8px;
+  color: var(--horizon-gold);
+  font-size: 11px;
+  line-height: 1.6;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.open-country-caption a::after { content: ""; position: absolute; bottom: 3px; inset-inline: 0; height: 1px; background: currentColor; transform: scaleX(.55); transform-origin: left; transition: transform 300ms ease; }
+.open-country-caption a:hover::after, .open-country-caption a:focus-visible::after { transform: scaleX(1); }
+.open-country-caption a:focus-visible { outline: 2px solid var(--horizon-gold); outline-offset: 6px; }
+html[dir="rtl"] .open-country-caption a::after { transform-origin: right; }
+@media (min-width: 1600px) { .open-country-masthead h2 { font-size: 136px; } }
+@media (max-width: 1023px) {
+  .open-country { padding-block: 92px 52px; }
+  .open-country-masthead h2 { font-size: 88px; }
+  .open-country-caption { grid-template-columns: 28px minmax(0, 1fr); gap: 20px; }
+  .open-country-caption a { grid-column: 2; justify-self: start; }
+  .open-country-film { height: 44svh; }
+}
+@media (max-width: 639px) {
+  .open-country { padding-block: 90px 104px; }
+  .open-country-masthead, .open-country-caption { width: calc(100% - 48px); }
+  .open-country-meta { flex-wrap: wrap; gap: 10px; font-size: 10px; }
+  .open-country-meta span:last-child { font-size: 9px; }
+  .open-country-masthead h2 { font-size: 64px; margin-block: 20px 24px; }
+  .open-country-film { height: 42svh; min-height: 280px; }
+  .open-country-flight-node { right: 7%; }
+  .open-country-caption { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 24px; }
+  .open-country-caption p { font-size: 14px; line-height: 1.8; }
+  .open-country-rule { display: none; }
+  .open-country-caption a { grid-column: 1; font-size: 10px; }
+}
+@media (max-width: 359px) { .open-country-masthead h2 { font-size: 56px; } }
+@media (prefers-reduced-motion: reduce) { .open-country-caption a::after { transition: none; } }
