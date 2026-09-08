@@ -32,7 +32,7 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
     <>
       <header
         id="tier2-nav"
-        className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-ink/72 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
+        className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-ink/94 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 sm:bg-ink/72 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
       >
         <a
           href="#tier2-hero"

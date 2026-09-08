@@ -176,28 +176,6 @@ function StaysRail({
   );
 }
 
-function usePinProgress(ref: React.RefObject<HTMLElement | null>) {
-  const [p, setP] = useState(0);
-  useEffect(() => {
-    const update = () => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
-      const next = clamp(-rect.top / scrollable, 0, 1);
-      setP((c) => (Math.abs(c - next) > 0.003 ? next : c));
-    };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, [ref]);
-  return p;
-}
-
 function useIsSmallScreen() {
   const [isSmall, setIsSmall] = useState(() => window.matchMedia("(max-width: 639px)").matches);
   useEffect(() => {
@@ -469,7 +447,7 @@ function CountryDetailInner({
           bar on mobile, where it's the established idiom site-wide. */}
       <header
         id="tier2-nav"
-        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/92 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
+        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/97 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 sm:bg-cream-deep/92 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
       >
         <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit xl:mx-0">
           <MediaImage
@@ -742,35 +720,85 @@ function ExpandChapter({
   onEnquire: () => void;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const p = usePinProgress(ref);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const windowRef = useRef<HTMLDivElement>(null);
+  const filmRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const isSmall = useIsSmallScreen();
   // A nav jump should land on the OPENED film with the editorial showing,
   // not at the closed window the scroll-scene starts from. scrollToHash
   // honours data-scroll-clearance live, so publish the (negative) offset
   // that puts the scene at the point where the text has fully faded in.
   const landAt = isSmall ? 0.56 : 0.68;
+
+  // The scene's beats at pin progress p. The film "window" is a scaled,
+  // overflow-clipped box with the footage counter-scaled inside it —
+  // transforms only, so phones composite the whole opening instead of
+  // repainting a clip-path every frame (and nothing goes through React
+  // state on the scroll path).
+  const beats = (p: number) => {
+    const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1);
+    const fx = 1 - ((1 - open) * (isSmall ? 8 : 24) * 2) / 100;
+    const fy = 1 - ((1 - open) * (isSmall ? 14 : 18) * 2) / 100;
+    const radius = (1 - open) * 26;
+    const titleOut = 1 - clamp((open - (isSmall ? 0.14 : 0.3)) / (isSmall ? 0.34 : 0.45), 0, 1);
+    const textIn = clamp((p - (isSmall ? 0.36 : 0.5)) / (isSmall ? 0.18 : 0.16), 0, 1);
+    const closing = 1 - clamp((p - (isSmall ? 0.92 : 0.9)) / (isSmall ? 0.08 : 0.1), 0, 1);
+    return {
+      title: { opacity: String(titleOut) },
+      window: { transform: `scale(${fx}, ${fy})`, borderRadius: `${radius / fx}px / ${radius / fy}px` },
+      film: { transform: `scale(${1 / fx}, ${1 / fy})` },
+      copy: { opacity: String(textIn * closing), transform: `translateY(${(1 - textIn) * 36 - (1 - closing) * 22}px)` },
+      bar: { transform: `scaleX(${p})` }
+    };
+  };
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const sync = () => el.setAttribute("data-scroll-clearance", String(-Math.round((el.offsetHeight - window.innerHeight) * landAt)));
+    let frame = 0;
+    let last = -1;
+    const apply = () => {
+      frame = 0;
+      const rect = el.getBoundingClientRect();
+      const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+      const p = clamp(-rect.top / scrollable, 0, 1);
+      if (Math.abs(p - last) < 0.002) return;
+      last = p;
+      const b = beats(p);
+      Object.assign(titleRef.current?.style ?? {}, b.title);
+      Object.assign(windowRef.current?.style ?? {}, b.window);
+      Object.assign(filmRef.current?.style ?? {}, b.film);
+      Object.assign(copyRef.current?.style ?? {}, b.copy);
+      Object.assign(barRef.current?.style ?? {}, b.bar);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(apply); };
+    const sync = () => {
+      el.setAttribute("data-scroll-clearance", String(-Math.round((el.offsetHeight - window.innerHeight) * landAt)));
+      last = -1;
+      schedule();
+    };
     sync();
+    window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
-  }, [landAt]);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", sync);
+    };
+    // beats closes over isSmall; landAt changes with it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSmall, landAt]);
 
-  const open = clamp(p / (isSmall ? 0.32 : 0.42), 0, 1); // film opens to full-bleed
-  const insetX = (1 - open) * (isSmall ? 8 : 24);
-  const insetY = (1 - open) * (isSmall ? 14 : 18);
-  const radius = (1 - open) * 26;
-  const titleOut = 1 - clamp((open - (isSmall ? 0.14 : 0.3)) / (isSmall ? 0.34 : 0.45), 0, 1); // backdrop word cedes to the film
-  const textIn = clamp((p - (isSmall ? 0.36 : 0.5)) / (isSmall ? 0.18 : 0.16), 0, 1); // fade-in
-  const closing = 1 - clamp((p - (isSmall ? 0.92 : 0.9)) / (isSmall ? 0.08 : 0.1), 0, 1); // closing fade before release
+  const initial = beats(0);
+  const rtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
 
   return (
     <section ref={ref} id={id} data-tier2-stop={id} className="relative h-[180svh] w-full sm:h-[220svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* the word the film opens over */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center" style={{ opacity: titleOut }}>
+        <div ref={titleRef} className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center" style={initial.title}>
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">
             {String(index + 1).padStart(2, "0")} · {chapter.eyebrow}
           </div>
@@ -783,21 +811,21 @@ function ExpandChapter({
         </div>
 
         {/* the film window, opening up */}
-        <div
-          className="absolute inset-0"
-          style={{ clipPath: `inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${radius}px)` }}
-        >
-          <MediaVideo src={hasFilm(chapter.slug) ? videoUrl(chapter.slug) : undefined}
-            poster={posterUrl(chapter.slug)} className="kenburns" />
-          {/* phones stack title + copy + CTA over most of the frame, so the
-              scrim has to climb with them; wider screens keep the lighter lift */}
-          <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.88)_0%,rgba(14,13,12,.72)_42%,rgba(14,13,12,.28)_72%,rgba(14,13,12,.16)_100%)] sm:bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
+        <div ref={windowRef} className="absolute inset-0 overflow-hidden will-change-transform" style={initial.window}>
+          <div ref={filmRef} className="absolute inset-0 will-change-transform" style={initial.film}>
+            <MediaVideo src={hasFilm(chapter.slug) ? videoUrl(chapter.slug) : undefined}
+              poster={posterUrl(chapter.slug)} className="kenburns" />
+            {/* phones stack title + copy + CTA over most of the frame, so the
+                scrim has to climb with them; wider screens keep the lighter lift */}
+            <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.88)_0%,rgba(14,13,12,.72)_42%,rgba(14,13,12,.28)_72%,rgba(14,13,12,.16)_100%)] sm:bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
+          </div>
         </div>
 
         {/* editorial over the opened film — fades in, then closes out */}
         <div
-          className="absolute inset-x-0 bottom-0 px-5 pb-[calc(env(safe-area-inset-bottom)+34px)] sm:px-10 sm:pb-[calc(env(safe-area-inset-bottom)+56px)] lg:px-16"
-          style={{ opacity: textIn * closing, transform: `translateY(${(1 - textIn) * 36 - (1 - closing) * 22}px)` }}
+          ref={copyRef}
+          className="absolute inset-x-0 bottom-0 px-5 pb-[calc(env(safe-area-inset-bottom)+112px)] will-change-transform sm:px-10 lg:px-16 xl:pb-[calc(env(safe-area-inset-bottom)+56px)]"
+          style={initial.copy}
         >
           <div className="mx-auto max-w-[1280px]">
             <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">
@@ -823,7 +851,7 @@ function ExpandChapter({
 
         {/* chapter progress */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-navy/15">
-          <div className="h-full bg-gold shadow-[0_0_10px_rgba(227,198,130,.6)]" style={{ width: `${p * 100}%` }} />
+          <div ref={barRef} className="h-full w-full bg-gold shadow-[0_0_10px_rgba(227,198,130,.6)]" style={{ ...initial.bar, transformOrigin: rtl ? "right" : "left" }} />
         </div>
       </div>
     </section>

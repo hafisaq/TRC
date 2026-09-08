@@ -91,6 +91,10 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
   const rafRef = useRef(0);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const lastFrameRef = useRef(0);
+  // touch devices: the loop sleeps while the hero is off screen (the map
+  // only shows through section washes there); a landing burst wakes it
+  const heroVisibleRef = useRef(true);
+  const wakeUntilRef = useRef(0);
   // Kept in a ref (not state) since resize()/draw()/burst() are plain
   // functions defined once in the effect below, not re-created on re-render.
   const focusRef = useRef(focus);
@@ -136,6 +140,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
         }
       });
       pingsRef.current.push({ xPct, yPct, x: bx, y: by, age: 0, color });
+      wakeUntilRef.current = performance.now() + 1800;
     }
   }));
 
@@ -211,9 +216,16 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
     let scrollingUntil = 0;
     const onScroll = () => { scrollingUntil = performance.now() + 140; };
     if (window.matchMedia("(pointer: coarse)").matches) window.addEventListener("scroll", onScroll, { passive: true });
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const heroEl = document.getElementById("tier2-hero") ?? document.getElementById("cd-hero");
+    const heroWatch = coarse && heroEl ? new IntersectionObserver((entries) => {
+      heroVisibleRef.current = entries.some((e) => e.isIntersecting);
+    }, { threshold: 0 }) : null;
+    heroWatch?.observe(heroEl!);
     const tick = (time: number) => {
       if (document.hidden) return;
-      if (time - lastFrameRef.current >= targetFrameMs && time > scrollingUntil) {
+      const awake = !coarse || heroVisibleRef.current || time < wakeUntilRef.current;
+      if (awake && time - lastFrameRef.current >= targetFrameMs && time > scrollingUntil) {
         lastFrameRef.current = time;
         draw(time);
       }
@@ -237,6 +249,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
         cancelAnimationFrame(rafRef.current);
         window.removeEventListener("resize", resize);
         window.removeEventListener("scroll", onScroll);
+        heroWatch?.disconnect();
         document.removeEventListener("visibilitychange", onVisibility);
       };
     }
@@ -245,6 +258,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
+      heroWatch?.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);

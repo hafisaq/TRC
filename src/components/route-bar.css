@@ -135,6 +135,13 @@ html[dir="rtl"] .route-bar-progress span { transform-origin: right; }
 .route-bar-stop a:active .route-bar-label { color: var(--rb-gold-hi); }
 html[dir="rtl"] .route-bar-label { letter-spacing: 0; font-size: 10px; text-transform: none; }
 html[dir="rtl"] .route-bar-status { letter-spacing: 0; font-size: 9px; }
+/* phones: backdrop blur over scrolling film is the single most expensive
+   effect a mobile GPU can be asked for, every frame — a denser tint reads
+   the same and costs nothing */
+@media (max-width: 639px) {
+  .route-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(14 13 12 / 96%); }
+  .route-bar--light { background: rgb(243 239 231 / 97%); }
+}
 @media (min-width: 1280px) { .route-bar { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .route-bar-line span, .route-bar-node, .route-bar-node::after, .route-bar-label { transition: none; }
