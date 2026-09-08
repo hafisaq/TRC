@@ -12,6 +12,7 @@ import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import MobileAppTools from "../components/MobileAppTools";
+import RouteBar from "../components/RouteBar";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
 
@@ -521,39 +522,18 @@ function CountryDetailInner({
       {/* mobile section nav — bottom tab bar, matching the home screen's
           mobile pattern; this is where boxed chips + a route progress
           thread belong, not the top header */}
-      <nav
-        data-country-bottom-nav
-        aria-label="Page sections"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-gold/20 bg-cream-deep/94 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(22,36,60,.14)] backdrop-blur-xl xl:hidden"
-      >
-        <div className="absolute left-0 right-0 top-0 h-px bg-navy/10">
-          <div
-            className="h-full bg-gold shadow-[0_0_14px_rgba(200,162,76,.6)] transition-[width] duration-200"
-            style={{ width: "100%", transformOrigin: "left", transform: "scaleX(var(--route-progress, 0))" }}
-          />
-        </div>
-        <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-navy/45">{page.country}</div>
-        <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 pb-0.5 no-scrollbar">
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToHash(`#${s.id}`);
-              }}
-              aria-current={activeSection === s.id ? "location" : undefined}
-              className={`grid min-h-12 min-w-[78px] place-items-center rounded-md border px-2 text-center text-[8px] tracking-[0.1em] uppercase transition-colors active:bg-gold/10 ${
-                activeSection === s.id
-                  ? "border-gold/45 bg-gold/12 text-gold-deep shadow-[0_0_18px_rgba(200,162,76,.18)]"
-                  : "border-navy/0 text-navy/55"
-              }`}
-            >
-              {s.label}
-            </a>
-          ))}
-        </div>
-      </nav>
+      <RouteBar
+        items={sections.map((s) => ({ href: `#${s.id}`, label: s.label }))}
+        activeHref={`#${activeSection}`}
+        onSelect={(e, href) => {
+          e.preventDefault();
+          scrollToHash(href);
+        }}
+        status={page.country}
+        tone="light"
+        ariaLabel="Page sections"
+        navAttrs={{ "data-country-bottom-nav": "" }}
+      />
 
       <main id="tier2-journey" className="relative z-10">
         <Tier2FlightPath stops={pathStops} startId={heroId} />
