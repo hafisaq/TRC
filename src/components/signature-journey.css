@@ -134,6 +134,10 @@
   transition: color 250ms, border-color 250ms;
 }
 .signature-navigator a:hover, .signature-navigator a[aria-current] { color: var(--signature-gold); border-color: var(--signature-gold); }
+/* WebKit can skip repainting style changes inside a horizontal scroller
+   while the page is pinned — a composited layer per link keeps the
+   current-stop highlight in step with the visible panel on iOS. */
+.signature-navigator a { transform: translateZ(0); }
 .signature-navigator a:focus-visible { outline: 2px solid var(--signature-gold); outline-offset: -4px; }
 .signature-navigator a span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .signature-nav-number { font-family: var(--font-mono); font-size: 10px; opacity: .65; }

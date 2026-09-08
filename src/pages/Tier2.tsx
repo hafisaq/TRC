@@ -145,7 +145,7 @@ export default function Tier2() {
       <Tier2Nav
         destinations={DESTINATIONS}
         activeStopId={activeStopId}
-        statusText={`${t("status.approaching")} ${activeDestination.statusLabel}`}
+        statusText={`${t("status.approaching")} ${activeStopId === "tier2-enquire" ? t("enq.journeysEnd") : activeDestination.statusLabel}`}
         onEnquire={() => handleEnquire()}
       />
       <main id="tier2-journey" className="relative z-10">

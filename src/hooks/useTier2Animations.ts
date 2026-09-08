@@ -7,6 +7,11 @@ import type { DotMapHandle } from "../components/tier2/DotMap";
 import { setActiveLenis } from "../lib/scroll";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+// Phones resize the viewport every time the address bar shows or hides;
+// without this every such resize triggers a full ScrollTrigger refresh
+// mid-scroll (the plane and reveals visibly jump).
+ScrollTrigger.config({ ignoreMobileResize: true });
+const COARSE_POINTER = () => window.matchMedia("(pointer: coarse)").matches;
 
 const $ = <T extends Element>(selector: string, root: ParentNode = document) => root.querySelector<T>(selector);
 const $$ = <T extends Element>(selector: string, root: ParentNode = document) => Array.from(root.querySelectorAll<T>(selector));
@@ -173,6 +178,19 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         }
       });
 
+      // Journey's End is not a stop, but the bottom bar should still show
+      // the traveller has arrived there — hand it the active id when the
+      // boarding pass takes over the viewport (scrolling back up lands on
+      // the last stop's onEnterBack, which restores it).
+      const enquireStop = $<HTMLElement>("#tier2-enquire");
+      if (enquireStop && options.onActiveStopChange) {
+        ScrollTrigger.create({
+          trigger: enquireStop,
+          start: "top 58%",
+          onEnter: () => options.onActiveStopChange?.("tier2-enquire")
+        });
+      }
+
       // position-cache-free fallback (see comment above)
       const checkReveals = () => {
         if (revealed.size >= watched.length) return;
@@ -288,7 +306,9 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
 
         // Each stop owns a vertical band of scroll progress; while inside
         // it, the path/plane wear that stop's accent color.
-        const journeyHeight = journey.scrollHeight;
+        // Match ScrollTrigger's layout box, excluding the absolute flight
+        // drawing, which can still have the previous viewport's height.
+        const journeyHeight = journey.offsetHeight;
         const zones = stops.map((s) => {
           const el = document.getElementById(s.id);
           const center = el ? el.offsetTop + el.offsetHeight / 2 : 0;
@@ -413,7 +433,11 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             trigger: journey,
             start: "top top",
             end: "bottom bottom",
-            scrub: 0.4,
+            // Desktop: a short catch-up makes wheel steps read as flight.
+            // Touch: the finger IS the scroll — any lag makes the plane
+            // swim against pinned scenes (sticky films sit still while a
+            // lagging plane drifts over them), so it tracks 1:1 there.
+            scrub: COARSE_POINTER() ? true : 0.4,
             onUpdate: (self) => applyProgress(self.progress)
           });
 

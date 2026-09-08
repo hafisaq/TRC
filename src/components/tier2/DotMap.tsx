@@ -205,9 +205,15 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
       });
     };
 
+    // On touch devices the map yields to the scroll: redrawing thousands
+    // of points at 24fps under a flick competes with the compositor and
+    // shows up as plane/reveal jitter. Freeze while the page is moving.
+    let scrollingUntil = 0;
+    const onScroll = () => { scrollingUntil = performance.now() + 140; };
+    if (window.matchMedia("(pointer: coarse)").matches) window.addEventListener("scroll", onScroll, { passive: true });
     const tick = (time: number) => {
       if (document.hidden) return;
-      if (time - lastFrameRef.current >= targetFrameMs) {
+      if (time - lastFrameRef.current >= targetFrameMs && time > scrollingUntil) {
         lastFrameRef.current = time;
         draw(time);
       }
@@ -230,6 +236,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
         window.clearTimeout(startTimer);
         cancelAnimationFrame(rafRef.current);
         window.removeEventListener("resize", resize);
+        window.removeEventListener("scroll", onScroll);
         document.removeEventListener("visibilitychange", onVisibility);
       };
     }
@@ -237,6 +244,7 @@ const DotMap = forwardRef<DotMapHandle, { className?: string; focus?: DotMapFocu
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
