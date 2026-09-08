@@ -1,0 +1,141 @@
+.route-bar {
+  --rb-line: rgb(255 255 255 / 14%);
+  --rb-text: rgb(255 255 255 / 58%);
+  --rb-status: rgb(255 255 255 / 42%);
+  --rb-node: #0e0d0c;
+  --rb-gold: #c8a24c;
+  --rb-gold-hi: #e3c682;
+  --rb-glow: rgb(227 198 130 / 55%);
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  padding: 7px 10px calc(env(safe-area-inset-bottom) + 6px);
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(14 13 12 / 88%);
+  box-shadow: 0 -18px 50px rgb(0 0 0 / 28%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.route-bar--light {
+  --rb-line: rgb(22 36 60 / 14%);
+  --rb-text: rgb(22 36 60 / 58%);
+  --rb-status: rgb(22 36 60 / 45%);
+  --rb-node: #f3efe7;
+  --rb-gold-hi: #8f7231;
+  --rb-glow: rgb(200 162 76 / 40%);
+  border-top-color: rgb(200 162 76 / 20%);
+  background: rgb(243 239 231 / 94%);
+  box-shadow: 0 -18px 50px rgb(22 36 60 / 14%);
+}
+/* the real scroll progress, as the hairline along the top edge (unchanged) */
+.route-bar-progress { position: absolute; inset: 0 0 auto; height: 1px; background: var(--rb-line); }
+.route-bar-progress span {
+  display: block;
+  height: 100%;
+  background: var(--rb-gold);
+  box-shadow: 0 0 14px var(--rb-glow);
+  transform: scaleX(var(--route-progress, 0));
+  transform-origin: left;
+}
+html[dir="rtl"] .route-bar-progress span { transform-origin: right; }
+.route-bar-status {
+  overflow: hidden;
+  text-align: center;
+  font-size: 7px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--rb-status);
+}
+.route-bar-track {
+  position: relative;
+  display: flex;
+  height: 54px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* the route: from the first node's centre to the last node's centre */
+.route-bar-line {
+  position: absolute;
+  top: 50%;
+  inset-inline: calc(50% / var(--n));
+  height: 1px;
+  background: var(--rb-line);
+}
+.route-bar-line span {
+  display: block;
+  height: 100%;
+  background: var(--rb-gold);
+  box-shadow: 0 0 10px var(--rb-glow);
+  transition: width 550ms cubic-bezier(.22, .65, .3, 1);
+}
+.route-bar-stop { position: relative; flex: 1 1 0; min-width: 0; }
+.route-bar-stop a {
+  position: relative;
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+/* a waypoint diamond, sat on the line; the current one wears the reticle ring */
+.route-bar-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--rb-gold);
+  background: var(--rb-node);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: background 300ms, transform 300ms, box-shadow 300ms;
+}
+.route-bar-node::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--rb-gold);
+  opacity: 0;
+  transform: rotate(-45deg) scale(.6);
+  transition: opacity 300ms, transform 300ms;
+}
+.is-passed .route-bar-node { background: var(--rb-gold); }
+.is-active .route-bar-node {
+  background: var(--rb-gold-hi);
+  border-color: var(--rb-gold-hi);
+  box-shadow: 0 0 12px var(--rb-glow);
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.15);
+}
+.is-active .route-bar-node::after { opacity: .7; transform: rotate(-45deg) scale(1); }
+/* labels alternate above / below the line and may spill into the
+   neighbouring columns (which carry their labels on the other side) */
+.route-bar-label {
+  position: absolute;
+  left: -50%;
+  width: 200%;
+  overflow: hidden;
+  text-align: center;
+  font-size: 7.5px;
+  line-height: 1.2;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--rb-text);
+  pointer-events: none;
+  transition: color 300ms;
+}
+.is-above .route-bar-label { bottom: calc(50% + 10px); }
+.is-below .route-bar-label { top: calc(50% + 10px); }
+.is-active .route-bar-label { color: var(--rb-gold-hi); }
+.route-bar-stop a:active .route-bar-label { color: var(--rb-gold-hi); }
+html[dir="rtl"] .route-bar-label { letter-spacing: 0; font-size: 10px; text-transform: none; }
+html[dir="rtl"] .route-bar-status { letter-spacing: 0; font-size: 9px; }
+@media (min-width: 1280px) { .route-bar { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .route-bar-line span, .route-bar-node, .route-bar-node::after, .route-bar-label { transition: none; }
+}

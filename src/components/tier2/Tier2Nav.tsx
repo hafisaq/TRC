@@ -4,6 +4,7 @@ import { scrollToHash } from "../../lib/scroll";
 import LanguageSwitch from "./LanguageSwitch";
 import { t } from "../../lib/i18n";
 import MobileAppTools from "../MobileAppTools";
+import RouteBar from "../RouteBar";
 
 type Tier2NavProps = {
   destinations: Destination[];
@@ -78,38 +79,14 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
         </nav>
       </header>
 
-      <nav
-        aria-label="Destination navigation"
-        className="fixed inset-x-0 bottom-0 z-50 xl:hidden border-t border-white/10 bg-ink/88 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] shadow-[0_-18px_50px_rgba(0,0,0,.28)] backdrop-blur-xl"
-      >
-        <div className="absolute left-0 right-0 top-0 h-px bg-white/10">
-          <div
-            className="h-full bg-gold shadow-[0_0_14px_rgba(227,198,130,.75)] transition-[width] duration-200"
-            style={{ width: "100%", transformOrigin: "left", transform: "scaleX(var(--route-progress, 0))" }}
-          />
-        </div>
-        <div className="mb-1 truncate px-2 text-center text-[7.5px] tracking-[0.2em] uppercase text-white/42">{statusText}</div>
-        <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain px-0.5 pb-0.5 no-scrollbar">
-          {navItems.map((item) => {
-            const isActive = item.href === `#${activeStopId}`;
-            return (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={(e) => handleClick(e, item.href)}
-              aria-current={isActive ? "location" : undefined}
-              className={`grid min-h-12 min-w-[78px] place-items-center rounded-md border px-2 text-center text-[8px] tracking-[0.1em] uppercase transition-colors active:bg-white/5 active:text-gold-light ${
-                isActive
-                  ? "border-gold/35 bg-gold/12 text-gold-light shadow-[0_0_18px_rgba(200,162,76,.22)]"
-                  : "border-white/0 text-white/58"
-              }`}
-            >
-              {item.label}
-            </a>
-            );
-          })}
-        </div>
-      </nav>
+      <RouteBar
+        items={navItems}
+        activeHref={`#${activeStopId}`}
+        onSelect={handleClick}
+        status={statusText}
+        tone="dark"
+        ariaLabel="Destination navigation"
+      />
     </>
   );
 }
