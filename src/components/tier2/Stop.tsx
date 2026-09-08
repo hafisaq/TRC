@@ -2,9 +2,11 @@ import type { MouseEvent } from "react";
 import { posterUrl, videoUrl, hasFilm, lqipStyle } from "../../lib/media";
 import { MediaVideo } from "../Media";
 import { t as tr } from "../../lib/i18n";
+import OpenCountry from "./OpenCountry";
 
 export type StopTheme = "gold" | "white";
-export type StopLayout = "split" | "cinematic" | "portal" | "editorial";
+// "horizon" — the wide masthead + full-bleed film band (OpenCountry)
+export type StopLayout = "split" | "cinematic" | "portal" | "editorial" | "horizon";
 
 type StopProps = {
   id: string;
@@ -84,6 +86,12 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
   const cta = ctaHref
     ? { href: ctaHref, onClick: undefined, label: ctaLabel ?? tr("stop.learnMore") }
     : { href: "#tier2-enquire", onClick: handleEnquireClick, label: tr("stop.enquireRoute") };
+
+  if (layout === "horizon") {
+    return <OpenCountry id={id} indexLabel={idx} eyebrow={eyebrow} title={title} copy={copy} theme={theme} cta={cta}>
+      <VideoTag slug={slug} posterW={1920} />
+    </OpenCountry>;
+  }
 
   if (layout === "cinematic") {
     return (

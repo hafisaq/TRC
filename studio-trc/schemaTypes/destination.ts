@@ -22,7 +22,16 @@ export const destination = defineType({
     }),
     defineField({
       name: 'layout', type: 'string',
-      options: { list: ['split', 'cinematic', 'portal', 'editorial'], layout: 'radio' },
+      options: {
+        list: [
+          { title: 'Split — text beside a framed film', value: 'split' },
+          { title: 'Cinematic — full-screen film, text at the foot', value: 'cinematic' },
+          { title: 'Portal — round film, centred text', value: 'portal' },
+          { title: 'Editorial — wide framed film above the text', value: 'editorial' },
+          { title: 'Horizon — large headline, full-bleed film band', value: 'horizon' },
+        ],
+        layout: 'radio',
+      },
       initialValue: 'split', validation: (r) => r.required(),
     }),
     defineField({
