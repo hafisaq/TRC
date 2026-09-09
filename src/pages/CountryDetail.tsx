@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { DotMapHandle } from "../components/tier2/DotMap";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Tier2Enquire, { type EnquiryOption } from "../components/tier2/Tier2Enquire";
+import JourneyFooter from "../components/JourneyFooter";
 import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
@@ -686,6 +687,7 @@ function CountryDetailInner({
           <Tier2Enquire selectedInterest={selectedInterest} destinations={enquiryOptions} />
         </div>
       </main>
+      <JourneyFooter departureHref={`#${heroId}`} />
 
       {openStay && (
         <StayDossier

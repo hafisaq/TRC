@@ -127,7 +127,19 @@ const EN: Record<string, string> = {
   "enq.toBeArranged": "To be arranged",
   "enq.confirm": "Confirm enquiry",
   "enq.sent": "Sent — we'll be in touch within 24 hours",
-  "enq.cities": "London · Cape Town · Kyoto"
+  "enq.cities": "London · Cape Town · Kyoto",
+  "footer.phone": "Call us",
+  "footer.whatsapp": "WhatsApp",
+  "footer.email": "Write to us",
+  "footer.contact": "Contact the collection",
+  "footer.social": "Follow the journey",
+  "footer.home": "The Retreat Collection home",
+  "footer.back": "Back to departure",
+  "footer.rights": "All rights reserved.",
+  "footer.placeholder": "Contact details coming soon.",
+  "footer.socialPlaceholder": "Social profile coming soon.",
+  "footer.arrived": "Arrived",
+  "footer.collection": "The Retreat Collection"
 };
 
 let ui: Record<string, string> = { ...EN };
