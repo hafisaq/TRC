@@ -5,6 +5,7 @@ import Tier2Hero from "../components/tier2/Tier2Hero";
 import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
 import Stop from "../components/tier2/Stop";
 import Tier2Enquire from "../components/tier2/Tier2Enquire";
+import JourneyFooter from "../components/JourneyFooter";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
 import { t } from "../lib/i18n";
@@ -190,6 +191,7 @@ export default function Tier2() {
             stop abruptly instead of flying down to land here */}
         <Tier2Enquire selectedInterest={selectedInterest} destinations={DESTINATIONS} />
       </main>
+      <JourneyFooter />
     </div>
   );
 }

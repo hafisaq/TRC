@@ -11,6 +11,7 @@ import { setCountryPage, type CountryPageData } from "../data/regions/countryCon
 import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../data/regions/types";
 import { registerMedia } from "./media";
 import { isAr, setUiStrings, applyTranslation } from "./i18n";
+import { FOOTER, contactHref } from "../data/footer";
 
 const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
@@ -53,13 +54,16 @@ const QUERY = `{
     essentials[]{_key, title, copy, points[]{_key, label, value}}
   },
   "translations": *[_type=="translation" && lang=="ar" && $arabic && (
-    source == "ui" ||
+    source == "ui" || source == "siteSettings" ||
     source in *[_type=="destination" && $home]._id ||
     source in *[_type=="region" && ($home || slug.current == $region)]._id ||
     source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
     source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref
   )]{source, strings[]{path, value}},
-  "settings": *[_id=="siteSettings"][0]{showLanguageSwitch}
+  "settings": *[_id=="siteSettings"][0]{
+    showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
+    phone, whatsapp, email, socials[]{_key, name, url}
+  }
 }`;
 
 // Site-wide switches from the CMS (mutated in place at hydration, like
@@ -120,7 +124,12 @@ export async function hydrateFromCms(): Promise<boolean> {
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
-    settings?: { showLanguageSwitch?: boolean } | null;
+    settings?: {
+      showLanguageSwitch?: boolean;
+      footerEyebrow?: string; footerHeadline?: TitlePair; footerLine?: string; footerStamp?: string;
+      phone?: string; whatsapp?: string; email?: string;
+      socials?: Array<{ name?: string; url?: string }>;
+    } | null;
   };
   // Reuse this route's last published response when the network is slow;
   // a fast response still wins (see the race below).
@@ -213,6 +222,7 @@ export async function hydrateFromCms(): Promise<boolean> {
       }
     }
     for (const p of (data.pages ?? []) as Array<Record<string, unknown>>) apply(p, p._id as string);
+    apply(data.settings as Record<string, unknown> | null, "siteSettings");
     const uiStrings = byId.get("ui");
     if (uiStrings) {
       const overrides: Record<string, string> = {};
@@ -221,6 +231,23 @@ export async function hydrateFromCms(): Promise<boolean> {
       }
       setUiStrings(overrides);
     }
+  }
+
+  // ---- footer (the client's own words and contact details; an empty
+  // contact renders as "coming soon" rather than a made-up number) ----
+  if (data.settings) {
+    const st = data.settings;
+    if (st.footerEyebrow) FOOTER.eyebrow = st.footerEyebrow;
+    if (st.footerHeadline) FOOTER.headline = pair(st.footerHeadline, FOOTER.headline);
+    if (st.footerLine) FOOTER.line = st.footerLine;
+    if (st.footerStamp) FOOTER.stamp = st.footerStamp;
+    FOOTER.contacts = (["phone", "whatsapp", "email"] as const).map((id) => {
+      const value = (st[id] ?? "").trim();
+      return { id, value, href: contactHref(id, value) };
+    });
+    FOOTER.socials = (st.socials ?? [])
+      .filter((s) => s?.name)
+      .map((s) => ({ name: s.name as string, href: s.url?.trim() || null }));
   }
 
   try {

@@ -126,6 +126,15 @@ for p in q('*[_type=="countryPage"]'):
             add(i, f"essentials[{k}].points[{pt['_key']}].value", ew, pt.get("value"))
 
 # ---- fixed UI chrome (lives in code, keyed for the frontend) ----
+# ---- site settings: the footer's words ----
+st = q('*[_id=="siteSettings"][0]')
+if st:
+    w = "Footer"
+    add("siteSettings", "footerEyebrow", w, st.get("footerEyebrow"), "small line above the footer headline")
+    title_pair("siteSettings", "footerHeadline", w, st.get("footerHeadline"))
+    add("siteSettings", "footerLine", w, st.get("footerLine"))
+    add("siteSettings", "footerStamp", w, st.get("footerStamp"), "under 'Arrived' on the stamp")
+
 UI = [
     ("nav.about", "Top navigation", "About"),
     ("nav.enquire", "Top navigation", "Enquire"),
@@ -229,6 +238,18 @@ UI = [
     ("enq.confirm", "Enquiry form", "Confirm enquiry"),
     ("enq.sent", "Enquiry form", "Sent — we'll be in touch within 24 hours"),
     ("enq.cities", "Enquiry form", "London · Cape Town · Kyoto"),
+    ("footer.phone", "Footer", "Call us"),
+    ("footer.whatsapp", "Footer", "WhatsApp"),
+    ("footer.email", "Footer", "Write to us"),
+    ("footer.contact", "Footer", "Contact the collection"),
+    ("footer.social", "Footer", "Follow the journey"),
+    ("footer.home", "Footer", "The Retreat Collection home"),
+    ("footer.back", "Footer", "Back to departure"),
+    ("footer.rights", "Footer", "All rights reserved."),
+    ("footer.placeholder", "Footer", "Contact details coming soon."),
+    ("footer.socialPlaceholder", "Footer", "Social profile coming soon."),
+    ("footer.arrived", "Footer", "Arrived"),
+    ("footer.collection", "Footer", "The Retreat Collection"),
 ]
 for key, where, en in UI:
     rows.append(("ui", key, f"UI · {where}", en, "{...} placeholders stay as-is"))
