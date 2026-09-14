@@ -13,7 +13,6 @@
 .about-page .about-desktop-nav .about-home { letter-spacing: .18em; }
 .about-desktop-nav .about-home { margin-inline-end: auto; gap: 14px; }
 .about-home span { color: #a78b4e; }
-.about-flight-node { display: inline-block; width: 1px; height: 1px; }
 .about-eyebrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--font-mono); font-size: 10px; line-height: 1.6; text-transform: uppercase; color: #8a6b2a; }
 .about-hero { position: relative; display: flex; align-items: center; min-height: 720px; height: calc(100svh - 56px); padding: calc(var(--about-header) + 36px) 72px 38px; overflow: hidden; background: #182f2b; color: #fff; }
 .about-hero-films { position: absolute; inset: -4% 0; }

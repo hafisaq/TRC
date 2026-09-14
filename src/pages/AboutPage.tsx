@@ -7,9 +7,6 @@ import { hasFilm, lqipStyle, posterUrl, videoUrl } from "../lib/media";
 import { t } from "../lib/i18n";
 import { SETTINGS } from "../lib/cms";
 import { scrollToHash } from "../lib/scroll";
-import type { DotMapHandle } from "../components/tier2/DotMap";
-import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
-import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
@@ -44,7 +41,6 @@ function goToSection(target: HTMLElement, smooth: boolean) {
 export default function AboutPage() {
   const root = useRef<HTMLDivElement>(null);
   const main = useRef<HTMLElement>(null);
-  const dotMapRef = useRef<DotMapHandle>(null);
   const [active, setActive] = useState("about-hero");
   const [chapter, setChapter] = useState(0);
   const [heroView, setHeroView] = useState(0);
@@ -55,14 +51,6 @@ export default function AboutPage() {
     { id: "about-hero", label: t("page.overview") },
     ...ABOUT.sections.map((s, i) => ({ id: `about-s${i}`, label: s.title })),
   ], []);
-  // the same flight the home and country pages fly: from the hero down to
-  // a landing on every part of the story
-  const flightStops = useMemo<Tier2Stop[]>(() => [
-    { id: "about-intro", mapPos: [0.5, 0.5], theme: "white", coords: "" },
-    ...ABOUT.sections.map((_, i) => ({ id: `about-s${i}`, mapPos: [0.5, 0.5] as [number, number], theme: "white" as const, coords: "" })),
-    ...(ABOUT.closing.length ? [{ id: "about-invitation", mapPos: [0.5, 0.5] as [number, number], theme: "gold" as const, coords: "" }] : []),
-  ], []);
-  useTier2Animations(dotMapRef, flightStops, { heroReady: true });
 
   useEffect(() => {
     const el = root.current;
@@ -157,8 +145,7 @@ export default function AboutPage() {
         activeHref={`#${active}`} onSelect={(e, href) => { if (href.startsWith("#")) jump(e, href); }}
         status={t("about.story")} tone="light" ariaLabel="Page sections" />
 
-      <main ref={main} id="tier2-journey">
-        <Tier2FlightPath stops={flightStops} startId="about-hero" />
+      <main ref={main}>
         <section id="about-hero" className="about-hero">
           <div className="about-hero-films" aria-hidden="true">
             {heroFilms.map((slug, i) => <div key={`${slug}-${i}`} className={`about-film-layer ${heroView === i ? "is-active" : ""}`}>
@@ -173,7 +160,6 @@ export default function AboutPage() {
             <div className="about-hero-bottom">
               <a className="about-story-link" href="#about-intro" onClick={e => jump(e, "#about-intro")}><ArrowDown size={19} aria-hidden="true" /><span>{t("about.begin")}</span></a>
               <div className="about-film-controls">
-                <span data-flight-node aria-hidden="true" className="about-flight-node" />
                 <span className="about-view-label">{t("about.view")} <span dir="ltr">{String(heroView + 1).padStart(2, "0")} / {String(heroFilms.length).padStart(2, "0")}</span></span>
                 <button type="button" title={t("about.change")} aria-label={t("about.change")} onClick={() => setHeroView(i => (i + 1) % heroFilms.length)}><ArrowRight size={19} aria-hidden="true" /></button>
                 <button type="button" title={paused ? t("about.play") : t("about.pause")} aria-label={paused ? t("about.play") : t("about.pause")} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>
@@ -182,8 +168,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section id="about-intro" data-tier2-stop="about-intro" className="about-intro">
-          <div className="about-intro-heading about-eyebrow" data-about-reveal><span>{t("about.perspective")}</span><span dir="ltr" data-flight-node>01 / {String(ABOUT.sections.length + 2).padStart(2, "0")}</span></div>
+        <section id="about-intro" className="about-intro">
+          <div className="about-intro-heading about-eyebrow" data-about-reveal><span>{t("about.perspective")}</span><span dir="ltr">01 / {String(ABOUT.sections.length + 2).padStart(2, "0")}</span></div>
           <div className="about-intro-copy">
             {ABOUT.intro.map((p, i) => <p key={i} data-about-reveal className={i === 0 ? "about-intro-lead" : "about-intro-paragraph"}>{p}</p>)}
           </div>
@@ -206,8 +192,8 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="about-chapters">
-            {ABOUT.sections.map((s, i) => <section key={s._key ?? i} id={`about-s${i}`} data-tier2-stop={`about-s${i}`} className="about-chapter">
-              <div className="about-eyebrow"><span>{t("about.chapter")}</span><span dir="ltr" data-flight-node>{String(i + 1).padStart(2, "0")}</span></div>
+            {ABOUT.sections.map((s, i) => <section key={s._key ?? i} id={`about-s${i}`} className="about-chapter">
+              <div className="about-eyebrow"><span>{t("about.chapter")}</span><span dir="ltr">{String(i + 1).padStart(2, "0")}</span></div>
               <h2 data-about-reveal>{s.title}</h2>
               {s.paragraphs.map((p, pi) => <p key={pi} data-about-reveal className={p.includes("\n") ? "about-stanza" : ""}>{p}</p>)}
               <span className="about-chapter-end" aria-hidden="true" />
@@ -215,13 +201,13 @@ export default function AboutPage() {
           </div>
         </div>}
 
-        {ABOUT.closing.length > 0 && <section id="about-invitation" data-tier2-stop="about-invitation" className="about-invitation">
+        {ABOUT.closing.length > 0 && <section id="about-invitation" className="about-invitation">
           <Film slug={ABOUT.heroSlug} active={!paused} />
           <div className="about-invitation-shade" />
           <div className="about-invitation-copy">
             <span className="about-eyebrow" data-about-reveal>{t("about.invitation")}</span>
             {ABOUT.closing.map((p, i) => <p key={i} data-about-reveal>{p}</p>)}
-            <a href="/#tier2-enquire" className="about-enquire" data-about-reveal><span>{t("about.enquire")}</span><ArrowUpRight size={24} aria-hidden="true" /><span data-flight-node aria-hidden="true" className="about-flight-node" /></a>
+            <a href="/#tier2-enquire" className="about-enquire" data-about-reveal><span>{t("about.enquire")}</span><ArrowUpRight size={24} aria-hidden="true" /></a>
           </div>
         </section>}
       </main>
