@@ -1,144 +1,215 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Pause, Play } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ABOUT } from "../data/about";
 import { hasFilm, lqipStyle, posterUrl, videoUrl } from "../lib/media";
-import { scrollToHash } from "../lib/scroll";
 import { t } from "../lib/i18n";
 import { SETTINGS } from "../lib/cms";
+import { scrollToHash } from "../lib/scroll";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
 import JourneyFooter from "../components/JourneyFooter";
 import { MediaVideo } from "../components/Media";
+import "./about-page.css";
 
-// /about — the client's own story, rendered verbatim from Sanity: tagline
-// over the About film, the opening paragraphs, the titled sections, and
-// the closing lines that hand over to the boarding pass.
+gsap.registerPlugin(ScrollTrigger);
+
+const PREVIEW_FILMS = ["bali-coast", "alpine-ridge", "reef-dive"];
+
+function Film({ slug, active, priority = false }: { slug: string; active: boolean; priority?: boolean }) {
+  return <>
+    <span aria-hidden="true" style={lqipStyle(slug)} className="lqip-layer absolute inset-0" />
+    <MediaVideo src={hasFilm(slug) ? videoUrl(slug) : undefined} poster={posterUrl(slug)} active={active} priority={priority} />
+  </>;
+}
+
+function goToSection(target: HTMLElement, smooth: boolean) {
+  const clearance = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+  if (!smooth) {
+    window.scrollTo({ top: target.getBoundingClientRect().top + scrollY - clearance, behavior: "instant" });
+    return;
+  }
+  // scrollToHash reads this live and drives Lenis when it is running
+  target.setAttribute("data-scroll-clearance", String(clearance));
+  scrollToHash(`#${target.id}`);
+}
+
+// Content stays in document flow; only the film window is sticky. Extra CMS
+// paragraphs/chapters grow naturally without artificial pin spacers.
 export default function AboutPage() {
-  const sections = useMemo(
-    () => [
-      { id: "about-hero", label: t("page.overview") },
-      ...ABOUT.sections.map((s, i) => ({ id: `about-s${i}`, label: s.title }))
-    ],
-    []
-  );
+  const root = useRef<HTMLDivElement>(null);
+  const main = useRef<HTMLElement>(null);
   const [active, setActive] = useState("about-hero");
+  const [chapter, setChapter] = useState(0);
+  const [heroView, setHeroView] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const scenery = ABOUT.films.length ? ABOUT.films : PREVIEW_FILMS;
+  const heroFilms = [ABOUT.heroSlug, ...scenery.slice(0, 2)];
+  const sections = useMemo(() => [
+    { id: "about-hero", label: t("page.overview") },
+    ...ABOUT.sections.map((s, i) => ({ id: `about-s${i}`, label: s.title })),
+  ], []);
 
   useEffect(() => {
-    const targets = sections.map(({ id }) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
-    const io = new IntersectionObserver(
-      (entries) => {
-        const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (hit) setActive(hit.target.id);
-      },
-      { rootMargin: "-40% 0px -45% 0px", threshold: [0, 0.2, 0.5] }
-    );
-    targets.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [sections]);
+    const el = root.current;
+    const content = main.current;
+    if (!el || !content) return;
+    const header = el.querySelector<HTMLElement>("#tier2-nav")!;
+    const stage = el.querySelector<HTMLElement>(".about-journal-stage");
+    const chapters = [...el.querySelectorAll<HTMLElement>(".about-chapter")];
+    let frame = 0;
+    let headerHeight = header.offsetHeight;
+    el.style.setProperty("--about-header", `${headerHeight}px`);
+    let disposed = false;
+    const update = () => {
+      frame = 0;
+      const narrow = window.matchMedia("(max-width: 899px)").matches;
+      const pinned = stage && getComputedStyle(stage).position === "sticky";
+      const focusY = narrow ? headerHeight + (pinned ? stage.offsetHeight : 0) + 85 : innerHeight * .55;
+      let current = -1;
+      chapters.forEach((section, i) => { if (section.getBoundingClientRect().top <= focusY) current = i; });
+      setChapter(Math.max(0, current));
+      setActive(current < 0 ? "about-hero" : `about-s${current}`);
+      const progress = Math.max(0, Math.min(1, -content.getBoundingClientRect().top / Math.max(1, content.offsetHeight - innerHeight)));
+      el.style.setProperty("--about-progress", String(progress));
+    };
+    const queue = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const resize = new ResizeObserver(() => {
+      headerHeight = header.offsetHeight;
+      el.style.setProperty("--about-header", `${headerHeight}px`);
+      queue();
+    });
+    resize.observe(header);
+    resize.observe(content);
+    if (stage) resize.observe(stage);
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue, { passive: true });
+    update();
+    document.fonts.ready.then(() => {
+      if (disposed) return;
+      const target = document.getElementById(location.hash.slice(1));
+      if (target && el.contains(target)) goToSection(target, false);
+      queue();
+    });
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      window.removeEventListener("scroll", queue);
+      window.removeEventListener("resize", queue);
+    };
+  }, []);
 
-  const jump = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    scrollToHash(href);
+  useEffect(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const context = gsap.context(() => {
+        gsap.from(".about-hero-title > span", { y: 46, opacity: 0, duration: 1.2, stagger: .15, ease: "power3.out", delay: .1 });
+        gsap.from(".about-hero-tagline, .about-hero-bottom", { opacity: 0, y: 16, duration: .8, stagger: .12, delay: .45 });
+        gsap.to(".about-hero-films", { yPercent: 12, ease: "none", scrollTrigger: { trigger: "#about-hero", start: "top top", end: "bottom top", scrub: true } });
+        root.current?.querySelectorAll<HTMLElement>("[data-about-reveal]").forEach(el => {
+          gsap.from(el, { y: 26, opacity: 0, duration: .8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 94%", once: true } });
+        });
+      }, root);
+      return () => context.revert();
+    });
+    return () => mm.revert();
+  }, []);
+
+  const jump = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const target = document.getElementById(href.slice(1));
+    if (target) goToSection(target, !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    history.replaceState(null, "", href);
   };
-  const slug = ABOUT.heroSlug;
 
   return (
-    <div className="relative min-h-screen bg-cream text-navy font-sans overflow-x-clip">
-      <header
-        id="tier2-nav"
-        className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/97 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 sm:bg-cream-deep/92 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
-      >
-        <a href="/" className="mx-auto block w-fit xl:mx-0" aria-label="The Retreat Collection">
-          <img src="/media/brand/01143b.png" alt="" width={697} height={226} decoding="async" fetchPriority="high" className="h-auto w-[132px] sm:w-[152px]" />
+    <div ref={root} className="about-page">
+      <header id="tier2-nav" className="about-header">
+        <a href="/" className="about-brand" aria-label="The Retreat Collection">
+          <img src="/media/brand/01143b.png" alt="" width={697} height={226} decoding="async" fetchPriority="high" />
         </a>
         <MobileAppTools tone="dark" />
         {SETTINGS.showLanguageSwitch && <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>}
-        <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label="Page sections">
-          <a href="/" className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex">
-            <span>← {t("page.home")}</span>
-            <span className="h-px w-8 bg-gold/45" />
-            <span>{t("nav.about")}</span>
-          </a>
-          {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`} onClick={(e) => jump(e, `#${s.id}`)} aria-current={active === s.id ? "location" : undefined}
-              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-deep ${active === s.id ? "text-gold-deep" : "text-navy/60"}`}>
-              {s.label}
-            </a>
-          ))}
-          <a href="/#tier2-enquire" className="shrink-0 text-[10px] tracking-[0.24em] uppercase text-gold-deep transition-colors hover:text-navy">{t("nav.enquire")}</a>
+        <nav className="about-desktop-nav" aria-label="Page sections">
+          <a href="/" className="about-home">{t("page.home")} <span aria-hidden="true">/</span> {t("nav.about")}</a>
+          {sections.map(s => <a key={s.id} href={`#${s.id}`} onClick={e => jump(e, `#${s.id}`)} aria-current={active === s.id ? "location" : undefined}>{s.label}</a>)}
+          <a href="/#tier2-enquire">{t("nav.enquire")}</a>
           {SETTINGS.showLanguageSwitch && <LanguageSwitch tone="dark" />}
         </nav>
       </header>
+      <RouteBar items={[...sections.map(s => ({ href: `#${s.id}`, label: s.label })), { href: "/#tier2-enquire", label: t("nav.enquire") }]}
+        activeHref={`#${active}`} onSelect={(e, href) => { if (href.startsWith("#")) jump(e, href); }}
+        status={t("about.story")} tone="light" ariaLabel="Page sections" />
 
-      <RouteBar
-        items={[...sections.map((s) => ({ href: `#${s.id}`, label: s.label })), { href: "/#tier2-enquire", label: t("nav.enquire") }]}
-        activeHref={`#${active}`}
-        onSelect={(e, href) => { if (href.startsWith("#")) jump(e, href); }}
-        status={t("nav.about")}
-        tone="light"
-        ariaLabel="Page sections"
-      />
-
-      <main className="relative z-10">
-        {/* HERO — the tagline over the About film */}
-        <section id="about-hero" className="relative flex h-[100svh] min-h-[560px] w-full items-end overflow-hidden bg-ink">
-          <span aria-hidden="true" style={lqipStyle(slug)} className="lqip-layer absolute inset-0" />
-          <MediaVideo src={hasFilm(slug) ? videoUrl(slug) : undefined} poster={posterUrl(slug)} priority />
-          <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.82)_0%,rgba(14,13,12,.35)_45%,rgba(14,13,12,.15)_100%)]" />
-          <div className="relative mx-auto w-full max-w-[1280px] px-5 pb-[calc(env(safe-area-inset-bottom)+120px)] sm:px-10 lg:px-16 xl:pb-24">
-            <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light">{t("nav.about")}</div>
-            <h1 className="mt-4 font-serif text-[clamp(36px,7vw,84px)] font-light leading-[1.02] text-white">
-              {ABOUT.tagline[0]}
-              <br />
-              <span className="text-gold-light">{ABOUT.tagline[1]}</span>
-            </h1>
+      <main ref={main}>
+        <section id="about-hero" className="about-hero">
+          <div className="about-hero-films" aria-hidden="true">
+            {heroFilms.map((slug, i) => <div key={`${slug}-${i}`} className={`about-film-layer ${heroView === i ? "is-active" : ""}`}>
+              <Film slug={slug} active={heroView === i && !paused} priority={i === 0} />
+            </div>)}
+          </div>
+          <div className="about-hero-shade" />
+          <div className="about-hero-content">
+            <div className="about-eyebrow about-hero-eyebrow"><span>{t("about.story")}</span></div>
+            <h1 className="about-hero-title"><span>{t("about.brand1")}</span><span className="about-collection">{t("about.brand2")}</span></h1>
+            <p className="about-hero-tagline">{ABOUT.tagline[0]}<br /><em>{ABOUT.tagline[1]}</em></p>
+            <div className="about-hero-bottom">
+              <a className="about-story-link" href="#about-intro" onClick={e => jump(e, "#about-intro")}><ArrowDown size={19} aria-hidden="true" /><span>{t("about.begin")}</span></a>
+              <div className="about-film-controls">
+                <span className="about-view-label">{t("about.view")} <span dir="ltr">{String(heroView + 1).padStart(2, "0")} / {String(heroFilms.length).padStart(2, "0")}</span></span>
+                <button type="button" title={t("about.change")} aria-label={t("about.change")} onClick={() => setHeroView(i => (i + 1) % heroFilms.length)}><ArrowRight size={19} aria-hidden="true" /></button>
+                <button type="button" title={paused ? t("about.play") : t("about.pause")} aria-label={paused ? t("about.play") : t("about.pause")} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* OPENING — the paragraphs the client leads with */}
-        <section className="relative w-full px-5 py-20 sm:px-10 sm:py-28 lg:px-16">
-          <div className="mx-auto max-w-[760px]">
-            {ABOUT.intro.map((p, i) => (
-              <p key={i} className={`whitespace-pre-line font-light leading-[1.85] text-navy/80 ${i === 0 ? "font-serif text-[clamp(22px,3vw,32px)] leading-[1.35] text-navy" : "mt-6 text-[15px] sm:text-[16.5px]"}`}>
-                {p}
-              </p>
-            ))}
+        <section id="about-intro" className="about-intro">
+          <div className="about-intro-heading about-eyebrow" data-about-reveal><span>{t("about.perspective")}</span><span dir="ltr">01 / {String(ABOUT.sections.length + 2).padStart(2, "0")}</span></div>
+          <div className="about-intro-copy">
+            {ABOUT.intro.map((p, i) => <p key={i} data-about-reveal className={i === 0 ? "about-intro-lead" : "about-intro-paragraph"}>{p}</p>)}
           </div>
+          <div className="about-origin" data-about-reveal><span aria-hidden="true" />{t("about.origin")}</div>
         </section>
 
-        {/* SECTIONS — titled, alternating the rule side */}
-        {ABOUT.sections.map((s, i) => (
-          <section key={s.title} id={`about-s${i}`} className={`relative w-full border-t border-gold/25 px-5 py-20 sm:px-10 sm:py-28 lg:px-16 ${i % 2 ? "bg-cream-deep" : ""}`}>
-            <div className="mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
-              <div>
-                <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{String(i + 1).padStart(2, "0")}</div>
-                <h2 className="mt-4 font-serif text-[clamp(34px,5vw,60px)] font-light leading-[1.02] text-navy">{s.title}</h2>
-                <span className="mt-7 block h-px w-14 bg-gold" aria-hidden="true" />
-              </div>
-              <div className="max-w-[640px]">
-                {s.paragraphs.map((p, pi) => (
-                  <p key={pi} className={`whitespace-pre-line font-light leading-[1.85] text-navy/80 ${pi ? "mt-6" : ""} ${p.includes("\n") ? "font-serif text-[clamp(19px,2.4vw,26px)] leading-[1.5] text-navy" : "text-[15px] sm:text-[16.5px]"}`}>
-                    {p}
-                  </p>
-                ))}
-              </div>
+        {ABOUT.sections.length > 0 && <div className="about-journal">
+          <div className="about-journal-stage">
+            {ABOUT.sections.map((s, i) => <div key={s._key ?? i} className={`about-film-layer ${chapter === i ? "is-active" : ""}`}>
+              <Film slug={s.mediaSlug ?? scenery[i % scenery.length]} active={chapter === i && !paused} />
+            </div>)}
+            <div className="about-journal-shade" />
+            <div className="about-journal-meta"><span>{t("about.journal")}</span><span dir="ltr">{String(chapter + 1).padStart(2, "0")} / {String(ABOUT.sections.length).padStart(2, "0")}</span></div>
+            <div className="about-film-caption" key={chapter}>
+              <span className="about-film-number" aria-hidden="true">{String(chapter + 1).padStart(2, "0")}</span>
+              <p>{ABOUT.sections[chapter]?.title}</p>
             </div>
-          </section>
-        ))}
+            <div className="about-chapter-selector" aria-label={t("about.journal")}>
+              {ABOUT.sections.map((s, i) => <a key={s._key ?? i} href={`#about-s${i}`} onClick={e => jump(e, `#about-s${i}`)} title={s.title} aria-label={s.title} aria-current={chapter === i ? "location" : undefined}><span>{String(i + 1).padStart(2, "0")}</span><i aria-hidden="true" /></a>)}
+            </div>
+          </div>
+          <div className="about-chapters">
+            {ABOUT.sections.map((s, i) => <section key={s._key ?? i} id={`about-s${i}`} className="about-chapter">
+              <div className="about-eyebrow"><span>{t("about.chapter")}</span><span dir="ltr">{String(i + 1).padStart(2, "0")}</span></div>
+              <h2 data-about-reveal>{s.title}</h2>
+              {s.paragraphs.map((p, pi) => <p key={pi} data-about-reveal className={p.includes("\n") ? "about-stanza" : ""}>{p}</p>)}
+              <span className="about-chapter-end" aria-hidden="true" />
+            </section>)}
+          </div>
+        </div>}
 
-        {/* CLOSING — the last lines, then the boarding pass */}
-        {ABOUT.closing.length > 0 && (
-          <section className="relative w-full border-t border-gold/25 bg-ink px-5 py-24 text-center sm:px-10 sm:py-32 lg:px-16">
-            <div className="mx-auto max-w-[900px]">
-              {ABOUT.closing.map((p, i) => (
-                <p key={i} className={`whitespace-pre-line font-serif font-light leading-[1.35] text-white ${i ? "mt-8 text-[clamp(20px,2.6vw,30px)] text-gold-light" : "text-[clamp(24px,3.6vw,44px)]"}`}>{p}</p>
-              ))}
-              <a href="/#tier2-enquire" className="mt-12 inline-block border-b border-gold-light/60 pb-1.5 text-[10px] uppercase tracking-[0.3em] text-gold-light transition-opacity hover:opacity-70">
-                {t("stop.enquireRoute")}
-              </a>
-            </div>
-          </section>
-        )}
+        {ABOUT.closing.length > 0 && <section id="about-invitation" className="about-invitation">
+          <Film slug={ABOUT.heroSlug} active={!paused} />
+          <div className="about-invitation-shade" />
+          <div className="about-invitation-copy">
+            <span className="about-eyebrow" data-about-reveal>{t("about.invitation")}</span>
+            {ABOUT.closing.map((p, i) => <p key={i} data-about-reveal>{p}</p>)}
+            <a href="/#tier2-enquire" className="about-enquire" data-about-reveal><span>{t("about.enquire")}</span><ArrowUpRight size={24} aria-hidden="true" /></a>
+          </div>
+        </section>}
       </main>
       <JourneyFooter departureHref="#about-hero" />
     </div>

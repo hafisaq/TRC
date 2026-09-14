@@ -55,7 +55,8 @@ const QUERY = `{
     essentials[]{_key, title, copy, points[]{_key, label, value}}
   },
   "about": select($about => *[_id=="aboutPage"][0]{
-    tagline, intro, sections[]{_key, title, paragraphs}, closing,
+    tagline, intro, sections[]{_key, title, paragraphs, "media": ${MEDIA_PROJ}}, closing,
+    "films": *[_type=="destination" && _id!="destination-about" && defined(media.film.asset)]|order(order asc)[0...3]{"media": ${MEDIA_PROJ}},
     "media": *[_id=="destination-about"][0]{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}
   }, null),
   "translations": *[_type=="translation" && lang=="ar" && $arabic && (
@@ -133,8 +134,9 @@ export async function hydrateFromCms(): Promise<boolean> {
     pages?: Array<Record<string, unknown>>;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
     about?: {
-      tagline?: TitlePair; intro?: string[]; sections?: Array<{ title?: string; paragraphs?: string[] }>; closing?: string[];
+      tagline?: TitlePair; intro?: string[]; sections?: Array<{ _key?: string; title?: string; paragraphs?: string[]; media?: Media }>; closing?: string[];
       media?: Media | null;
+      films?: Array<{ media?: Media }>;
     } | null;
     settings?: {
       showLanguageSwitch?: boolean;
@@ -254,9 +256,10 @@ export async function hydrateFromCms(): Promise<boolean> {
     ABOUT.intro = (a.intro ?? []).filter((s): s is string => typeof s === "string" && s.trim() !== "");
     ABOUT.sections = (a.sections ?? [])
       .filter((s) => s?.title)
-      .map((s) => ({ title: s.title as string, paragraphs: (s.paragraphs ?? []).filter((p): p is string => typeof p === "string" && p.trim() !== "") }));
+      .map((s) => ({ _key: s._key, title: s.title as string, paragraphs: (s.paragraphs ?? []).filter((p): p is string => typeof p === "string" && p.trim() !== ""), mediaSlug: s.media?.poster ? mediaKey(s.media, ABOUT.heroSlug) : undefined }));
     ABOUT.closing = (a.closing ?? []).filter((s): s is string => typeof s === "string" && s.trim() !== "");
     ABOUT.heroSlug = mediaKey(a.media, ABOUT.heroSlug);
+    ABOUT.films = (a.films ?? []).filter(f => f.media?.poster).map(f => mediaKey(f.media, ABOUT.heroSlug));
   }
 
   // ---- footer (the client's own words and contact details; an empty

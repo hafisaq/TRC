@@ -1,10 +1,11 @@
-export type AboutSection = { title: string; paragraphs: string[] };
+export type AboutSection = { _key?: string; title: string; paragraphs: string[]; mediaSlug?: string };
 export type AboutContent = {
   tagline: [string, string];
   intro: string[];
   sections: AboutSection[];
   closing: string[];
   heroSlug: string;
+  films: string[];
 };
 
 // Hydrated in place from Sanity's About page (lib/cms.ts). Nothing here
@@ -15,5 +16,6 @@ export const ABOUT: AboutContent = {
   intro: [],
   sections: [],
   closing: [],
-  heroSlug: "alpine-ridge"
+  heroSlug: "alpine-ridge",
+  films: []
 };

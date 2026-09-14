@@ -144,7 +144,21 @@ const EN: Record<string, string> = {
   "footer.socialPlaceholder": "Social profile coming soon.",
   "footer.arrived": "Arrived",
   "footer.collection": "The Retreat Collection",
-  "footer.madeBy": "Made by"
+  "footer.madeBy": "Made by",
+  "about.brand1": "The Retreat",
+  "about.brand2": "Collection",
+  "about.story": "Our story",
+  "about.journal": "The travel journal",
+  "about.begin": "Begin the story",
+  "about.chapter": "Chapter",
+  "about.perspective": "A personal point of view",
+  "about.pause": "Pause films",
+  "about.play": "Play films",
+  "about.change": "Change the view",
+  "about.view": "View",
+  "about.invitation": "Your next chapter",
+  "about.enquire": "Let us draw your route",
+  "about.origin": "From the UAE, with care"
 };
 
 let ui: Record<string, string> = { ...EN };

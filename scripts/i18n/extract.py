@@ -270,6 +270,20 @@ UI = [
     ("footer.arrived", "Footer", "Arrived"),
     ("footer.collection", "Footer", "The Retreat Collection"),
     ("footer.madeBy", "Footer", "Made by"),
+    ("about.brand1", "About page", "The Retreat"),
+    ("about.brand2", "About page", "Collection"),
+    ("about.story", "About page", "Our story"),
+    ("about.journal", "About page", "The travel journal"),
+    ("about.begin", "About page", "Begin the story"),
+    ("about.chapter", "About page", "Chapter"),
+    ("about.perspective", "About page", "A personal point of view"),
+    ("about.pause", "About page", "Pause films"),
+    ("about.play", "About page", "Play films"),
+    ("about.change", "About page", "Change the view"),
+    ("about.view", "About page", "View"),
+    ("about.invitation", "About page", "Your next chapter"),
+    ("about.enquire", "About page", "Let us draw your route"),
+    ("about.origin", "About page", "From the UAE, with care"),
 ]
 for key, where, en in UI:
     rows.append(("ui", key, f"UI · {where}", en, "{...} placeholders stay as-is"))
