@@ -60,7 +60,7 @@ export default function JourneyFooter({ departureHref = "#tier2-hero" }: { depar
         <div className="footer-arrival-line" aria-hidden="true"><span /><i /><span /></div>
         <div className="footer-manifest">
           <span>{FOOTER.eyebrow}</span>
-          <span className="footer-manifest-status"><span dir="ltr">TRC / 001</span><span className="footer-mobile-arrival">{t("footer.arrived")}</span></span>
+          <span className="footer-manifest-status"><span className="footer-mobile-arrival">{t("footer.arrived")}</span></span>
         </div>
 
         <div className="footer-welcome">
@@ -69,7 +69,6 @@ export default function JourneyFooter({ departureHref = "#tier2-hero" }: { depar
             <p>{FOOTER.line}</p>
           </div>
           <div className="footer-arrival-stamp" aria-hidden="true">
-            <span dir="ltr">TRC · 001</span>
             <strong>{t("footer.arrived")}</strong>
             <span>{FOOTER.stamp}</span>
           </div>
