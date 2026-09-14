@@ -16,6 +16,7 @@ export const aboutPage = defineType({
         fields: [
           defineField({ name: 'title', title: 'Heading', type: 'string', validation: (r) => r.required() }),
           defineField({ name: 'paragraphs', title: 'Paragraphs', type: 'array', of: [{ type: 'text', rows: 3 }], description: 'A line break inside one paragraph is kept as a line break (for short stanza lines).' }),
+          defineField({ name: 'media', title: 'Chapter image / short film', type: 'mediaSlot', description: 'Optional. A poster and short preview clip for this part of the story. Leave empty to use the existing preview footage.' }),
         ],
         preview: { select: { title: 'title' } },
       }],
