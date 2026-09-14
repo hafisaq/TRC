@@ -24,8 +24,11 @@ type Tier2EnquireProps = {
 };
 
 export default function Tier2Enquire({ selectedInterest, destinations }: Tier2EnquireProps) {
-  const [cabin, setCabin] = useState<string | null>(selectedInterest);
+  // the cabin is set by the route the traveller arrived from (a stop's
+  // "Enquire about this route"); the pass itself asks in their own words
+  const cabin = selectedInterest;
   const [status, setStatus] = useState<"idle" | "tearing" | "sent">("idle");
+  const messageRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const stubRef = useRef<HTMLDivElement>(null);
@@ -38,7 +41,10 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
   );
 
   useEffect(() => {
-    if (selectedInterest) setCabin(selectedInterest);
+    // a route-specific enquiry opens the note with the route named, so the
+    // traveller only has to add the when and the who
+    const box = messageRef.current;
+    if (selectedInterest && box && box.value.trim() === "") box.value = `${selectedInterest} — `;
   }, [selectedInterest]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -81,7 +87,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
 
   return (
     <section id="tier2-enquire" data-tier2-stop="tier2-enquire" className="relative min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-6 pt-16 pb-[calc(env(safe-area-inset-bottom)+104px)] sm:py-24">
-      <div data-stop-text className="w-full max-w-[820px] opacity-0">
+      <div data-stop-text className="w-full max-w-[820px] opacity-0 lg:max-w-[1080px]">
         <div className="text-center mb-7 sm:mb-9">
           <div className="text-[9px] sm:text-[10.5px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-gold-light">{t("enq.journeysEnd")}</div>
           <h2 className="mt-3 sm:mt-4 font-serif font-light text-white text-[clamp(34px,12vw,58px)] leading-[1.08]">
@@ -94,7 +100,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
           {/* boarding pass */}
           <div ref={cardRef} className="relative flex flex-col sm:flex-row rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,.5)] sm:shadow-[0_30px_80px_rgba(0,0,0,.55)]">
           {/* main stub */}
-          <div ref={mainRef} className="relative flex-1 bg-cream px-4 py-6 sm:px-9 sm:py-9" style={{ fontFamily: "var(--font-type)" }}>
+          <div ref={mainRef} className="relative flex-1 bg-cream px-4 py-6 sm:px-9 sm:py-8 lg:px-11" style={{ fontFamily: "var(--font-type)" }}>
             <div
               ref={tornEdgeRef}
               aria-hidden="true"
@@ -127,6 +133,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               </div>
             </div>
 
+            <div className="sm:grid sm:grid-cols-2 sm:gap-x-8">
             <label className="block mt-6 sm:mt-7">
               <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.passengerName")}</div>
               <input
@@ -141,7 +148,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               />
             </label>
 
-            <label className="block mt-5">
+            <label className="block mt-5 sm:mt-7">
               <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.contactEmail")}</div>
               <input
                 name="email"
@@ -155,23 +162,21 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               />
             </label>
 
-            <div className="mt-6 text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.cabinWhereTo")}</div>
-            <div className="mt-2.5 grid max-h-44 grid-cols-1 gap-2 overflow-y-auto overscroll-contain rounded-sm border border-navy/10 bg-white/20 p-2 min-[380px]:grid-cols-2 sm:max-h-none sm:flex sm:flex-wrap sm:overflow-visible sm:border-0 sm:bg-transparent sm:p-0">
-              {destinations.map((destination) => (
-                <button
-                  key={destination.id}
-                  type="button"
-                  disabled={status !== "idle"}
-                  onClick={() => setCabin(destination.interest === cabin ? null : destination.interest)}
-                  className={`min-h-11 break-words text-[8.5px] leading-snug sm:text-[9.5px] tracking-[0.08em] sm:tracking-[0.15em] uppercase px-2.5 sm:px-3.5 py-2 border transition-colors duration-200 disabled:opacity-50 ${
-                    cabin === destination.interest ? "border-gold bg-gold/10 text-navy" : "border-navy/20 text-navy/60 hover:border-navy/40"
-                  }`}
-                  style={{ fontFamily: "var(--font-type)" }}
-                >
-                  {destination.interest}
-                </button>
-              ))}
             </div>
+
+            <label className="block mt-5 sm:mt-7">
+              <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.message")}</div>
+              <textarea
+                ref={messageRef}
+                name="message"
+                rows={3}
+                placeholder={t("enq.messagePlaceholder")}
+                required
+                disabled={status !== "idle"}
+                className="w-full box-border mt-1.5 sm:mt-2 resize-none bg-transparent border-0 border-b border-navy/25 text-navy tracking-[0.01em] sm:tracking-[0.03em] text-[15px] sm:text-[16px] leading-[1.6] py-2.5 sm:py-2 outline-none transition-colors duration-300 focus:border-gold placeholder:text-navy/30 disabled:opacity-50 sm:[field-sizing:content] sm:min-h-[4.6em]"
+                style={{ fontFamily: "var(--font-type)" }}
+              />
+            </label>
           </div>
 
           {/* perforation */}
@@ -187,7 +192,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
           </div>
 
           {/* stub */}
-          <div ref={stubRef} className="relative w-full sm:w-[210px] bg-cream-deep px-4 py-5 sm:px-6 sm:py-9 flex flex-col justify-between" style={{ fontFamily: "var(--font-type)" }}>
+          <div ref={stubRef} className="relative w-full sm:w-[210px] lg:w-[250px] bg-cream-deep px-4 py-5 sm:px-6 sm:py-8 flex flex-col justify-between" style={{ fontFamily: "var(--font-type)" }}>
             <div>
               <div className="grid grid-cols-3 gap-3 sm:block">
                 <div>
