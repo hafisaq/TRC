@@ -54,7 +54,9 @@
 .journey-footer :is(a, button):focus-visible { outline: 2px solid #dcc28b; outline-offset: 6px; }
 
 /* the maker's mark — drawn on by its own stroke, then inked */
-.footer-signature-row { display: flex; justify-content: center; padding-top: 22px; }
+.footer-signature-row { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 22px; }
+.footer-made-by { color: #7d857f; font-family: var(--font-mono); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; }
+html[dir="rtl"] .footer-made-by { letter-spacing: 0; font-size: 11px; text-transform: none; }
 .footer-signature { display: inline-block; opacity: .55; transition: opacity 300ms; }
 .footer-signature:hover, .footer-signature:focus-visible { opacity: 1; }
 .footer-signature-mark { display: block; width: 150px; height: auto; overflow: visible; }

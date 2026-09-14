@@ -143,7 +143,8 @@ const EN: Record<string, string> = {
   "footer.placeholder": "Contact details coming soon.",
   "footer.socialPlaceholder": "Social profile coming soon.",
   "footer.arrived": "Arrived",
-  "footer.collection": "The Retreat Collection"
+  "footer.collection": "The Retreat Collection",
+  "footer.madeBy": "Made by"
 };
 
 let ui: Record<string, string> = { ...EN };

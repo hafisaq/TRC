@@ -150,7 +150,7 @@ export default function JourneyFooter({ departureHref = "#tier2-hero" }: { depar
             <span>{t("footer.back")}</span><ArrowUp size={18} strokeWidth={1.5} aria-hidden="true" />
           </a>
         </div>
-        {FOOTER.signature.show && <div className="footer-signature-row"><Signature name={FOOTER.signature.name} href={FOOTER.signature.href} /></div>}
+        {FOOTER.signature.show && <div className="footer-signature-row"><span className="footer-made-by">{t("footer.madeBy")}</span><Signature name={FOOTER.signature.name} href={FOOTER.signature.href} /></div>}
       </div>
       <p className="footer-notice" role="status" aria-live="polite">{notice?.message}</p>
     </footer>

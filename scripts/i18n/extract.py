@@ -269,6 +269,7 @@ UI = [
     ("footer.socialPlaceholder", "Footer", "Social profile coming soon."),
     ("footer.arrived", "Footer", "Arrived"),
     ("footer.collection", "Footer", "The Retreat Collection"),
+    ("footer.madeBy", "Footer", "Made by"),
 ]
 for key, where, en in UI:
     rows.append(("ui", key, f"UI · {where}", en, "{...} placeholders stay as-is"))
