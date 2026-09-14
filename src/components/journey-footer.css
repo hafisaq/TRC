@@ -41,6 +41,7 @@
 .footer-social { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0; border: 0; color: #e1d4b5; background: transparent; font-family: inherit; font-size: 13px; cursor: pointer; }
 .footer-social:hover { color: #fff; }
 .footer-social svg { flex-shrink: 0; }
+.footer-social svg:first-child { color: #dcc28b; }
 .footer-colophon { display: flex; flex-direction: column-reverse; gap: 18px; border-top: 1px solid #323831; padding-top: 20px; }
 .footer-colophon p { color: #a3aba7; font-size: 11px; line-height: 1.8; }
 .footer-colophon p > span:last-child { display: block; }
@@ -51,6 +52,27 @@
 .footer-notice { position: fixed; z-index: 65; inset-inline: 16px; bottom: calc(110px + env(safe-area-inset-bottom)); width: fit-content; max-width: calc(100% - 32px); margin: 0 auto; padding: 12px 18px; border: 1px solid #5b766d; border-radius: 4px; background: #1a2521; color: #e3eee8; font-size: 13px; line-height: 1.6; text-align: center; pointer-events: none; box-shadow: 0 8px 30px rgb(0 0 0 / 18%); }
 .footer-notice:empty { display: none; }
 .journey-footer :is(a, button):focus-visible { outline: 2px solid #dcc28b; outline-offset: 6px; }
+
+/* the maker's mark — drawn on by its own stroke, then inked */
+.footer-signature-row { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 22px; }
+.footer-made-by { color: #7d857f; font-family: var(--font-mono); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; }
+html[dir="rtl"] .footer-made-by { letter-spacing: 0; font-size: 11px; text-transform: none; }
+.footer-signature { display: inline-block; opacity: .55; transition: opacity 300ms; }
+.footer-signature:hover, .footer-signature:focus-visible { opacity: 1; }
+.footer-signature-mark { display: block; width: 150px; height: auto; overflow: visible; }
+.footer-signature-mark text {
+  fill: #dcc28b;
+  fill-opacity: 0;
+  stroke: #dcc28b;
+  stroke-width: .7;
+  stroke-linejoin: round;
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+}
+.has-arrived .footer-signature-mark text { animation: footer-sign 2.6s ease-out .4s forwards, footer-ink 900ms ease-out 2.4s forwards; }
+@keyframes footer-sign { to { stroke-dashoffset: 0; } }
+@keyframes footer-ink { to { fill-opacity: 1; stroke-opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .footer-signature-mark text { animation: none; stroke-dashoffset: 0; fill-opacity: 1; } }
 
 @media (min-width: 700px) {
   .footer-mobile-arrival { display: none; }

@@ -26,7 +26,9 @@ if (path === "/cities") {
 // Start the selected page chunk and CMS request together.
 const page = routeMatch
   ? import("./pages/CountryDetailRoute").then(({ default: Page }) => <Page regionSlug={routeMatch[1]} slug={routeMatch[2]} />)
-  : import("./pages/Tier2").then(({ default: Page }) => <Page />);
+  : path === "/about"
+    ? import("./pages/AboutPage").then(({ default: Page }) => <Page />)
+    : import("./pages/Tier2").then(({ default: Page }) => <Page />);
 
 // The HTML loading mark covers the network wait, before React is ready.
 import { hydrateFromCms } from "./lib/cms";

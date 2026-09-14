@@ -111,7 +111,7 @@
 
 .mobile-language-switch { position: absolute; right: max(12px, env(safe-area-inset-right)); top: calc(env(safe-area-inset-top) + 14px); }
 .mobile-language-switch button { min-height: 44px; }
-.mobile-language-switch svg { width: 64px; }
+.mobile-language-switch button { padding-inline: 4px; }
 
 html[dir="rtl"] .app-tools-sheet { font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; }
 html[dir="rtl"] .app-tools-heading h2 { font-family: "Amiri", Georgia, serif; }

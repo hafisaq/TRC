@@ -135,6 +135,21 @@ if st:
     add("siteSettings", "footerLine", w, st.get("footerLine"))
     add("siteSettings", "footerStamp", w, st.get("footerStamp"), "under 'Arrived' on the stamp")
 
+# ---- about page ----
+ab = q('*[_id=="aboutPage"][0]')
+if ab:
+    w = "About page"
+    title_pair("aboutPage", "tagline", w, ab.get("tagline"))
+    for n, para in enumerate(ab.get("intro") or []):
+        add("aboutPage", f"intro[{n}]", w, para)
+    for s in ab.get("sections") or []:
+        k = s["_key"]
+        add("aboutPage", f"sections[{k}].title", f"{w} · {s.get('title','')}", s.get("title"), "section heading")
+        for n, para in enumerate(s.get("paragraphs") or []):
+            add("aboutPage", f"sections[{k}].paragraphs[{n}]", f"{w} · {s.get('title','')}", para, "keep line breaks")
+    for n, para in enumerate(ab.get("closing") or []):
+        add("aboutPage", f"closing[{n}]", w, para)
+
 UI = [
     ("nav.about", "Top navigation", "About"),
     ("nav.enquire", "Top navigation", "Enquire"),
@@ -238,6 +253,10 @@ UI = [
     ("enq.confirm", "Enquiry form", "Confirm enquiry"),
     ("enq.sent", "Enquiry form", "Sent — we'll be in touch within 24 hours"),
     ("enq.cities", "Enquiry form", "London · Cape Town · Kyoto"),
+    ("enq.message", "Enquiry form", "Your journey"),
+    ("enq.messagePlaceholder", "Enquiry form", "Tell us where you'd like to go, when, and who's travelling."),
+    ("gallery.showAll", "Gallery", "Show all {count} frames"),
+    ("gallery.showLess", "Gallery", "Show fewer"),
     ("footer.phone", "Footer", "Call us"),
     ("footer.whatsapp", "Footer", "WhatsApp"),
     ("footer.email", "Footer", "Write to us"),
@@ -250,6 +269,7 @@ UI = [
     ("footer.socialPlaceholder", "Footer", "Social profile coming soon."),
     ("footer.arrived", "Footer", "Arrived"),
     ("footer.collection", "Footer", "The Retreat Collection"),
+    ("footer.madeBy", "Footer", "Made by"),
 ]
 for key, where, en in UI:
     rows.append(("ui", key, f"UI · {where}", en, "{...} placeholders stay as-is"))

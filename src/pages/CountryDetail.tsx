@@ -1355,6 +1355,10 @@ function GallerySection({
   }, [page, group]);
   const [open, setOpen] = useState<number | null>(null);
   const swipeX = useRef<number | null>(null);
+  // collapsed by default: one full rhythm of the grid, the rest on request
+  const COLLAPSED = 6;
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? items : items.slice(0, COLLAPSED);
 
   useEffect(() => {
     if (open === null) return;
@@ -1399,7 +1403,7 @@ function GallerySection({
           </div>
 
           <div className="mt-10 grid grid-cols-2 gap-3 [grid-auto-flow:dense] auto-rows-[130px] md:grid-cols-6 md:auto-rows-[168px] md:gap-4">
-            {items.map((item, i) => (
+            {shown.map((item, i) => (
               <button
                 key={item.poster}
                 type="button"
@@ -1429,6 +1433,21 @@ function GallerySection({
               </button>
             ))}
           </div>
+          {items.length > COLLAPSED && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => {
+                  setExpanded((v) => !v);
+                  if (expanded) document.getElementById("cd-gallery")?.scrollIntoView({ block: "start" });
+                }}
+                className="border-b border-gold-deep/60 pb-1.5 font-mono text-[9px] uppercase tracking-[0.26em] text-gold-deep transition-opacity hover:opacity-70"
+              >
+                {expanded ? t("gallery.showLess") : t("gallery.showAll", { count: items.length })}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

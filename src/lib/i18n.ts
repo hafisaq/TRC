@@ -25,7 +25,7 @@ const EN: Record<string, string> = {
   "hero.scroll": "Scroll",
   "hero.scrollRoute": "Scroll to fly the route",
   "loader.preparing": "Preparing route",
-  "status.approaching": "TRC 001 · Approaching",
+  "status.approaching": "Approaching",
   "stop.bestSeason": "Best season",
   "stop.enquireRoute": "Enquire about this route",
   "stop.learnMore": "Learn more",
@@ -128,6 +128,10 @@ const EN: Record<string, string> = {
   "enq.confirm": "Confirm enquiry",
   "enq.sent": "Sent — we'll be in touch within 24 hours",
   "enq.cities": "London · Cape Town · Kyoto",
+  "enq.message": "Your journey",
+  "enq.messagePlaceholder": "Tell us where you'd like to go, when, and who's travelling.",
+  "gallery.showAll": "Show all {count} frames",
+  "gallery.showLess": "Show fewer",
   "footer.phone": "Call us",
   "footer.whatsapp": "WhatsApp",
   "footer.email": "Write to us",
@@ -139,7 +143,8 @@ const EN: Record<string, string> = {
   "footer.placeholder": "Contact details coming soon.",
   "footer.socialPlaceholder": "Social profile coming soon.",
   "footer.arrived": "Arrived",
-  "footer.collection": "The Retreat Collection"
+  "footer.collection": "The Retreat Collection",
+  "footer.madeBy": "Made by"
 };
 
 let ui: Record<string, string> = { ...EN };

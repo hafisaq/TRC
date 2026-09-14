@@ -12,6 +12,7 @@ import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../d
 import { registerMedia } from "./media";
 import { isAr, setUiStrings, applyTranslation } from "./i18n";
 import { FOOTER, contactHref } from "../data/footer";
+import { ABOUT } from "../data/about";
 
 const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
@@ -53,8 +54,12 @@ const QUERY = `{
     days[]{_key, title, copy, details, "media": ${MEDIA_PROJ}},
     essentials[]{_key, title, copy, points[]{_key, label, value}}
   },
+  "about": select($about => *[_id=="aboutPage"][0]{
+    tagline, intro, sections[]{_key, title, paragraphs}, closing,
+    "media": *[_id=="destination-about"][0]{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}
+  }, null),
   "translations": *[_type=="translation" && lang=="ar" && $arabic && (
-    source == "ui" || source == "siteSettings" ||
+    source == "ui" || source == "siteSettings" || ($about && source == "aboutPage") ||
     source in *[_type=="destination" && $home]._id ||
     source in *[_type=="region" && ($home || slug.current == $region)]._id ||
     source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
@@ -62,7 +67,8 @@ const QUERY = `{
   )]{source, strings[]{path, value}},
   "settings": *[_id=="siteSettings"][0]{
     showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
-    phone, whatsapp, email, socials[]{_key, name, url}
+    contacts[]{_key, type, value, show}, socials[]{_key, network, url, show},
+    showSignature, signatureName, signatureUrl
   }
 }`;
 
@@ -108,10 +114,12 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 
 export async function hydrateFromCms(): Promise<boolean> {
   const route = window.location.pathname.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/);
+  const about = /^\/about\/?$/.test(window.location.pathname);
   const params = new URLSearchParams({
     query: QUERY,
     perspective: "published",
-    $home: JSON.stringify(!route),
+    $home: JSON.stringify(!route && !about),
+    $about: JSON.stringify(about),
     $region: JSON.stringify(route?.[1] ?? ""),
     $country: JSON.stringify(route?.[2] ?? ""),
     $arabic: JSON.stringify(isAr())
@@ -124,17 +132,22 @@ export async function hydrateFromCms(): Promise<boolean> {
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
+    about?: {
+      tagline?: TitlePair; intro?: string[]; sections?: Array<{ title?: string; paragraphs?: string[] }>; closing?: string[];
+      media?: Media | null;
+    } | null;
     settings?: {
       showLanguageSwitch?: boolean;
       footerEyebrow?: string; footerHeadline?: TitlePair; footerLine?: string; footerStamp?: string;
-      phone?: string; whatsapp?: string; email?: string;
-      socials?: Array<{ name?: string; url?: string }>;
+      contacts?: Array<{ _key?: string; type?: string; value?: string; show?: boolean }>;
+      socials?: Array<{ _key?: string; network?: string; url?: string; show?: boolean }>;
+      showSignature?: boolean; signatureName?: string; signatureUrl?: string;
     } | null;
   };
   // Reuse this route's last published response when the network is slow;
   // a fast response still wins (see the race below).
   const CACHE_PREFIX = `trc-cms-v2:${PROJECT_ID}:${DATASET}:`;
-  const CACHE_KEY = `${CACHE_PREFIX}${isAr() ? "ar" : "en"}:${route ? `${route[1]}/${route[2]}` : "home"}`;
+  const CACHE_KEY = `${CACHE_PREFIX}${isAr() ? "ar" : "en"}:${route ? `${route[1]}/${route[2]}` : about ? "about" : "home"}`;
   let cached: typeof data | null = null;
   try {
     const entry = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
@@ -223,6 +236,7 @@ export async function hydrateFromCms(): Promise<boolean> {
     }
     for (const p of (data.pages ?? []) as Array<Record<string, unknown>>) apply(p, p._id as string);
     apply(data.settings as Record<string, unknown> | null, "siteSettings");
+    apply(data.about as Record<string, unknown> | null, "aboutPage");
     const uiStrings = byId.get("ui");
     if (uiStrings) {
       const overrides: Record<string, string> = {};
@@ -233,6 +247,18 @@ export async function hydrateFromCms(): Promise<boolean> {
     }
   }
 
+  // ---- about page (the client's own words, verbatim) ----
+  if (data.about) {
+    const a = data.about;
+    ABOUT.tagline = pair(a.tagline, ABOUT.tagline);
+    ABOUT.intro = (a.intro ?? []).filter((s): s is string => typeof s === "string" && s.trim() !== "");
+    ABOUT.sections = (a.sections ?? [])
+      .filter((s) => s?.title)
+      .map((s) => ({ title: s.title as string, paragraphs: (s.paragraphs ?? []).filter((p): p is string => typeof p === "string" && p.trim() !== "") }));
+    ABOUT.closing = (a.closing ?? []).filter((s): s is string => typeof s === "string" && s.trim() !== "");
+    ABOUT.heroSlug = mediaKey(a.media, ABOUT.heroSlug);
+  }
+
   // ---- footer (the client's own words and contact details; an empty
   // contact renders as "coming soon" rather than a made-up number) ----
   if (data.settings) {
@@ -241,13 +267,23 @@ export async function hydrateFromCms(): Promise<boolean> {
     if (st.footerHeadline) FOOTER.headline = pair(st.footerHeadline, FOOTER.headline);
     if (st.footerLine) FOOTER.line = st.footerLine;
     if (st.footerStamp) FOOTER.stamp = st.footerStamp;
-    FOOTER.contacts = (["phone", "whatsapp", "email"] as const).map((id) => {
-      const value = (st[id] ?? "").trim();
-      return { id, value, href: contactHref(id, value) };
-    });
+    const CONTACT_TYPES = ["phone", "whatsapp", "email"] as const;
+    const NETWORKS = ["instagram", "facebook", "x", "linkedin", "youtube", "tiktok", "pinterest"] as const;
+    FOOTER.contacts = (st.contacts ?? [])
+      .filter((c) => c && c.show !== false && (CONTACT_TYPES as readonly string[]).includes(c.type ?? "") && (c.value ?? "").trim())
+      .map((c, i) => {
+        const type = c.type as (typeof CONTACT_TYPES)[number];
+        const value = (c.value as string).trim();
+        return { id: c._key ?? `${type}-${i}`, type, value, href: contactHref(type, value) };
+      });
     FOOTER.socials = (st.socials ?? [])
-      .filter((s) => s?.name)
-      .map((s) => ({ name: s.name as string, href: s.url?.trim() || null }));
+      .filter((s) => s && s.show !== false && (NETWORKS as readonly string[]).includes(s.network ?? ""))
+      .map((s, i) => ({ id: s._key ?? `${s.network}-${i}`, network: s.network as (typeof NETWORKS)[number], href: s.url?.trim() || null }));
+    FOOTER.signature = {
+      show: st.showSignature === true && !!(st.signatureName ?? "").trim(),
+      name: (st.signatureName ?? "").trim(),
+      href: (st.signatureUrl ?? "").trim()
+    };
   }
 
   try {
