@@ -22,9 +22,13 @@ export default defineConfig({
               .title('Site settings')
               .id('siteSettings')
               .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
+            S.listItem()
+              .title('About page')
+              .id('aboutPage')
+              .child(S.document().schemaType('aboutPage').documentId('aboutPage')),
             S.divider(),
             ...S.documentTypeListItems().filter(
-              (item) => !['siteSettings', 'translation'].includes(item.getId() ?? ''),
+              (item) => !['siteSettings', 'aboutPage', 'translation'].includes(item.getId() ?? ''),
             ),
             S.divider(),
             S.documentTypeListItem('translation').title('Arabic translations'),

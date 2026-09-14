@@ -15,7 +15,7 @@ import path from "node:path";
 const distDir = path.resolve(import.meta.dirname, "..", "dist");
 const src = path.join(distDir, "index.html");
 const routes = [
-  "tier2", "asia",
+  "tier2", "about", "asia",
   "asia/maldives", "asia/thailand", "asia/sri-lanka", "asia/india", "asia/malaysia",
   "alpine",
   "alpine/switzerland", "alpine/france", "alpine/italy", "alpine/finland", "alpine/antarctica",
