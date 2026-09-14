@@ -6,6 +6,10 @@ import { ABOUT } from "../data/about";
 import { hasFilm, lqipStyle, posterUrl, videoUrl } from "../lib/media";
 import { t } from "../lib/i18n";
 import { SETTINGS } from "../lib/cms";
+import { scrollToHash } from "../lib/scroll";
+import type { DotMapHandle } from "../components/tier2/DotMap";
+import Tier2FlightPath from "../components/tier2/Tier2FlightPath";
+import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
@@ -16,7 +20,6 @@ import "./about-page.css";
 gsap.registerPlugin(ScrollTrigger);
 
 const PREVIEW_FILMS = ["bali-coast", "alpine-ridge", "reef-dive"];
-const PLANE = "M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z";
 
 function Film({ slug, active, priority = false }: { slug: string; active: boolean; priority?: boolean }) {
   return <>
@@ -27,7 +30,13 @@ function Film({ slug, active, priority = false }: { slug: string; active: boolea
 
 function goToSection(target: HTMLElement, smooth: boolean) {
   const clearance = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
-  window.scrollTo({ top: target.getBoundingClientRect().top + scrollY - clearance, behavior: smooth ? "smooth" : "instant" });
+  if (!smooth) {
+    window.scrollTo({ top: target.getBoundingClientRect().top + scrollY - clearance, behavior: "instant" });
+    return;
+  }
+  // scrollToHash reads this live and drives Lenis when it is running
+  target.setAttribute("data-scroll-clearance", String(clearance));
+  scrollToHash(`#${target.id}`);
 }
 
 // Content stays in document flow; only the film window is sticky. Extra CMS
@@ -35,9 +44,7 @@ function goToSection(target: HTMLElement, smooth: boolean) {
 export default function AboutPage() {
   const root = useRef<HTMLDivElement>(null);
   const main = useRef<HTMLElement>(null);
-  const rail = useRef<SVGPathElement>(null);
-  const trail = useRef<SVGPathElement>(null);
-  const plane = useRef<SVGGElement>(null);
+  const dotMapRef = useRef<DotMapHandle>(null);
   const [active, setActive] = useState("about-hero");
   const [chapter, setChapter] = useState(0);
   const [heroView, setHeroView] = useState(0);
@@ -48,15 +55,22 @@ export default function AboutPage() {
     { id: "about-hero", label: t("page.overview") },
     ...ABOUT.sections.map((s, i) => ({ id: `about-s${i}`, label: s.title })),
   ], []);
+  // the same flight the home and country pages fly: from the hero down to
+  // a landing on every part of the story
+  const flightStops = useMemo<Tier2Stop[]>(() => [
+    { id: "about-intro", mapPos: [0.5, 0.5], theme: "white", coords: "" },
+    ...ABOUT.sections.map((_, i) => ({ id: `about-s${i}`, mapPos: [0.5, 0.5] as [number, number], theme: "white" as const, coords: "" })),
+    ...(ABOUT.closing.length ? [{ id: "about-invitation", mapPos: [0.5, 0.5] as [number, number], theme: "gold" as const, coords: "" }] : []),
+  ], []);
+  useTier2Animations(dotMapRef, flightStops, { heroReady: true });
 
   useEffect(() => {
     const el = root.current;
     const content = main.current;
-    if (!el || !content || !rail.current) return;
+    if (!el || !content) return;
     const header = el.querySelector<HTMLElement>("#tier2-nav")!;
     const stage = el.querySelector<HTMLElement>(".about-journal-stage");
     const chapters = [...el.querySelectorAll<HTMLElement>(".about-chapter")];
-    const length = rail.current.getTotalLength();
     let frame = 0;
     let headerHeight = header.offsetHeight;
     el.style.setProperty("--about-header", `${headerHeight}px`);
@@ -72,12 +86,6 @@ export default function AboutPage() {
       setActive(current < 0 ? "about-hero" : `about-s${current}`);
       const progress = Math.max(0, Math.min(1, -content.getBoundingClientRect().top / Math.max(1, content.offsetHeight - innerHeight)));
       el.style.setProperty("--about-progress", String(progress));
-      const point = rail.current!.getPointAtLength(length * progress);
-      const next = rail.current!.getPointAtLength(Math.min(length, length * progress + 1));
-      const angle = progress >= 1 ? 180 : Math.atan2(next.y - point.y, next.x - point.x) * 180 / Math.PI + 90;
-      plane.current?.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${angle}) scale(.8) translate(-11.5 -12)`);
-      trail.current?.setAttribute("stroke-dasharray", `${length}`);
-      trail.current?.setAttribute("stroke-dashoffset", `${length * (1 - progress)}`);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(update); };
     const resize = new ResizeObserver(() => {
@@ -149,13 +157,8 @@ export default function AboutPage() {
         activeHref={`#${active}`} onSelect={(e, href) => { if (href.startsWith("#")) jump(e, href); }}
         status={t("about.story")} tone="light" ariaLabel="Page sections" />
 
-      <svg className="about-flight" viewBox="0 0 40 600" preserveAspectRatio="none" aria-hidden="true">
-        <path ref={rail} d="M20 16 C2 130 38 180 20 295 S5 455 20 584" fill="none" stroke="currentColor" opacity=".25" strokeWidth="1" />
-        <path ref={trail} d="M20 16 C2 130 38 180 20 295 S5 455 20 584" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        <g ref={plane}><path d={PLANE} fill="currentColor" /></g>
-      </svg>
-
-      <main ref={main}>
+      <main ref={main} id="tier2-journey">
+        <Tier2FlightPath stops={flightStops} startId="about-hero" />
         <section id="about-hero" className="about-hero">
           <div className="about-hero-films" aria-hidden="true">
             {heroFilms.map((slug, i) => <div key={`${slug}-${i}`} className={`about-film-layer ${heroView === i ? "is-active" : ""}`}>
@@ -170,6 +173,7 @@ export default function AboutPage() {
             <div className="about-hero-bottom">
               <a className="about-story-link" href="#about-intro" onClick={e => jump(e, "#about-intro")}><ArrowDown size={19} aria-hidden="true" /><span>{t("about.begin")}</span></a>
               <div className="about-film-controls">
+                <span data-flight-node aria-hidden="true" className="about-flight-node" />
                 <span className="about-view-label">{t("about.view")} <span dir="ltr">{String(heroView + 1).padStart(2, "0")} / {String(heroFilms.length).padStart(2, "0")}</span></span>
                 <button type="button" title={t("about.change")} aria-label={t("about.change")} onClick={() => setHeroView(i => (i + 1) % heroFilms.length)}><ArrowRight size={19} aria-hidden="true" /></button>
                 <button type="button" title={paused ? t("about.play") : t("about.pause")} aria-label={paused ? t("about.play") : t("about.pause")} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}</button>
@@ -178,8 +182,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section id="about-intro" className="about-intro">
-          <div className="about-intro-heading about-eyebrow" data-about-reveal><span>{t("about.perspective")}</span><span dir="ltr">01 / {String(ABOUT.sections.length + 2).padStart(2, "0")}</span></div>
+        <section id="about-intro" data-tier2-stop="about-intro" className="about-intro">
+          <div className="about-intro-heading about-eyebrow" data-about-reveal><span>{t("about.perspective")}</span><span dir="ltr" data-flight-node>01 / {String(ABOUT.sections.length + 2).padStart(2, "0")}</span></div>
           <div className="about-intro-copy">
             {ABOUT.intro.map((p, i) => <p key={i} data-about-reveal className={i === 0 ? "about-intro-lead" : "about-intro-paragraph"}>{p}</p>)}
           </div>
@@ -202,8 +206,8 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="about-chapters">
-            {ABOUT.sections.map((s, i) => <section key={s._key ?? i} id={`about-s${i}`} className="about-chapter">
-              <div className="about-eyebrow"><span>{t("about.chapter")}</span><span dir="ltr">{String(i + 1).padStart(2, "0")}</span></div>
+            {ABOUT.sections.map((s, i) => <section key={s._key ?? i} id={`about-s${i}`} data-tier2-stop={`about-s${i}`} className="about-chapter">
+              <div className="about-eyebrow"><span>{t("about.chapter")}</span><span dir="ltr" data-flight-node>{String(i + 1).padStart(2, "0")}</span></div>
               <h2 data-about-reveal>{s.title}</h2>
               {s.paragraphs.map((p, pi) => <p key={pi} data-about-reveal className={p.includes("\n") ? "about-stanza" : ""}>{p}</p>)}
               <span className="about-chapter-end" aria-hidden="true" />
@@ -211,13 +215,13 @@ export default function AboutPage() {
           </div>
         </div>}
 
-        {ABOUT.closing.length > 0 && <section className="about-invitation">
+        {ABOUT.closing.length > 0 && <section id="about-invitation" data-tier2-stop="about-invitation" className="about-invitation">
           <Film slug={ABOUT.heroSlug} active={!paused} />
           <div className="about-invitation-shade" />
           <div className="about-invitation-copy">
             <span className="about-eyebrow" data-about-reveal>{t("about.invitation")}</span>
             {ABOUT.closing.map((p, i) => <p key={i} data-about-reveal>{p}</p>)}
-            <a href="/#tier2-enquire" className="about-enquire" data-about-reveal><span>{t("about.enquire")}</span><ArrowUpRight size={24} aria-hidden="true" /></a>
+            <a href="/#tier2-enquire" className="about-enquire" data-about-reveal><span>{t("about.enquire")}</span><ArrowUpRight size={24} aria-hidden="true" /><span data-flight-node aria-hidden="true" className="about-flight-node" /></a>
           </div>
         </section>}
       </main>

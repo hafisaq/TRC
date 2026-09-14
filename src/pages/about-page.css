@@ -13,7 +13,7 @@
 .about-page .about-desktop-nav .about-home { letter-spacing: .18em; }
 .about-desktop-nav .about-home { margin-inline-end: auto; gap: 14px; }
 .about-home span { color: #a78b4e; }
-.about-flight { position: fixed; z-index: 22; pointer-events: none; top: calc(var(--about-header) + 24px); right: 9px; width: 28px; height: calc(100svh - var(--about-header) - 60px); color: #d5b766; overflow: visible; }
+.about-flight-node { display: inline-block; width: 1px; height: 1px; }
 .about-eyebrow { display: flex; justify-content: space-between; gap: 16px; font-family: var(--font-mono); font-size: 10px; line-height: 1.6; text-transform: uppercase; color: #8a6b2a; }
 .about-hero { position: relative; display: flex; align-items: center; min-height: 720px; height: calc(100svh - 56px); padding: calc(var(--about-header) + 36px) 72px 38px; overflow: hidden; background: #182f2b; color: #fff; }
 .about-hero-films { position: absolute; inset: -4% 0; }
@@ -85,8 +85,7 @@ html[dir="rtl"] .about-page :is(h1, h2, .about-intro-lead, .about-intro-paragrap
   .about-brand { width: 132px; }
   .about-desktop-nav { display: none; }
   /* the fixed rail competes with the edge of a small screen — the route strip carries progress there */
-  .about-flight { display: none; }
-  .about-hero { height: calc(100svh - 132px); min-height: 650px; padding-inline: 48px; padding-bottom: 100px; }
+    .about-hero { height: calc(100svh - 132px); min-height: 650px; padding-inline: 48px; padding-bottom: 100px; }
   .about-hero-title { font-size: 96px; }
   .about-intro { padding-inline: 48px; }
   .about-journal-stage { height: calc(100svh - var(--about-header) - 86px); }
