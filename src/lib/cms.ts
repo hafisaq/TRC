@@ -67,7 +67,8 @@ const QUERY = `{
   )]{source, strings[]{path, value}},
   "settings": *[_id=="siteSettings"][0]{
     showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
-    phone, whatsapp, email, socials[]{_key, name, url}
+    contacts[]{_key, type, value, show}, socials[]{_key, network, url, show},
+    showSignature, signatureName, signatureUrl
   }
 }`;
 
@@ -138,8 +139,9 @@ export async function hydrateFromCms(): Promise<boolean> {
     settings?: {
       showLanguageSwitch?: boolean;
       footerEyebrow?: string; footerHeadline?: TitlePair; footerLine?: string; footerStamp?: string;
-      phone?: string; whatsapp?: string; email?: string;
-      socials?: Array<{ name?: string; url?: string }>;
+      contacts?: Array<{ _key?: string; type?: string; value?: string; show?: boolean }>;
+      socials?: Array<{ _key?: string; network?: string; url?: string; show?: boolean }>;
+      showSignature?: boolean; signatureName?: string; signatureUrl?: string;
     } | null;
   };
   // Reuse this route's last published response when the network is slow;
@@ -265,13 +267,23 @@ export async function hydrateFromCms(): Promise<boolean> {
     if (st.footerHeadline) FOOTER.headline = pair(st.footerHeadline, FOOTER.headline);
     if (st.footerLine) FOOTER.line = st.footerLine;
     if (st.footerStamp) FOOTER.stamp = st.footerStamp;
-    FOOTER.contacts = (["phone", "whatsapp", "email"] as const).map((id) => {
-      const value = (st[id] ?? "").trim();
-      return { id, value, href: contactHref(id, value) };
-    });
+    const CONTACT_TYPES = ["phone", "whatsapp", "email"] as const;
+    const NETWORKS = ["instagram", "facebook", "x", "linkedin", "youtube", "tiktok", "pinterest"] as const;
+    FOOTER.contacts = (st.contacts ?? [])
+      .filter((c) => c && c.show !== false && (CONTACT_TYPES as readonly string[]).includes(c.type ?? "") && (c.value ?? "").trim())
+      .map((c, i) => {
+        const type = c.type as (typeof CONTACT_TYPES)[number];
+        const value = (c.value as string).trim();
+        return { id: c._key ?? `${type}-${i}`, type, value, href: contactHref(type, value) };
+      });
     FOOTER.socials = (st.socials ?? [])
-      .filter((s) => s?.name)
-      .map((s) => ({ name: s.name as string, href: s.url?.trim() || null }));
+      .filter((s) => s && s.show !== false && (NETWORKS as readonly string[]).includes(s.network ?? ""))
+      .map((s, i) => ({ id: s._key ?? `${s.network}-${i}`, network: s.network as (typeof NETWORKS)[number], href: s.url?.trim() || null }));
+    FOOTER.signature = {
+      show: st.showSignature === true && !!(st.signatureName ?? "").trim(),
+      name: (st.signatureName ?? "").trim(),
+      href: (st.signatureUrl ?? "").trim()
+    };
   }
 
   try {

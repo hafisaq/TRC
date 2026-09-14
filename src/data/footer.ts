@@ -1,13 +1,9 @@
-export type FooterContact = {
-  id: "phone" | "whatsapp" | "email";
-  value: string;
-  href: string | null;
-};
+export type ContactType = "phone" | "whatsapp" | "email";
+export type SocialNetwork = "instagram" | "facebook" | "x" | "linkedin" | "youtube" | "tiktok" | "pinterest";
 
-export type FooterSocial = {
-  name: string;
-  href: string | null;
-};
+export type FooterContact = { id: string; type: ContactType; value: string; href: string | null };
+export type FooterSocial = { id: string; network: SocialNetwork; href: string | null };
+export type FooterSignature = { show: boolean; name: string; href: string };
 
 export type FooterContent = {
   eyebrow: string;
@@ -16,31 +12,32 @@ export type FooterContent = {
   stamp: string;
   contacts: FooterContact[];
   socials: FooterSocial[];
+  signature: FooterSignature;
 };
 
-// Hydrated in place from Sanity's Site settings (lib/cms.ts), like every
-// other content store. The words below are only the offline fallback; the
-// contact details are never guessed — an empty value renders as "coming
-// soon" until the client types their own number into the Studio.
+export const SOCIAL_LABELS: Record<SocialNetwork, string> = {
+  instagram: "Instagram", facebook: "Facebook", x: "X", linkedin: "LinkedIn", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest"
+};
+
+// Hydrated in place from Sanity's Site settings (lib/cms.ts). The words
+// below are only the offline fallback; contact details are never guessed
+// — with nothing published the contact block simply has nothing to show.
 export const FOOTER: FooterContent = {
   eyebrow: "The arrival lounge",
   headline: ["Until the", "next departure."],
   line: "A world of possibilities. One conversation away.",
   stamp: "Your next chapter awaits",
-  contacts: [
-    { id: "phone", value: "", href: null },
-    { id: "whatsapp", value: "", href: null },
-    { id: "email", value: "", href: null }
-  ],
-  socials: []
+  contacts: [],
+  socials: [],
+  signature: { show: false, name: "", href: "" }
 };
 
 // tel: keeps a leading +, WhatsApp wants bare international digits.
-export function contactHref(id: FooterContact["id"], value: string): string | null {
+export function contactHref(type: ContactType, value: string): string | null {
   const v = value.trim();
   if (!v) return null;
-  if (id === "email") return `mailto:${v}`;
+  if (type === "email") return `mailto:${v}`;
   const digits = v.replace(/\D/g, "");
   if (!digits) return null;
-  return id === "phone" ? `tel:${v.startsWith("+") ? "+" : ""}${digits}` : `https://wa.me/${digits}`;
+  return type === "phone" ? `tel:${v.startsWith("+") ? "+" : ""}${digits}` : `https://wa.me/${digits}`;
 }
