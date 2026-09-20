@@ -49,8 +49,9 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = event.currentTarget;
     if (status !== "idle") return;
+    // read the fields now, before they are disabled for the animation
+    const data = new FormData(event.currentTarget);
     setStatus("tearing");
 
     const tl = gsap.timeline();
@@ -74,13 +75,13 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
     }
     tl.call(async () => {
       try {
-        await submitEnquiry(form, "Boarding pass");
+        await submitEnquiry(data, "Boarding pass");
         setStatus("sent");
       } catch {
         // never claim it was sent when it was not: say so, and hand the
         // enquiry to the traveller's own mail app instead
         setStatus("failed");
-        openMailFallback(form, "Boarding pass");
+        openMailFallback(data, "Boarding pass");
       }
     });
     if (confirmedRef.current) {
