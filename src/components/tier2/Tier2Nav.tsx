@@ -67,8 +67,9 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
               href={item.href}
               onClick={(e) => handleClick(e, item.href)}
               aria-current={isActive ? "location" : undefined}
-              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-deep ${
-                isActive ? "text-gold-deep" : "text-navy/65"
+              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-deep! ${
+                // the base `a` colour is unlayered and would beat a plain utility
+                isActive ? "text-gold-deep!" : "text-navy/70!"
               }`}
             >
               {item.label}
