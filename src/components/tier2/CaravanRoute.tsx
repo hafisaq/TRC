@@ -102,7 +102,7 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
             <h3 className="font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white">
               {region.title}
             </h3>
-            <span className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/50 lg:block">Scroll ↓</span>
+            <span className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/50 lg:block">{t("hint.scrollDown")}</span>
           </div>
         </div>
 

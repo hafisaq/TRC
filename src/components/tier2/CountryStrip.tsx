@@ -126,7 +126,7 @@ export default function CountryStrip({ region, onMore }: { region: Region; onMor
             <div className="hidden h-px flex-1 bg-gold/25 lg:block">
               <div ref={barRef} className="h-full bg-gold shadow-[0_0_10px_rgba(200,162,76,.5)]" style={{ width: "0%" }} />
             </div>
-            <div className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 lg:block">Scroll →</div>
+            <div className="hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45 lg:block">{t("hint.scrollAcross")}</div>
           </div>
         </div>
 

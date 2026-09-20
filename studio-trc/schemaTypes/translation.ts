@@ -8,7 +8,7 @@ export const translation = defineType({
   title: 'Translation',
   type: 'document',
   fields: [
-    defineField({ name: 'lang', type: 'string', options: { list: ['ar'] }, validation: (r) => r.required() }),
+    defineField({ name: 'lang', type: 'string', options: { list: ['ar', 'en'] }, validation: (r) => r.required() }),
     defineField({ name: 'source', type: 'string', description: 'The _id of the document these strings translate (or "ui")' }),
     defineField({
       name: 'strings', type: 'array',

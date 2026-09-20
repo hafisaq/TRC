@@ -38,11 +38,11 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
           href="#tier2-hero"
           onClick={(e) => handleClick(e, "#tier2-hero")}
           className="mx-auto block w-fit xl:mx-0"
-          aria-label="The Retreat Collection"
+          aria-label={t("brand.name")}
         >
           <img
             src="/media/brand/newaccentlogo-720.png"
-            alt="The Retreat Collection"
+            alt={t("brand.name")}
             width={720}
             height={240}
             decoding="async"

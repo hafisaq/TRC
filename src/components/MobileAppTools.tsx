@@ -2,41 +2,36 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import { ArrowLeft, Check, Copy, Ellipsis, Maximize, Minimize, Share2, Smartphone, X } from "lucide-react";
 import { canUseFullscreen, getAppState, isAppleMobile, requestAppInstall, subscribeAppState } from "../lib/pwa";
 import { pauseSmoothScroll } from "../lib/scroll";
-import { isAr } from "../lib/i18n";
+import { t } from "../lib/i18n";
 import "./mobile-app-tools.css";
 
-const labels = {
-  en: {
-    options: "App options", title: "Your journey", close: "Close", back: "Back",
-    install: "Install Retreat", add: "Add to Home Screen", installed: "Retreat is installed",
-    share: "Share this journey", copy: "Copy link", copied: "Link copied",
-    fullscreen: "Full screen", exit: "Exit full screen", requested: "Installation requested",
-    installError: "Installation is not available right now. Try again from your browser menu.",
-    fullscreenError: "Full screen was not allowed by this browser.",
-    shareError: "Sharing is unavailable right now. You can copy the link instead.",
-    manualCopy: "Select and copy this link", offline: "You are offline. Some photos and films may be unavailable.",
-    appleSteps: ["Open this page in Safari, then open the browser's Share menu (it may be under More).", "Choose Add to Home Screen.", "Keep Open as Web App on, if shown, then tap Add."],
-    browserSteps: ["Open your browser's menu.", "Choose Install app or Add to Home screen, if offered, and confirm."],
-    browserNote: "If that option is missing, open this page in Safari on iPhone or Chrome on Android.",
-  },
-  ar: {
-    options: "خيارات التطبيق", title: "رحلتك", close: "إغلاق", back: "رجوع",
-    install: "تثبيت ريتريت", add: "إضافة إلى الشاشة الرئيسية", installed: "تم تثبيت ريتريت",
-    share: "مشاركة هذه الرحلة", copy: "نسخ الرابط", copied: "تم نسخ الرابط",
-    fullscreen: "ملء الشاشة", exit: "الخروج من ملء الشاشة", requested: "تم طلب التثبيت",
-    installError: "التثبيت غير متاح حالياً. حاول مجدداً من قائمة المتصفح.",
-    fullscreenError: "لم يسمح المتصفح بوضع ملء الشاشة.",
-    shareError: "المشاركة غير متاحة حالياً. يمكنك نسخ الرابط بدلاً من ذلك.",
-    manualCopy: "حدد هذا الرابط وانسخه", offline: "أنت غير متصل بالإنترنت. قد لا تتوفر بعض الصور ومقاطع الفيديو.",
-    appleSteps: ["افتح هذه الصفحة في سفاري، ثم افتح قائمة المشاركة في المتصفح، وقد تجدها ضمن المزيد.", "اختر إضافة إلى الشاشة الرئيسية.", "اترك خيار فتح كتطبيق ويب مفعّلاً إن ظهر، ثم اضغط إضافة."],
-    browserSteps: ["افتح قائمة المتصفح.", "اختر تثبيت التطبيق أو إضافة إلى الشاشة الرئيسية، إن كان متاحاً، ثم أكد الاختيار."],
-    browserNote: "إذا لم يظهر الخيار، افتح الصفحة في سفاري على آيفون أو كروم على أندرويد.",
-  },
-};
 
 export default function MobileAppTools({ tone = "light" }: { tone?: "light" | "dark" }) {
   const app = useSyncExternalStore(subscribeAppState, getAppState);
-  const copy = labels[isAr() ? "ar" : "en"];
+  // every label is an app.* string, editable in Sanity (en--ui / ar--ui)
+  const copy = {
+    options: t("app.options"),
+    title: t("app.title"),
+    close: t("app.close"),
+    back: t("app.back"),
+    install: t("app.install"),
+    add: t("app.add"),
+    installed: t("app.installed"),
+    share: t("app.share"),
+    copy: t("app.copy"),
+    copied: t("app.copied"),
+    fullscreen: t("app.fullscreen"),
+    exit: t("app.exit"),
+    requested: t("app.requested"),
+    installError: t("app.installError"),
+    fullscreenError: t("app.fullscreenError"),
+    shareError: t("app.shareError"),
+    manualCopy: t("app.manualCopy"),
+    offline: t("app.offline"),
+    browserNote: t("app.browserNote"),
+    appleSteps: [t("app.apple1"), t("app.apple2"), t("app.apple3")],
+    browserSteps: [t("app.browser1"), t("app.browser2")],
+  };
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);

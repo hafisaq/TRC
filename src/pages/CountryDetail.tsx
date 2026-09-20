@@ -450,10 +450,10 @@ function CountryDetailInner({
         id="tier2-nav"
         className="fixed inset-x-0 top-0 z-50 border-b border-gold/20 bg-cream-deep/97 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 sm:bg-cream-deep/92 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
       >
-        <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit xl:mx-0">
+        <a href="/" aria-label={t("footer.home")} className="mx-auto block w-fit xl:mx-0">
           <MediaImage
             src="/media/brand/newaccentlogo-720.png"
-            alt="The Retreat Collection"
+            alt={t("brand.name")}
             width={2101}
             height={691}
             decoding="async"
@@ -462,7 +462,7 @@ function CountryDetailInner({
         </a>
         <MobileAppTools tone="dark" />
         <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>
-        <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label="Page sections">
+        <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label={t("a11y.pageSections")}>
           <a
             href="/"
             className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
@@ -510,7 +510,7 @@ function CountryDetailInner({
         }}
         status={page.country}
         tone="light"
-        ariaLabel="Page sections"
+        ariaLabel={t("a11y.pageSections")}
         navAttrs={{ "data-country-bottom-nav": "" }}
       />
 
@@ -809,7 +809,7 @@ function ExpandChapter({
             <br />
             {chapter.title[1]}
           </div>
-          <div className="mt-6 font-mono text-[8px] uppercase tracking-[0.3em] text-navy/40">Keep scrolling</div>
+          <div className="mt-6 font-mono text-[8px] uppercase tracking-[0.3em] text-navy/40">{t("hint.keepScrolling")}</div>
         </div>
 
         {/* the film window, opening up */}
@@ -846,7 +846,7 @@ function ExpandChapter({
               onClick={onEnquire}
               className="mt-6 border-b border-white/55 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-white transition-opacity hover:opacity-70"
             >
-              Speak to us about {country}
+              {t("page.speakToUs", { country })}
             </button>
           </div>
         </div>
@@ -918,7 +918,7 @@ function StayDossier({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dossier"
+            aria-label={t("a11y.closeDossier")}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/25 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light sm:h-11 sm:w-11"
           >
             <span className="text-[13px]">✕</span>
@@ -1071,8 +1071,8 @@ function AtlasChart() {
 
       {/* sea labels, old-map style */}
       <g className="sketch-late" style={{ animationDelay: "1.7s" }} fontFamily="var(--font-serif)" fontStyle="italic" fill="rgba(22,36,60,.16)" stroke="none">
-        <text x="800" y="628" fontSize="17" letterSpacing="4">Indian Ocean</text>
-        <text x="880" y="240" fontSize="12" letterSpacing="3">Bay of Bengal</text>
+        <text x="800" y="628" fontSize="17" letterSpacing="4">{t("atlas.indianOcean")}</text>
+        <text x="880" y="240" fontSize="12" letterSpacing="3">{t("atlas.bayOfBengal")}</text>
       </g>
 
       {/* rolling waves scattered in the open sea */}
@@ -1263,7 +1263,7 @@ function EssentialsStack({ cards, country }: { cards: EssentialCard[]; country: 
     <section id="cd-essentials" data-tier2-stop="cd-essentials" className="relative w-full px-5 pb-14 pt-24 sm:px-10 lg:px-16">
       <div className="mx-auto max-w-[1080px]">
         <div data-stop-text className="text-center opacity-0">
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The essentials</div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.theEssentials")}</div>
           <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
             {t("page.beforeYouPack")}
           </h2>
@@ -1392,7 +1392,7 @@ function GallerySection({
         <div data-stop-text className="opacity-0">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">The gallery</div>
+              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.theGallery")}</div>
               <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
                 {t("page.framed", { country: page.country })}
               </h2>
@@ -1467,7 +1467,7 @@ function GallerySection({
           }}>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t("a11y.close")}
             onClick={() => setOpen(null)}
             className="absolute right-5 top-5 z-10 grid h-11 w-11 place-items-center rounded-full border border-white/25 text-white/70 transition-colors hover:border-gold/60 hover:text-gold-light"
           >
@@ -1475,7 +1475,7 @@ function GallerySection({
           </button>
           <button
             type="button"
-            aria-label="Previous"
+            aria-label={t("a11y.previous")}
             onClick={(e) => {
               e.stopPropagation();
               setOpen((o) => (o === null ? o : (o - 1 + items.length) % items.length));
@@ -1519,7 +1519,7 @@ function GallerySection({
           </figure>
           <button
             type="button"
-            aria-label="Next"
+            aria-label={t("a11y.next")}
             onClick={(e) => {
               e.stopPropagation();
               setOpen((o) => (o === null ? o : (o + 1) % items.length));
