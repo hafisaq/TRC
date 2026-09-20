@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { Region } from "../../data/regions/types";
-import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../../lib/media";
+import { posterUrl, videoUrl, hasFilm, lqipVar, lqipStyle } from "../../lib/media";
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
-import { MediaImage, MediaVideo } from "../Media";
+import { MediaVideo } from "../Media";
+import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -26,6 +27,14 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
   const n = stops.length;
+  // touch layouts: the swipe row picks the active country (the centred
+  // card), so the sky behind follows the swipe
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const pinned = useIsPinnedLayout();
+  const snap = useSnapIndex(rowRef, n);
+  useEffect(() => {
+    if (!pinned) setActive(clamp(snap, 0, Math.max(0, n - 1)));
+  }, [pinned, snap, n]);
 
   useEffect(() => {
     if (!n) return;
@@ -87,8 +96,10 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
               className="absolute inset-0 transition-opacity duration-[900ms] ease-out"
               style={{ opacity: bgActiveOf(active) === i ? 1 : 0, ...(stop.slug ? lqipStyle(stop.slug) : undefined) }}
             >
+              {/* on touch layouts the centred CARD plays the film; the sky
+                  only crossfades its still, so one film decodes at a time */}
               {near && Math.abs(active - i) <= 1 && stop.slug && <MediaVideo
-                src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
+                src={pinned && hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
                 poster={posterUrl(stop.slug)} active={active === i} />}
             </div>
           ))}
@@ -175,7 +186,7 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
         </div>
 
         {/* mobile: waypoint cards in a snap row */}
-        <div className="relative mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
+        <div ref={rowRef} className="relative mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
           {stops.map((stop, i) => {
             const gid = gidOf(stop.country);
             return (
@@ -186,8 +197,9 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
                 style={stop.slug ? lqipVar(stop.slug) : undefined}
                 className="media-shell relative block h-[46svh] min-h-[300px] w-[76vw] shrink-0 snap-center overflow-hidden rounded-sm border border-gold/40 sm:w-[52vw]"
               >
-                {near && stop.slug && (
-                  <MediaImage src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+                {near && !pinned && stop.slug && (
+                  <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 800)}
+                    active={i === active} sizes="(min-width: 640px) 52vw, 76vw" />
                 )}
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.78),rgba(14,13,12,.08)_55%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-5">

@@ -5,6 +5,7 @@ import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
+import CentreFilm from "../CentreFilm";
 
 // The Grand Cities selector — a split-flap departures board. Where the
 // mountains got an altimeter and the desert a caravan line, the cities
@@ -218,7 +219,7 @@ export default function TerminalBoard({ region, onMore }: { region: Region; onMo
                         {/* mobile inline still */}
                         {stop.slug && (
                           <span className="media-shell relative mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden" style={lqipVar(stop.slug)}>
-                            <MediaImage src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
+                            <CentreFilm slug={stop.slug} />
                           </span>
                         )}
                       </span>

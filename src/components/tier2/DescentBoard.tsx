@@ -8,6 +8,7 @@ import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
+import CentreFilm from "../CentreFilm";
 
 // The Mountain & Ice country selector — deliberately NOT the Asia strip.
 // Where Asia glides bright cards sideways across cream, this is a dark
@@ -149,7 +150,7 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                     {/* mobile: inline still so the rows aren't blind */}
                     {stop.slug && (
                       <span className="media-shell relative mt-3 block h-24 w-full overflow-hidden rounded-sm border border-white/10 sm:hidden" style={lqipVar(stop.slug)}>
-                        <MediaImage src={imgSized(posterUrl(stop.slug, 800), 800)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade h-full w-full object-cover" />
+                        <CentreFilm slug={stop.slug} />
                       </span>
                     )}
                   </span>

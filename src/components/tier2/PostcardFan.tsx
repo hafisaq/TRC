@@ -5,6 +5,7 @@ import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaImage, MediaVideo } from "../Media";
+import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 const countWord = (n: number) => WORDS[n] ?? String(n);
@@ -26,6 +27,9 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
   const { ref: nearRef, near } = useNearViewport<HTMLDivElement>();
 
   const n = stops.length;
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const pinned = useIsPinnedLayout();
+  const snap = useSnapIndex(rowRef, n);
 
   // scroll drives the deal: progress through the pinned section maps to
   // the active card index (same pin pattern as the Asia country strip —
@@ -74,7 +78,7 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
       <span id="tier2-coast-hold-out" aria-hidden="true" className="absolute right-[6vw] top-[88%]">
         <span data-flight-node className="block h-px w-px" />
       </span>
-      <div ref={nearRef} className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-4 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
+      <div ref={nearRef} className="relative flex flex-col overflow-hidden pt-14 pb-[calc(env(safe-area-inset-bottom)+64px)] sm:pt-16 lg:sticky lg:top-0 lg:h-[100svh] lg:justify-between lg:pb-[calc(env(safe-area-inset-bottom)+92px)] lg:pt-[calc(env(safe-area-inset-top)+96px)] xl:pb-4">
         {/* sun-bleached wash + a faint horizon line through the middle */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,#f7f4ee_0%,#eef0ec_55%,#e8ecea_100%)]" />
@@ -131,14 +135,18 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                 }}
                 id={`postcard-${stop.id}`}
                 aria-label={`${stop.country} — ${stop.eyebrow}`}
-                className={`absolute block w-[min(44vw,640px)] cursor-pointer border-[10px] border-white bg-white shadow-[0_30px_80px_rgba(22,36,60,.25)] transition-all duration-[650ms] ease-[cubic-bezier(.22,.8,.3,1)] ${
-                  isActive ? "z-30" : "z-10 hover:brightness-105"
+                className={`absolute block w-[min(44vw,640px,calc((100svh-400px)*1.42))] cursor-pointer border-[10px] border-white bg-white shadow-[0_18px_44px_rgba(22,36,60,.22)] transition-transform duration-[650ms] ease-[cubic-bezier(.22,.8,.3,1)] will-change-transform ${
+                  isActive ? "z-30" : "z-10"
                 }`}
                 style={{ transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})` }}
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
-                  {near && stop.slug && <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
-                    poster={posterUrl(stop.slug, 1200)} active={isActive} sizes="(min-width: 1024px) 44vw, 100vw" />}
+                  {/* only the front card and its neighbours carry a film
+                      element; the rest of the hand are plain stills */}
+                  {near && pinned && stop.slug && (Math.abs(off) <= 1
+                    ? <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined}
+                        poster={posterUrl(stop.slug, 1200)} active={isActive} sizes="(min-width: 1024px) 44vw, 100vw" />
+                    : <MediaImage src={imgSized(posterUrl(stop.slug, 1200), 1200)} alt="" loading="lazy" decoding="async" sizes="44vw" className="absolute inset-0 h-full w-full object-cover" />)}
                   {isMoreStop(stop) && (
                     <div className="absolute inset-0 grid place-items-center bg-cream-deep">
                       <span className="font-serif text-[clamp(30px,3.4vw,52px)] font-light text-navy">{stop.country}</span>
@@ -146,7 +154,7 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                   )}
                   <div className={`absolute inset-0 bg-ink/35 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`} />
                   {/* postmark — coords in a dashed ring, like a cancelled stamp */}
-                  <div className="absolute right-4 top-4 grid h-20 w-20 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center backdrop-blur-[2px]">
+                  <div className="absolute right-4 top-4 grid h-20 w-20 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/30 text-center">
                     <div className="font-mono text-[7px] uppercase leading-[1.6] tracking-[0.14em] text-white/90">
                       TRC<br />{stop.coords}
                     </div>
@@ -170,8 +178,8 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
 
         {/* mobile / tablet: the postcards in a snap row (same idiom as the
             Asia strip's mobile behavior) */}
-        <div className="relative mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
-          {stops.map((stop) => {
+        <div ref={rowRef} className="relative mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 no-scrollbar sm:px-10 lg:hidden">
+          {stops.map((stop, i) => {
             const gid = gidOf(stop.country);
             return (
               <a
@@ -181,8 +189,9 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                 className="block w-[80vw] shrink-0 snap-center border-8 border-white bg-white shadow-[0_18px_50px_rgba(22,36,60,.2)] sm:w-[54vw]"
               >
                 <div className="media-shell relative aspect-[16/10] overflow-hidden bg-ink" style={stop.slug ? lqipVar(stop.slug) : undefined}>
-                  {near && stop.slug && (
-                    <MediaImage src={imgSized(posterUrl(stop.slug, 900), 900)} alt="" loading="lazy" decoding="async" onLoad={(e) => e.currentTarget.classList.add("media-ready")} className="media-fade absolute inset-0 h-full w-full object-cover" />
+                  {near && !pinned && stop.slug && (
+                    <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 900)}
+                      active={i === snap} sizes="(min-width: 640px) 54vw, 80vw" />
                   )}
                   <div className="absolute right-3 top-3 grid h-14 w-14 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center">
                     <div className="font-mono text-[6px] uppercase leading-[1.5] tracking-[0.12em] text-white/90">TRC<br />{stop.coords}</div>
