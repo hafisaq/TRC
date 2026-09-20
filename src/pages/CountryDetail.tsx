@@ -452,7 +452,7 @@ function CountryDetailInner({
       >
         <a href="/" aria-label="The Retreat Collection home" className="mx-auto block w-fit xl:mx-0">
           <MediaImage
-            src="/media/brand/01143b.png"
+            src="/media/brand/newaccentlogo-720.png"
             alt="The Retreat Collection"
             width={2101}
             height={691}
