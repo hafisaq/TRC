@@ -6,18 +6,14 @@
 <meta name="color-scheme" content="light only">
 <title>{{t_subject}}</title>
 <style>
-  /* Progressive enhancement: Apple Mail and most mobile clients play these;
-     Gmail and Outlook ignore them and simply show the finished state. */
-  @keyframes trc-fly-ltr { from { transform: translateX(-452px); opacity: 0; } 12% { opacity: 1; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes trc-fly-rtl { from { transform: translateX(452px) scaleX(-1); opacity: 0; } 12% { opacity: 1; } to { transform: translateX(0) scaleX(-1); opacity: 1; } }
-  @keyframes trc-draw { from { width: 0; } to { width: 100%; } }
+  /* Extras for clients that allow CSS animation (Apple Mail, most phone apps):
+     the pass rises and the stamp lands. The flight itself is a GIF, so it
+     plays everywhere, Gmail included. */
   @keyframes trc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes trc-stamp { from { opacity: 0; transform: rotate(-16deg) scale(1.35); } to { opacity: 1; transform: rotate(-8deg) scale(1); } }
-  .trc-plane { animation: trc-fly-{{dir}} 2.8s cubic-bezier(.22,.7,.2,1) .3s both; }
-  .trc-trail { animation: trc-draw 2.8s cubic-bezier(.22,.7,.2,1) .3s both; }
   .trc-pass { animation: trc-rise .9s ease-out 1.1s both; }
   .trc-stamp { animation: trc-stamp .6s ease-out 2.6s both; }
-  @media (prefers-reduced-motion: reduce) { .trc-plane, .trc-trail, .trc-pass, .trc-stamp { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .trc-pass, .trc-stamp { animation: none !important; } }
   @media (max-width: 620px) {
     .trc-wrap { width: 100% !important; }
     .trc-pad { padding-left: 22px !important; padding-right: 22px !important; }
@@ -45,17 +41,12 @@
       <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#e3c682;">{{t_kicker}}</div>
       <div class="trc-h1" style="font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:1.12;font-weight:normal;color:#ffffff;padding-top:14px;">{{t_headline1}}<br><span style="color:#e3c682;font-style:italic;">{{t_headline2}}</span></div>
 
-      <!-- the route: a gold line that draws itself, the plane riding its tip -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:30px;"><tr>
-        <td width="8" valign="middle"><div style="width:7px;height:7px;border:1px solid #c8a24c;transform:rotate(45deg);"></div></td>
-        <td valign="middle" style="padding:0 8px;">
-          <div style="position:relative;height:22px;">
-            <div style="position:absolute;top:10px;left:0;right:0;border-top:1px dashed #5d5236;"></div>
-            <div class="trc-trail" style="position:absolute;top:10px;{{start}}:0;width:100%;border-top:1px solid #c8a24c;"></div>
-            <div class="trc-plane" style="position:absolute;top:0;{{end}}:0;width:22px;height:22px;font-size:19px;line-height:22px;color:#e3c682;{{plane_flip}}">&#9992;&#xFE0E;</div>
-          </div>
-        </td>
-        <td width="8" valign="middle"><div style="width:7px;height:7px;background:#c8a24c;transform:rotate(45deg);"></div></td>
+      <!-- the route: an animated GIF (plays once, then rests on the landing)
+           because Gmail and Outlook drop CSS animation and positioning -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:28px;"><tr>
+        <td width="14" valign="middle" align="center" style="font-size:11px;line-height:1;color:#c8a24c;">&#9671;</td>
+        <td valign="middle" style="padding:0 6px;"><img src="{{site_url}}/media/email/flight-{{dir}}.gif" width="484" alt="" style="display:block;width:100%;max-width:484px;height:auto;border:0;"></td>
+        <td width="14" valign="middle" align="center" style="font-size:11px;line-height:1;color:#c8a24c;">&#9670;</td>
       </tr></table>
 
       <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#cfc9bb;padding-top:26px;">{{t_intro}}</div>
