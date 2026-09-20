@@ -127,7 +127,7 @@ const EN: Record<string, string> = {
   "enq.toBeArranged": "To be arranged",
   "enq.confirm": "Confirm enquiry",
   "enq.sent": "Sent — we'll be in touch within 24 hours",
-  "enq.cities": "London · Cape Town · Kyoto",
+  "enq.cities": "United Arab Emirates",
   "enq.message": "Your journey",
   "enq.messagePlaceholder": "Tell us where you'd like to go, when, and who's travelling.",
   "gallery.showAll": "Show all {count} frames",

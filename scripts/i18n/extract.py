@@ -252,7 +252,7 @@ UI = [
     ("enq.toBeArranged", "Enquiry form", "To be arranged"),
     ("enq.confirm", "Enquiry form", "Confirm enquiry"),
     ("enq.sent", "Enquiry form", "Sent — we'll be in touch within 24 hours"),
-    ("enq.cities", "Enquiry form", "London · Cape Town · Kyoto"),
+    ("enq.cities", "Enquiry form", "United Arab Emirates"),
     ("enq.message", "Enquiry form", "Your journey"),
     ("enq.messagePlaceholder", "Enquiry form", "Tell us where you'd like to go, when, and who's travelling."),
     ("gallery.showAll", "Gallery", "Show all {count} frames"),
