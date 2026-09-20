@@ -129,12 +129,12 @@ export default function AboutPage() {
   return (
     <div ref={root} className="about-page">
       <header id="tier2-nav" className="about-header">
-        <a href="/" className="about-brand" aria-label="The Retreat Collection">
+        <a href="/" className="about-brand" aria-label={t("brand.name")}>
           <img src="/media/brand/newaccentlogo-720.png" alt="" width={697} height={226} decoding="async" fetchPriority="high" />
         </a>
         <MobileAppTools tone="dark" />
         {SETTINGS.showLanguageSwitch && <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>}
-        <nav className="about-desktop-nav" aria-label="Page sections">
+        <nav className="about-desktop-nav" aria-label={t("a11y.pageSections")}>
           <a href="/" className="about-home">{t("page.home")} <span aria-hidden="true">/</span> {t("nav.about")}</a>
           {sections.map(s => <a key={s.id} href={`#${s.id}`} onClick={e => jump(e, `#${s.id}`)} aria-current={active === s.id ? "location" : undefined}>{s.label}</a>)}
           <a href="/#tier2-enquire">{t("nav.enquire")}</a>
@@ -143,7 +143,7 @@ export default function AboutPage() {
       </header>
       <RouteBar items={[...sections.map(s => ({ href: `#${s.id}`, label: s.label })), { href: "/#tier2-enquire", label: t("nav.enquire") }]}
         activeHref={`#${active}`} onSelect={(e, href) => { if (href.startsWith("#")) jump(e, href); }}
-        status={t("about.story")} tone="light" ariaLabel="Page sections" />
+        status={t("about.story")} tone="light" ariaLabel={t("a11y.pageSections")} />
 
       <main ref={main}>
         <section id="about-hero" className="about-hero">
@@ -155,7 +155,7 @@ export default function AboutPage() {
           <div className="about-hero-shade" />
           <div className="about-hero-content">
             <div className="about-eyebrow about-hero-eyebrow"><span>{t("about.story")}</span></div>
-            <h1 className="about-hero-title"><span>{t("about.brand1")}</span><span className="about-collection">{t("about.brand2")}</span></h1>
+            <h1 className="about-hero-title"><span>{t("brand.line1")}</span><span className="about-collection">{t("brand.line2")}</span></h1>
             <p className="about-hero-tagline">{ABOUT.tagline[0]}<br /><em>{ABOUT.tagline[1]}</em></p>
             <div className="about-hero-bottom">
               <a className="about-story-link" href="#about-intro" onClick={e => jump(e, "#about-intro")}><ArrowDown size={19} aria-hidden="true" /><span>{t("about.begin")}</span></a>

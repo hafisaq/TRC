@@ -31,7 +31,15 @@ export default defineConfig({
               (item) => !['siteSettings', 'aboutPage', 'translation'].includes(item.getId() ?? ''),
             ),
             S.divider(),
-            S.documentTypeListItem('translation').title('Arabic translations'),
+            // every fixed label on the site (buttons, form labels, hints)
+            S.listItem()
+              .title('English labels')
+              .id('enUi')
+              .child(S.document().schemaType('translation').documentId('en--ui')),
+            S.listItem()
+              .title('Arabic translations')
+              .id('arTranslations')
+              .child(S.documentList().title('Arabic translations').filter('_type == "translation" && lang == "ar"')),
           ]),
     }),
     visionTool(),

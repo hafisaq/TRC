@@ -66,6 +66,7 @@ const QUERY = `{
     source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
     source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref
   )]{source, strings[]{path, value}},
+  "uiEn": *[_id=="en--ui"][0].strings[]{path, value},
   "settings": *[_id=="siteSettings"][0]{
     showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
     contacts[]{_key, type, value, show}, socials[]{_key, network, url, show},
@@ -133,6 +134,7 @@ export async function hydrateFromCms(): Promise<boolean> {
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
+    uiEn?: Array<{ path?: string; value?: string }> | null;
     about?: {
       tagline?: TitlePair; intro?: string[]; sections?: Array<{ _key?: string; title?: string; paragraphs?: string[]; media?: Media }>; closing?: string[];
       media?: Media | null;
@@ -211,6 +213,14 @@ export async function hydrateFromCms(): Promise<boolean> {
     return false;
   }
 
+  // ---- English labels: the Studio's `en--ui` document overrides the
+  // bundled fallbacks; Arabic (below) layers on top of these ----
+  const uiOverrides: Record<string, string> = {};
+  for (const { path, value } of data.uiEn ?? []) {
+    if (path && typeof value === "string" && value !== "") uiOverrides[path] = value;
+  }
+  setUiStrings(uiOverrides);
+
   // ---- site settings ----
   SETTINGS.showLanguageSwitch = data.settings?.showLanguageSwitch ?? false;
 
@@ -241,7 +251,7 @@ export async function hydrateFromCms(): Promise<boolean> {
     apply(data.about as Record<string, unknown> | null, "aboutPage");
     const uiStrings = byId.get("ui");
     if (uiStrings) {
-      const overrides: Record<string, string> = {};
+      const overrides: Record<string, string> = { ...uiOverrides };
       for (const { path, value } of uiStrings) {
         if (path && typeof value === "string") overrides[path] = value;
       }

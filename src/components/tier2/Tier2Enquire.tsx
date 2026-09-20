@@ -109,7 +109,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
             />
             <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.35em] uppercase text-navy/50">The Retreat Collection</div>
+                <div className="text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.35em] uppercase text-navy/50">{t("brand.name")}</div>
                 <div className="mt-1 text-[15px] sm:text-[17px] tracking-[0.1em] uppercase text-navy font-bold">{t("enq.boardingPass")}</div>
               </div>
               {/* No static plane icon on the card — the flight path's own
@@ -153,7 +153,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               <input
                 name="email"
                 type="email"
-                placeholder="you@address.com"
+                placeholder={t("enq.emailPlaceholder")}
                 required
                 autoComplete="email"
                 disabled={status !== "idle"}
@@ -197,7 +197,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
               <div className="grid grid-cols-3 gap-3 sm:block">
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.flight")}</div>
-                  <div className="mt-1 text-[13px] sm:text-[15px] tracking-[0.06em] sm:tracking-[0.08em] text-navy">TRC · 001</div>
+                  <div className="mt-1 text-[13px] sm:text-[15px] tracking-[0.06em] sm:tracking-[0.08em] text-navy">{t("enq.flightCode")}</div>
                 </div>
 
                 <div>
@@ -206,7 +206,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
                 </div>
                 <div>
                   <div className="text-[8px] sm:text-[9px] tracking-[0.18em] sm:tracking-[0.25em] uppercase text-navy/45">{t("enq.seat")}</div>
-                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">1A</div>
+                  <div className="mt-1 text-[13px] sm:text-[14px] text-navy">{t("enq.seatCode")}</div>
                 </div>
               </div>
 

@@ -19,11 +19,11 @@ export default function Tier2Hero() {
         id="tier2-title"
         className="mt-9 sm:mt-12 translate-y-4 font-serif font-light text-white text-[clamp(44px,16vw,120px)] leading-[0.95] tracking-[0.02em] opacity-0"
       >
-        The Retreat
+        {t("brand.line1")}
       </h1>
       <div id="tier2-subtitle" className="mt-4 sm:mt-5 flex items-center gap-3 sm:gap-4 opacity-0">
         <span className="w-8 sm:w-10 h-px bg-gold/60" />
-        <span className="text-[10px] sm:text-[13px] tracking-[0.38em] sm:tracking-[0.5em] uppercase text-gold-light">Collection</span>
+        <span className="text-[10px] sm:text-[13px] tracking-[0.38em] sm:tracking-[0.5em] uppercase text-gold-light">{t("brand.line2")}</span>
         <span className="w-8 sm:w-10 h-px bg-gold/60" />
       </div>
 

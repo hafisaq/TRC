@@ -16,8 +16,9 @@ export function currentLang(): Lang {
 export const isAr = () => currentLang() === "ar";
 
 // ---- fixed UI chrome ----
-// English defaults; Arabic arrives from the CMS `ar--ui` translation doc
-// at hydration via setUiStrings(). Keys match scripts/i18n/extract.py.
+// Offline fallback only. The live English labels come from Sanity's `en--ui`
+// document and the Arabic from `ar--ui`, both applied at hydration via
+// setUiStrings() — edit labels in the Studio, not here.
 const EN: Record<string, string> = {
   "nav.about": "About",
   "nav.enquire": "Enquire",
@@ -127,7 +128,7 @@ const EN: Record<string, string> = {
   "enq.toBeArranged": "To be arranged",
   "enq.confirm": "Confirm enquiry",
   "enq.sent": "Sent — we'll be in touch within 24 hours",
-  "enq.cities": "London · Cape Town · Kyoto",
+  "enq.cities": "United Arab Emirates",
   "enq.message": "Your journey",
   "enq.messagePlaceholder": "Tell us where you'd like to go, when, and who's travelling.",
   "gallery.showAll": "Show all {count} frames",
@@ -158,7 +159,49 @@ const EN: Record<string, string> = {
   "about.view": "View",
   "about.invitation": "Your next chapter",
   "about.enquire": "Let us draw your route",
-  "about.origin": "From the UAE, with care"
+  "about.origin": "From the UAE, with care",
+  "brand.line1": "The Retreat",
+  "brand.line2": "Collection",
+  "brand.name": "The Retreat Collection",
+  "a11y.pageSections": "Page sections",
+  "a11y.close": "Close",
+  "a11y.previous": "Previous",
+  "a11y.next": "Next",
+  "a11y.closeDossier": "Close dossier",
+  "hint.scrollDown": "Scroll ↓",
+  "hint.scrollAcross": "Scroll →",
+  "hint.keepScrolling": "Keep scrolling",
+  "page.theEssentials": "The essentials",
+  "page.theGallery": "The gallery",
+  "atlas.indianOcean": "Indian Ocean",
+  "atlas.bayOfBengal": "Bay of Bengal",
+  "enq.flightCode": "TRC · 001",
+  "enq.seatCode": "1A",
+  "enq.emailPlaceholder": "you@address.com",
+  "app.options": "App options",
+  "app.title": "Your journey",
+  "app.close": "Close",
+  "app.back": "Back",
+  "app.install": "Install Retreat",
+  "app.add": "Add to Home Screen",
+  "app.installed": "Retreat is installed",
+  "app.share": "Share this journey",
+  "app.copy": "Copy link",
+  "app.copied": "Link copied",
+  "app.fullscreen": "Full screen",
+  "app.exit": "Exit full screen",
+  "app.requested": "Installation requested",
+  "app.installError": "Installation is not available right now. Try again from your browser menu.",
+  "app.fullscreenError": "Full screen was not allowed by this browser.",
+  "app.shareError": "Sharing is unavailable right now. You can copy the link instead.",
+  "app.manualCopy": "Select and copy this link",
+  "app.offline": "You are offline. Some photos and films may be unavailable.",
+  "app.apple1": "Open this page in Safari, then open the browser's Share menu (it may be under More).",
+  "app.apple2": "Choose Add to Home Screen.",
+  "app.apple3": "Keep Open as Web App on, if shown, then tap Add.",
+  "app.browser1": "Open your browser's menu.",
+  "app.browser2": "Choose Install app or Add to Home screen, if offered, and confirm.",
+  "app.browserNote": "If that option is missing, open this page in Safari on iPhone or Chrome on Android."
 };
 
 let ui: Record<string, string> = { ...EN };

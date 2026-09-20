@@ -101,7 +101,7 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                   {stop.country}
                 </button>
               ))}
-              <span className="font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45">Scroll ↓</span>
+              <span className="font-mono text-[8.5px] uppercase tracking-[0.24em] text-navy/45">{t("hint.scrollDown")}</span>
             </div>
           </div>
         </div>
