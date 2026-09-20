@@ -32,7 +32,7 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
     <>
       <header
         id="tier2-nav"
-        className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-ink/94 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 sm:bg-ink/72 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-5"
+        className="fixed top-0 inset-x-0 z-50 border-b border-gold/25 bg-cream/97 px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-3 shadow-[0_10px_40px_rgba(14,13,12,.18)] sm:bg-cream/94 sm:backdrop-blur-xl xl:flex xl:items-center xl:gap-8 xl:px-8 xl:py-4"
       >
         <a
           href="#tier2-hero"
@@ -41,22 +41,22 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
           aria-label="The Retreat Collection"
         >
           <img
-            src="/media/brand/GOLD.png"
+            src="/media/brand/newaccentlogo-720.png"
             alt="The Retreat Collection"
-            width={697}
-            height={226}
+            width={720}
+            height={240}
             decoding="async"
             fetchPriority="high"
             className="w-[154px] h-auto xl:w-[190px]"
           />
         </a>
-        <MobileAppTools />
+        <MobileAppTools tone="dark" />
         <div className="mobile-language-switch">
-          <LanguageSwitch tone="light" />
+          <LanguageSwitch tone="dark" />
         </div>
         <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 xl:flex xl:justify-end">
-          <div className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-white/45 lg:flex">
-            <span className="h-px w-8 bg-gold/45" />
+          <div className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 lg:flex">
+            <span className="h-px w-8 bg-gold/60" />
             <span>{statusText}</span>
           </div>
           {navItems.map((item) => {
@@ -67,15 +67,15 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
               href={item.href}
               onClick={(e) => handleClick(e, item.href)}
               aria-current={isActive ? "location" : undefined}
-              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-light ${
-                isActive ? "text-gold-light" : "text-white/65"
+              className={`shrink-0 text-[10px] tracking-[0.24em] uppercase transition-colors hover:text-gold-deep ${
+                isActive ? "text-gold-deep" : "text-navy/65"
               }`}
             >
               {item.label}
             </a>
             );
           })}
-          <LanguageSwitch tone="light" />
+          <LanguageSwitch tone="dark" />
         </nav>
       </header>
 
