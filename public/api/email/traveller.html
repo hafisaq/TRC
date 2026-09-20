@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="{{lang}}" dir="{{dir}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>{{t_subject}}</title>
+<style>
+  /* Progressive enhancement: Apple Mail and most mobile clients play these;
+     Gmail and Outlook ignore them and simply show the finished state. */
+  @keyframes trc-fly-ltr { from { transform: translateX(-452px); opacity: 0; } 12% { opacity: 1; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes trc-fly-rtl { from { transform: translateX(452px) scaleX(-1); opacity: 0; } 12% { opacity: 1; } to { transform: translateX(0) scaleX(-1); opacity: 1; } }
+  @keyframes trc-draw { from { width: 0; } to { width: 100%; } }
+  @keyframes trc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes trc-stamp { from { opacity: 0; transform: rotate(-16deg) scale(1.35); } to { opacity: 1; transform: rotate(-8deg) scale(1); } }
+  .trc-plane { animation: trc-fly-{{dir}} 2.8s cubic-bezier(.22,.7,.2,1) .3s both; }
+  .trc-trail { animation: trc-draw 2.8s cubic-bezier(.22,.7,.2,1) .3s both; }
+  .trc-pass { animation: trc-rise .9s ease-out 1.1s both; }
+  .trc-stamp { animation: trc-stamp .6s ease-out 2.6s both; }
+  @media (prefers-reduced-motion: reduce) { .trc-plane, .trc-trail, .trc-pass, .trc-stamp { animation: none !important; } }
+  @media (max-width: 620px) {
+    .trc-wrap { width: 100% !important; }
+    .trc-pad { padding-left: 22px !important; padding-right: 22px !important; }
+    .trc-stub, .trc-main { display: block !important; width: 100% !important; box-sizing: border-box; }
+    .trc-stub { border-left: 0 !important; border-right: 0 !important; border-top: 1px dashed #c9bfa6 !important; }
+    .trc-h1 { font-size: 30px !important; }
+    .trc-route { font-size: 19px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#0e0d0c;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{t_preheader}}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0e0d0c;">
+<tr><td align="center" style="padding:28px 12px 40px;">
+
+  <table role="presentation" class="trc-wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
+
+    <!-- logo band -->
+    <tr><td align="center" style="background:#faf8f4;padding:26px 24px 22px;border-radius:14px 14px 0 0;border-bottom:1px solid #e3d3a8;">
+      <a href="{{site_url}}" style="text-decoration:none;"><img src="{{site_url}}/media/brand/newaccentlogo-720.png" width="210" alt="The Retreat Collection" style="display:block;width:210px;max-width:60%;height:auto;border:0;"></a>
+    </td></tr>
+
+    <!-- night sky hero with the flight -->
+    <tr><td class="trc-pad" align="center" style="background:#12110f;padding:40px 44px 34px;">
+      <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#e3c682;">{{t_kicker}}</div>
+      <div class="trc-h1" style="font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:1.12;font-weight:normal;color:#ffffff;padding-top:14px;">{{t_headline1}}<br><span style="color:#e3c682;font-style:italic;">{{t_headline2}}</span></div>
+
+      <!-- the route: a gold line that draws itself, the plane riding its tip -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:30px;"><tr>
+        <td width="8" valign="middle"><div style="width:7px;height:7px;border:1px solid #c8a24c;transform:rotate(45deg);"></div></td>
+        <td valign="middle" style="padding:0 8px;">
+          <div style="position:relative;height:22px;">
+            <div style="position:absolute;top:10px;left:0;right:0;border-top:1px dashed #5d5236;"></div>
+            <div class="trc-trail" style="position:absolute;top:10px;{{start}}:0;width:100%;border-top:1px solid #c8a24c;"></div>
+            <div class="trc-plane" style="position:absolute;top:0;{{end}}:0;width:22px;height:22px;font-size:19px;line-height:22px;color:#e3c682;{{plane_flip}}">&#9992;&#xFE0E;</div>
+          </div>
+        </td>
+        <td width="8" valign="middle"><div style="width:7px;height:7px;background:#c8a24c;transform:rotate(45deg);"></div></td>
+      </tr></table>
+
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#cfc9bb;padding-top:26px;">{{t_intro}}</div>
+    </td></tr>
+
+    <!-- the boarding pass -->
+    <tr><td class="trc-pad" style="background:#12110f;padding:6px 28px 40px;">
+      <table role="presentation" class="trc-pass" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#faf8f4;border-radius:12px;overflow:hidden;">
+      <tr>
+        <td class="trc-main" valign="top" style="padding:26px 26px 24px;font-family:'Courier New',Courier,monospace;color:#16243c;">
+          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#7c8594;">The Retreat Collection</div>
+          <div style="font-size:17px;letter-spacing:2px;text-transform:uppercase;font-weight:bold;padding-top:4px;">{{t_boardingPass}}</div>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top:20px;"><tr>
+            <td valign="bottom" style="font-family:'Courier New',Courier,monospace;">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;">{{t_from}}</div>
+              <div class="trc-route" style="font-size:22px;letter-spacing:1px;color:#16243c;padding-top:3px;">{{t_here}}</div>
+            </td>
+            <td valign="bottom" align="center" width="38%" style="width:38%;padding:0 10px 8px;"><div style="border-top:1px solid #b9bfc9;font-size:0;line-height:0;">&nbsp;</div></td>
+            <td valign="bottom" align="{{end}}" style="font-family:'Courier New',Courier,monospace;">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;">{{t_to}}</div>
+              <div class="trc-route" style="font-size:22px;letter-spacing:1px;color:#8f7231;padding-top:3px;">{{route}}</div>
+            </td>
+          </tr></table>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;padding-top:20px;">{{t_passenger}}</div>
+          <div style="font-size:16px;letter-spacing:1px;text-transform:uppercase;padding-top:4px;border-bottom:1px solid #d9d4c6;padding-bottom:9px;">{{name}}</div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;padding-top:16px;">{{t_contact}}</div>
+          <div style="font-size:15px;padding-top:4px;border-bottom:1px solid #d9d4c6;padding-bottom:9px;direction:ltr;text-align:{{start}};">{{email}}</div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;padding-top:16px;">{{t_journey}}</div>
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#2a3547;padding-top:6px;white-space:pre-line;">{{message}}</div>
+        </td>
+        <td class="trc-stub" width="168" valign="top" style="width:168px;background:#f3efe7;border-{{start}}:1px dashed #c9bfa6;padding:26px 20px 22px;font-family:'Courier New',Courier,monospace;color:#16243c;">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;">{{t_flight}}</div>
+          <div style="font-size:15px;letter-spacing:1px;padding-top:3px;direction:ltr;text-align:{{start}};">{{flight}}</div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;padding-top:14px;">{{t_date}}</div>
+          <div style="font-size:14px;padding-top:3px;direction:ltr;text-align:{{start}};">{{date}}</div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8a93a1;padding-top:14px;">{{t_class}}</div>
+          <div style="font-size:13px;line-height:1.4;padding-top:3px;">{{t_toBeArranged}}</div>
+          <div class="trc-stamp" style="margin-top:20px;display:inline-block;border:1px solid #5b766d;outline:1px solid #5b766d;outline-offset:-5px;padding:10px 14px;color:#4d6a61;font-family:Georgia,serif;font-size:17px;transform:rotate(-8deg);">{{t_received}}</div>
+        </td>
+      </tr>
+      <!-- barcode, built from cells so every client draws it -->
+      <tr><td colspan="2" style="padding:0 26px 22px;background:#faf8f4;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" height="30" style="height:30px;direction:ltr;"><tr>{{barcode}}</tr></table>
+      </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- next steps -->
+    <tr><td class="trc-pad" align="center" style="background:#12110f;padding:0 44px 40px;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.35;color:#ffffff;">{{t_nextTitle}}</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.75;color:#b9b3a5;padding-top:10px;">{{t_nextCopy}}</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="padding-top:24px;"><tr>
+        {{contact_buttons}}
+      </tr></table>
+    </td></tr>
+
+    <!-- footer -->
+    <tr><td align="center" style="background:#0b0a09;padding:26px 24px 30px;border-radius:0 0 14px 14px;border-top:1px solid #2a261d;">
+      <div style="font-family:'Courier New',Courier,monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#7d7662;">{{t_country}}</div>
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6f6a5e;padding-top:10px;">&copy; {{year}} The Retreat Collection. {{t_footnote}}</div>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

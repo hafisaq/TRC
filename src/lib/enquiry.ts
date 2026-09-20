@@ -1,5 +1,7 @@
 const ENQUIRY_EMAIL = import.meta.env.VITE_ENQUIRY_EMAIL || "hello@theretreatcollection.com";
-const ENQUIRY_ENDPOINT = import.meta.env.VITE_ENQUIRY_ENDPOINT || "";
+// The site ships its own endpoint (public/api/enquiry.php on the host). In
+// local dev there is no PHP, so the request fails and the caller falls back.
+const ENQUIRY_ENDPOINT = import.meta.env.VITE_ENQUIRY_ENDPOINT || (import.meta.env.PROD ? "/api/enquiry.php" : "");
 
 const getValue = (formData: FormData, key: string) => String(formData.get(key) || "").trim();
 
@@ -24,6 +26,12 @@ const buildMailtoHref = (formData: FormData, source: string) => {
   return `mailto:${ENQUIRY_EMAIL}?subject=${subject}&body=${body}`;
 };
 
+// when the endpoint cannot be reached the traveller's own mail app opens
+// with everything filled in, so the enquiry is never lost
+export function openMailFallback(form: HTMLFormElement, source: string) {
+  window.location.href = buildMailtoHref(new FormData(form), source);
+}
+
 export async function submitEnquiry(form: HTMLFormElement, source: string) {
   const formData = new FormData(form);
 
@@ -41,5 +49,5 @@ export async function submitEnquiry(form: HTMLFormElement, source: string) {
     return;
   }
 
-  window.location.href = buildMailtoHref(formData, source);
+  openMailFallback(form, source);
 }

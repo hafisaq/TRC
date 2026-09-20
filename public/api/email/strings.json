@@ -1,0 +1,36 @@
+{
+  "en": {
+    "subject": "Your boarding pass — The Retreat Collection",
+    "preheader": "We have your enquiry. A travel designer will be in touch within 24 hours.",
+    "kicker": "Enquiry received",
+    "headline1": "Your journey",
+    "headline2": "is on our desk.",
+    "intro": "Thank you, {name}. Your boarding pass is below, exactly as you filled it in. One of our travel designers is reading it now.",
+    "boardingPass": "Boarding pass",
+    "from": "From", "to": "To", "here": "HERE", "anywhere": "ANYWHERE",
+    "passenger": "Passenger name", "contact": "Contact email", "journey": "Your journey",
+    "flight": "Flight", "date": "Issued", "class": "Class", "toBeArranged": "To be arranged", "received": "Received",
+    "nextTitle": "What happens next",
+    "nextCopy": "We will reply within 24 hours with first thoughts and a few questions, so the route is drawn around you. If it is urgent, reach us directly.",
+    "whatsapp": "WhatsApp", "call": "Call us", "write": "Write to us",
+    "country": "United Arab Emirates",
+    "footnote": "You are receiving this because you sent an enquiry from our website."
+  },
+  "ar": {
+    "subject": "بطاقة صعودك — ذا ريتريت كولكشن",
+    "preheader": "وصلنا استفسارك، وسيتواصل معك أحد مصممي الرحلات خلال 24 ساعة.",
+    "kicker": "وصلنا استفسارك",
+    "headline1": "رحلتك",
+    "headline2": "بين أيدينا الآن.",
+    "intro": "شكراً لك، {name}. هذه بطاقة صعودك كما كتبتها تماماً، ويقرؤها الآن أحد مصممي الرحلات لدينا.",
+    "boardingPass": "بطاقة الصعود",
+    "from": "من", "to": "إلى", "here": "هنا", "anywhere": "أي مكان",
+    "passenger": "اسم المسافر", "contact": "البريد الإلكتروني", "journey": "رحلتك",
+    "flight": "الرحلة", "date": "تاريخ الإصدار", "class": "الدرجة", "toBeArranged": "تُرتَّب لاحقاً", "received": "تم الاستلام",
+    "nextTitle": "ما الخطوة التالية",
+    "nextCopy": "سنرد عليك خلال 24 ساعة بأفكار أولية وبعض الأسئلة، لنرسم المسار على مقاسك. وإن كان الأمر عاجلاً فتواصل معنا مباشرة.",
+    "whatsapp": "واتساب", "call": "اتصل بنا", "write": "راسلنا",
+    "country": "الإمارات العربية المتحدة",
+    "footnote": "تصلك هذه الرسالة لأنك أرسلت استفساراً من موقعنا."
+  }
+}
