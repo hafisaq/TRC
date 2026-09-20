@@ -4,6 +4,7 @@ import { posterUrl, videoUrl, hasFilm, lqipVar } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
 import { MediaVideo } from "../Media";
+import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -24,6 +25,9 @@ export default function CountryStrip({ region, onMore }: { region: Region; onMor
   const rowRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
+  // touch layouts have no hover: the centred card of the swipe row plays
+  const pinned = useIsPinnedLayout();
+  const snap = useSnapIndex(rowRef, stops.length, innerRef);
 
   // The glide is driven OUTSIDE React: one rAF loop eases the row toward
   // its scroll target and writes the transform directly. The previous
@@ -152,12 +156,12 @@ export default function CountryStrip({ region, onMore }: { region: Region; onMor
                     <div className="absolute inset-0 bg-ink" />
                   ) : (
                     <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 900)}
-                      hover sizes="(min-width: 1024px) 34vw, (min-width: 640px) 52vw, 76vw"
+                      hover={pinned} active={pinned || i === snap} sizes="(min-width: 1024px) 34vw, (min-width: 640px) 52vw, 76vw"
                       className="transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" />
                   )}
                   {/* lighter than before — just enough for legibility */}
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.72),rgba(14,13,12,.06)_52%,rgba(14,13,12,.16))] transition-opacity duration-500 group-hover:opacity-75" />
-                  <div className={`absolute left-5 top-5 flex items-center gap-3 rounded-sm px-2.5 py-1.5 font-mono text-[8.5px] uppercase tracking-[0.22em] backdrop-blur-sm ${
+                  <div className={`absolute left-5 top-5 flex items-center gap-3 rounded-sm px-2.5 py-1.5 font-mono text-[8.5px] uppercase tracking-[0.22em] lg:backdrop-blur-sm ${
                     goldCard ? "bg-gold/85 text-white" : "bg-cream/85 text-gold-deep"
                   }`}>
                     <span>{String(i + 1).padStart(2, "0")}</span>
