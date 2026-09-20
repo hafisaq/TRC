@@ -28,12 +28,14 @@ const buildMailtoHref = (formData: FormData, source: string) => {
 
 // when the endpoint cannot be reached the traveller's own mail app opens
 // with everything filled in, so the enquiry is never lost
-export function openMailFallback(form: HTMLFormElement, source: string) {
-  window.location.href = buildMailtoHref(new FormData(form), source);
+export function openMailFallback(data: FormData, source: string) {
+  window.location.href = buildMailtoHref(data, source);
 }
 
-export async function submitEnquiry(form: HTMLFormElement, source: string) {
-  const formData = new FormData(form);
+// Takes the FormData captured AT SUBMIT: the pass disables its fields for
+// the tear-off animation, and disabled fields are left out of a FormData
+// built afterwards (the server then sees an empty enquiry).
+export async function submitEnquiry(formData: FormData, source: string) {
 
   if (ENQUIRY_ENDPOINT) {
     formData.set("source", source);
@@ -49,5 +51,5 @@ export async function submitEnquiry(form: HTMLFormElement, source: string) {
     return;
   }
 
-  openMailFallback(form, source);
+  openMailFallback(formData, source);
 }
