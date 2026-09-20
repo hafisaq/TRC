@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import type { Destination } from "../../data/tier2Destinations";
-import { submitEnquiry } from "../../lib/enquiry";
-import { t } from "../../lib/i18n";
+import { openMailFallback, submitEnquiry } from "../../lib/enquiry";
+import { currentLang, t } from "../../lib/i18n";
 
 export type EnquiryOption = Pick<Destination, "id" | "interest"> & Partial<Pick<Destination, "gate">>;
 
@@ -27,7 +27,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
   // the cabin is set by the route the traveller arrived from (a stop's
   // "Enquire about this route"); the pass itself asks in their own words
   const cabin = selectedInterest;
-  const [status, setStatus] = useState<"idle" | "tearing" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "tearing" | "sent" | "failed">("idle");
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -74,10 +74,13 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
     }
     tl.call(async () => {
       try {
-        await submitEnquiry(form, "Tier 2");
+        await submitEnquiry(form, "Boarding pass");
         setStatus("sent");
       } catch {
-        setStatus("sent");
+        // never claim it was sent when it was not: say so, and hand the
+        // enquiry to the traveller's own mail app instead
+        setStatus("failed");
+        openMailFallback(form, "Boarding pass");
       }
     });
     if (confirmedRef.current) {
@@ -97,6 +100,10 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
 
         <form onSubmit={handleSubmit}>
           <input type="hidden" name="interest" value={cabin || "To be arranged"} />
+          <input type="hidden" name="lang" value={currentLang()} />
+          <input type="hidden" name="page" value={typeof window !== "undefined" ? window.location.pathname : "/"} />
+          {/* bot trap — real visitors never see or fill this */}
+          <input type="text" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
           {/* boarding pass */}
           <div ref={cardRef} className="relative flex flex-col sm:flex-row rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,.5)] sm:shadow-[0_30px_80px_rgba(0,0,0,.55)]">
           {/* main stub */}
@@ -233,7 +240,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
           >
             <span ref={buttonTextRef} className="inline-block">{t("enq.confirm")}</span>
             <div ref={confirmedRef} className="absolute inset-0 flex items-center justify-center opacity-0">
-              {t("enq.sent")}
+              {status === "failed" ? t("enq.failed") : t("enq.sent")}
             </div>
           </button>
         </form>
