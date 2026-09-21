@@ -1,0 +1,43 @@
+.consent-banner {
+  position: fixed;
+  z-index: 60;
+  inset-inline: 12px;
+  bottom: calc(env(safe-area-inset-bottom) + 96px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  max-width: 720px;
+  margin-inline: auto;
+  padding: 14px 18px;
+  border: 1px solid rgb(200 162 76 / 45%);
+  border-radius: 10px;
+  background: rgb(18 17 15 / 97%);
+  color: #d8d2c4;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.6;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 35%);
+  animation: consent-in 500ms ease-out both;
+}
+.consent-banner p { flex: 1 1 320px; margin: 0; }
+.consent-banner strong { color: #e3c682; font-weight: 500; }
+.consent-actions { display: flex; gap: 10px; margin-inline-start: auto; }
+.consent-actions button {
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.consent-decline { border: 1px solid rgb(255 255 255 / 25%); background: transparent; color: #cfc9bb; }
+.consent-accept { border: 1px solid #c8a24c; background: #c8a24c; color: #12110f; }
+.consent-actions button:focus-visible { outline: 2px solid #e3c682; outline-offset: 3px; }
+html[dir="rtl"] .consent-banner { font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-size: 13.5px; }
+html[dir="rtl"] .consent-actions button { letter-spacing: 0; font-size: 12.5px; }
+@media (min-width: 1280px) { .consent-banner { bottom: 24px; } }
+@media (prefers-reduced-motion: reduce) { .consent-banner { animation: none; } }
+@keyframes consent-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
