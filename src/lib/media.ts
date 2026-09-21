@@ -66,7 +66,7 @@ export function imageSrcSet(url: string, maxWidth = 1600): string | undefined {
   if (!url.startsWith("https://cdn.sanity.io/images/")) return undefined;
   const originalWidth = Number(new URL(url).pathname.match(/-(\d+)x\d+\./)?.[1]) || maxWidth;
   const limit = Math.min(originalWidth, maxWidth);
-  const widths = [...new Set([320, 480, 640, 800, 1100, 1440, limit].filter(w => w <= limit))];
+  const widths = [...new Set([320, 480, 640, 800, 1100, 1440, 1920, limit].filter(w => w <= limit))];
   return widths.sort((a, b) => a - b).map(w => `${imgSized(url, w)} ${w}w`).join(", ");
 }
 
