@@ -74,6 +74,8 @@ export const siteSettings = defineType({
       validation: (r) => r.regex(/^G-[A-Z0-9]{6,}$/, { name: 'GA4 ID' }).warning('Usually starts with G-') }),
     defineField({ name: 'clarityId', title: 'Microsoft Clarity — Project ID', type: 'string', fieldset: 'analytics',
       description: 'The short code from clarity.microsoft.com → Settings → Overview. Heatmaps and session recordings.' }),
+    defineField({ name: 'analyticsDomain', title: 'Only measure on this domain', type: 'string', fieldset: 'analytics',
+      description: 'Optional. e.g. theretreatcollection.travel — when filled in, every other address (the replica, local testing) stays silent. Leave empty to measure everywhere.' }),
     defineField({ name: 'askConsent', title: 'Ask visitors for consent first', type: 'boolean', fieldset: 'analytics', initialValue: true,
       description: 'Recommended. Shows a small banner; recordings and cookies start only after the visitor accepts.' }),
   ],

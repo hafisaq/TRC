@@ -7,7 +7,7 @@
 // pings only) and is upgraded when the visitor accepts; Clarity loads only
 // after they accept. The choice is remembered on this device.
 
-export type AnalyticsSettings = { enabled: boolean; ga4Id: string; clarityId: string; askConsent: boolean };
+export type AnalyticsSettings = { enabled: boolean; ga4Id: string; clarityId: string; askConsent: boolean; domain: string };
 type Params = Record<string, string | number | boolean | undefined>;
 type Consent = "granted" | "denied" | null;
 
@@ -18,7 +18,12 @@ declare global {
   interface Window { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void; clarity?: (...args: unknown[]) => void }
 }
 
-let settings: AnalyticsSettings = { enabled: false, ga4Id: "", clarityId: "", askConsent: true };
+let settings: AnalyticsSettings = { enabled: false, ga4Id: "", clarityId: "", askConsent: true, domain: "" };
+
+// with a domain set in Sanity, only that site reports (www or not); the
+// replica and local builds stay silent
+const bare = (h: string) => h.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+const onMeasuredHost = () => !settings.domain || bare(location.hostname) === bare(settings.domain);
 let started = false;
 const listeners = new Set<() => void>();
 
@@ -30,7 +35,7 @@ export function getConsent(): Consent {
     return null;
   }
 }
-export const analyticsActive = () => settings.enabled && (!!settings.ga4Id || !!settings.clarityId);
+export const analyticsActive = () => settings.enabled && onMeasuredHost() && (!!settings.ga4Id || !!settings.clarityId);
 export const needsConsentChoice = () => analyticsActive() && settings.askConsent && getConsent() === null;
 export function onConsentChange(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 
