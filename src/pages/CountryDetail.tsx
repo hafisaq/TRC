@@ -522,7 +522,7 @@ function CountryDetailInner({
         <section ref={heroRef} id={heroId} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink sm:min-h-[600px]">
           <span aria-hidden="true" style={lqipStyle(page.heroSlug)} className="lqip-layer absolute inset-0" />
           <MediaVideo src={hasFilm(page.heroSlug) ? videoUrl(page.heroSlug) : undefined}
-            poster={posterUrl(page.heroSlug)} priority active={!openStay} />
+            poster={posterUrl(page.heroSlug, 2560)} sizes={COVER_SIZES} priority active={!openStay} />
           <svg className="absolute inset-0 h-full w-full" viewBox={heroViewBox} preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <mask id={maskId}>
@@ -705,6 +705,11 @@ function CountryDetailInner({
   );
 }
 
+// A full-bleed 16:9 still is cropped to cover, so on a tall or narrow screen
+// it is drawn far wider than the viewport. Tell the browser the width it is
+// really painted at, or it fetches a small rendition and stretches it soft.
+const COVER_SIZES = "max(100vw, 178vh)";
+
 // White Desert's signature move: the chapter pins, its film starts as an
 // inset window over a giant title, opens up to full-bleed as you scroll,
 // the editorial fades in over the footage, then fades out (the "closing"
@@ -817,7 +822,7 @@ function ExpandChapter({
         <div ref={windowRef} className="absolute inset-0 overflow-hidden will-change-transform" style={initial.window}>
           <div ref={filmRef} className="absolute inset-0 will-change-transform" style={initial.film}>
             <MediaVideo src={hasFilm(chapter.slug) ? videoUrl(chapter.slug) : undefined}
-              poster={posterUrl(chapter.slug)} className="kenburns" />
+              poster={posterUrl(chapter.slug, 2560)} sizes={COVER_SIZES} className="kenburns" />
             {/* phones stack title + copy + CTA over most of the frame, so the
                 scrim has to climb with them; wider screens keep the lighter lift */}
             <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.88)_0%,rgba(14,13,12,.72)_42%,rgba(14,13,12,.28)_72%,rgba(14,13,12,.16)_100%)] sm:bg-[linear-gradient(0deg,rgba(14,13,12,.74),rgba(14,13,12,.06)_52%,rgba(14,13,12,.18))]" />
