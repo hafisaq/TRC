@@ -207,7 +207,24 @@ export async function hydrateFromCms(): Promise<boolean> {
         save(fresh);
       } else {
         data = cached;
-        fetchFresh.then(save).catch(() => undefined);
+        const shownAt = Date.now();
+        fetchFresh.then((late) => {
+          save(late);
+          // The saved copy went on screen because the network was slow. If
+          // what arrived is different and the visitor has not started
+          // reading, show it now rather than on their next visit — an editor
+          // who just published should not be looking at yesterday's page.
+          const changed = JSON.stringify(late) !== JSON.stringify(cached);
+          const flag = `trc-cms-refreshed:${CACHE_KEY}`;
+          try {
+            if (changed && Date.now() - shownAt < 6000 && window.scrollY < 80 && !sessionStorage.getItem(flag)) {
+              sessionStorage.setItem(flag, "1");
+              window.location.reload();
+            }
+          } catch {
+            /* storage blocked — they get the new copy on the next visit */
+          }
+        }).catch(() => undefined);
       }
     } else {
       data = await fetchFresh;
