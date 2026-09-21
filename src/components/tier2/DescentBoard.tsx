@@ -81,7 +81,7 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.85),transparent_18%,transparent_82%,rgba(14,13,12,.9))]" />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1380px] gap-10 px-5 py-20 sm:px-10 sm:py-24 lg:h-full lg:grid-cols-[auto_1fr] lg:gap-16 lg:px-16 lg:pb-8 lg:pt-[calc(env(safe-area-inset-top)+96px)]">
+      <div className="relative mx-auto grid max-w-[1380px] gap-10 px-5 py-20 sm:px-10 sm:py-24 lg:h-full lg:grid-cols-[auto_1fr] lg:grid-rows-[minmax(0,1fr)] lg:gap-16 lg:px-16 lg:pb-8 lg:pt-[calc(env(safe-area-inset-top)+116px)]">
         {/* the altitude rail — ticks, a running line, and the section head
             rotated into it on large screens */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:gap-4 lg:pt-2">
@@ -104,15 +104,17 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
           </div>
         </div>
 
-        <div>
-          <div className="mb-10 sm:mb-12 lg:mb-[clamp(12px,3svh,40px)]">
+        {/* pinned, the rows share whatever height the screen has left, so a
+            longer list tightens instead of running off the bottom */}
+        <div className="lg:flex lg:min-h-0 lg:flex-col" style={{ "--rows": n } as React.CSSProperties}>
+          <div className="mb-10 sm:mb-12 lg:mb-[clamp(10px,2.4svh,32px)]">
             <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light lg:hidden">{t("board.choose")}</div>
-            <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white lg:mt-0">
+            <h3 className="mt-2 font-serif text-[clamp(28px,4.6vw,52px)] font-light leading-[1.02] text-white lg:mt-0 lg:text-[clamp(26px,min(4.6vw,5.4svh),52px)]">
               {region.title}
             </h3>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col lg:min-h-0 lg:flex-1">
             {stops.map((stop, i) => {
               const gid = region.catalog.find((g) => g.label.toLowerCase() === stop.country.toLowerCase())?.id;
               const isActive = active === i;
@@ -121,7 +123,7 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                   key={stop.id}
                   href={gid ? `/${region.slug}/${gid}` : "#tier2-enquire"}
                   onClick={(e) => { if (isMoreStop(stop)) { e.preventDefault(); onMore?.(); } }}
-                  className={`group grid grid-cols-[auto_1fr] items-baseline gap-x-5 border-t border-white/[0.09] py-6 transition-colors duration-500 last:border-b sm:grid-cols-[auto_1fr_auto] sm:gap-x-8 sm:py-7 lg:py-[clamp(10px,2.4svh,26px)] ${
+                  className={`group grid grid-cols-[auto_1fr] items-baseline gap-x-5 border-t border-white/[0.09] py-6 transition-colors duration-500 last:border-b sm:grid-cols-[auto_1fr_auto] sm:gap-x-8 sm:py-7 lg:min-h-0 lg:flex-1 lg:content-center lg:py-0 ${
                     isActive ? "" : "opacity-100"
                   }`}
                 >
@@ -141,7 +143,7 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                       {stop.eyebrow}
                     </span>
                     <span
-                      className={`mt-1 block font-serif text-[clamp(30px,5.2vw,58px)] font-light leading-[1.02] lg:text-[clamp(26px,min(4.6vw,6.4svh),56px)] transition-all duration-500 ${
+                      className={`mt-1 block font-serif text-[clamp(30px,5.2vw,58px)] font-light leading-[1.02] lg:text-[clamp(22px,min(4.6vw,calc(44svh/var(--rows))),56px)] transition-all duration-500 ${
                         isActive ? "translate-x-1.5 text-white" : "text-white/45"
                       }`}
                     >
