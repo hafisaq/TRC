@@ -64,7 +64,7 @@ const EN: Record<string, string> = {
   "page.speakToUs": "Speak to us about {country}",
   "page.theSignatures": "The signatures",
   "page.signatureBySignature": "{country}, signature by signature",
-  "page.notItinerary": "Not an itinerary — the marks of the Maison, one signature at a time.",
+  "page.notItinerary": "Not an itinerary — the marks of the place, one signature at a time.",
   "page.beforeYouPack": "Before you pack",
   "page.practicalSide": "The practical side of {country}, one sheet at a time.",
   "dossier.title": "Stay dossier",
