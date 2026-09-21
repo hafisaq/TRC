@@ -1,5 +1,5 @@
-import type { CatalogGroup, Region, RegionStop } from "./types";
-import { keyForPoster } from "../../lib/media";
+import type { CatalogEntry, CatalogGroup, Region, RegionStop } from "./types";
+import { filmForPoster, keyForPoster } from "../../lib/media";
 import { t } from "../../lib/i18n";
 
 // White Desert-style product page content for a single country: editorial
@@ -147,6 +147,23 @@ const AUTHORED: Record<string, CountryPageData> = {
 function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
   const lead = group.entries[0];
   const second = group.entries[1] ?? lead;
+  // No frame twice on one page: the hero keeps the country's film and the
+  // signatures keep each stay's own, so the chapters draw on what is left
+  // in the stays' galleries — spare footage first, then stills.
+  const taken = new Set(group.entries.map((e) => e.poster));
+  const spare = group.entries
+    .flatMap((e) => e.gallery ?? [])
+    .filter((p, i, all) => !taken.has(p) && all.indexOf(p) === i);
+  const frameFor = (stay?: CatalogEntry) => {
+    const own = spare.filter((p) => stay?.gallery?.includes(p));
+    const pool = own.length ? own : spare;
+    const frame = pool.find((p) => filmForPoster(p)) ?? pool[0];
+    if (!frame) return undefined;
+    spare.splice(spare.indexOf(frame), 1);
+    return keyForPoster(frame);
+  };
+  const openingSlug = frameFor(lead) ?? stop.slug;
+  const addressSlug = frameFor(second) ?? (second ? keyForPoster(second.poster) : stop.slug);
   return {
     country: stop.country,
     tagline: stop.copy,
@@ -159,7 +176,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
         navLabel: stop.eyebrow,
         eyebrow: stop.eyebrow,
         title: stop.title,
-        slug: stop.slug,
+        slug: openingSlug,
         paragraphs: [
           lead?.description ?? stop.copy,
           t("gen.chapter1Para", { country: stop.country })
@@ -169,7 +186,7 @@ function generatePage(stop: RegionStop, group: CatalogGroup): CountryPageData {
         navLabel: t("gen.addressNav"),
         eyebrow: t("gen.addressNav"),
         title: [t("gen.addressTitle1"), t("gen.addressTitle2")],
-        slug: second ? keyForPoster(second.poster) : stop.slug,
+        slug: addressSlug,
         light: true,
         paragraphs: [
           second?.description ?? t("gen.addressFallback", { location: lead?.location ?? stop.country }),
