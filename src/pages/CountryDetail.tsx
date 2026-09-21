@@ -497,7 +497,7 @@ function CountryDetailInner({
           <button
             type="button"
             onClick={() => handleEnquire()}
-            className="shrink-0 text-[10px] tracking-[0.24em] uppercase text-gold-deep transition-colors hover:text-navy"
+            className="shrink-0 text-[10px]! tracking-[0.24em] uppercase text-gold-deep transition-colors hover:text-navy"
           >
             {t("nav.enquire")}
           </button>
