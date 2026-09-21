@@ -953,7 +953,8 @@ function StayDossier({
                 </div>
               )}
               <div className="absolute right-3 top-3 border border-gold-light/35 bg-ink/30 px-2.5 py-1 font-mono text-[7.5px] uppercase tracking-[0.22em] text-gold-light backdrop-blur-sm">
-                {t("dossier.film")}
+                {/* only call it a film when the stay really has footage */}
+                {videoForPoster(gallery[0]) ? t("dossier.film") : t("dossier.still")}
               </div>
             </div>
 
