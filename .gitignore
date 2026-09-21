@@ -13,3 +13,6 @@ work/
 /WhatsApp Image*.jpeg
 seed/
 import/
+
+# raw client footage — cut and encoded copies live in Sanity, never deploy the originals
+source-media/

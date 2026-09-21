@@ -44,7 +44,9 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
       const rect = section.getBoundingClientRect();
       const scrollable = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = clamp(-rect.top / scrollable, 0, 1);
-      setActive(clamp(Math.round(progress * (n - 1)), 0, n - 1));
+      // equal shares of the scroll, so the last waypoint (More) holds the
+      // screen as long as any country instead of flashing past at the end
+      setActive(clamp(Math.floor(progress * n), 0, n - 1));
     };
     readTarget();
     window.addEventListener("scroll", readTarget, { passive: true });
@@ -65,14 +67,14 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
     if (!section) return;
     const scrollable = section.offsetHeight - window.innerHeight;
     const top = section.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: top + (i / (n - 1)) * scrollable, behavior: "smooth" });
+    window.scrollTo({ top: top + ((i + 0.5) / n) * scrollable, behavior: "smooth" });
   };
 
   // waypoints strung along the dune crest (x%, y% within the ridge band)
-  const CREST: Array<[number, number]> = [
-    [12, 58], [30, 34], [50, 52], [68, 28], [86, 46],
-    [22, 40], [58, 38], [78, 52], [40, 30], [92, 34]
-  ];
+  // left to right in route order, so the trailing More is the last marker
+  // on the ridge; heights follow the crest's rise and fall
+  const CREST_Y = [58, 34, 52, 28, 46, 32, 50, 30, 44, 34];
+  const crestAt = (i: number): [number, number] => [n > 1 ? 10 + (i * 82) / (n - 1) : 50, CREST_Y[i % CREST_Y.length]];
   const activeStop = stops[active];
   const activeGid = activeStop ? gidOf(activeStop.country) : undefined;
 
@@ -155,7 +157,7 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
           {/* waypoints along the crest */}
           <div className="absolute inset-0">
             {stops.map((stop, i) => {
-              const [x, y] = CREST[i % CREST.length];
+              const [x, y] = crestAt(i);
               const isActive = i === active;
               return (
                 <button
