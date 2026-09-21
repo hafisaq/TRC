@@ -3,6 +3,7 @@ import gsap from "gsap";
 import type { Destination } from "../../data/tier2Destinations";
 import { openMailFallback, submitEnquiry } from "../../lib/enquiry";
 import { currentLang, t } from "../../lib/i18n";
+import { firstTouch, track } from "../../lib/analytics";
 
 export type EnquiryOption = Pick<Destination, "id" | "interest"> & Partial<Pick<Destination, "gate">>;
 
@@ -29,6 +30,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
   const cabin = selectedInterest;
   const [status, setStatus] = useState<"idle" | "tearing" | "sent" | "failed">("idle");
   const messageRef = useRef<HTMLTextAreaElement>(null);
+  const startedRef = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const stubRef = useRef<HTMLDivElement>(null);
@@ -52,6 +54,11 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
     if (status !== "idle") return;
     // read the fields now, before they are disabled for the animation
     const data = new FormData(event.currentTarget);
+    // which campaign or site produced this lead — shown in the company email
+    const touch = firstTouch();
+    data.set("lead_source", [touch.source, touch.medium, touch.campaign].filter(Boolean).join(" / "));
+    data.set("lead_landing", touch.landing);
+    track("enquiry_submit", { route: cabin || "general" });
     setStatus("tearing");
 
     const tl = gsap.timeline();
@@ -77,10 +84,12 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
       try {
         await submitEnquiry(data, "Boarding pass");
         setStatus("sent");
+        track("generate_lead", { route: cabin || "general", lead_source: touch.source });
       } catch {
         // never claim it was sent when it was not: say so, and hand the
         // enquiry to the traveller's own mail app instead
         setStatus("failed");
+        track("enquiry_failed", { route: cabin || "general" });
         openMailFallback(data, "Boarding pass");
       }
     });
@@ -99,7 +108,7 @@ export default function Tier2Enquire({ selectedInterest, destinations }: Tier2En
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onFocusCapture={() => { if (!startedRef.current) { startedRef.current = true; track("enquiry_start", { route: cabin || "general" }); } }}>
           <input type="hidden" name="interest" value={cabin || "To be arranged"} />
           <input type="hidden" name="lang" value={currentLang()} />
           <input type="hidden" name="page" value={typeof window !== "undefined" ? window.location.pathname : "/"} />

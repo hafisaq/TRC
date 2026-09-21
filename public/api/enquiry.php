@@ -17,6 +17,7 @@ $f = fn(string $k, int $max = 200): string => mb_substr(trim((string)($_POST[$k]
 $name = $f('name', 120); $email = $f('email', 200); $interest = $f('interest', 160);
 $message = $f('message', 4000); $lang = $f('lang', 2) === 'ar' ? 'ar' : 'en';
 $page = $f('page', 300); $source = $f('source', 60) ?: 'Website';
+$leadSource = $f('lead_source', 160) ?: 'direct'; $leadLanding = $f('lead_landing', 200);
 
 // bots fill every field; people never see this one
 if ($f('company_website') !== '') out(200, ['ok' => true]);
@@ -72,7 +73,7 @@ $fill = function (string $file, array $vars): string {
   return preg_replace_callback('/\{\{(\w+)\}\}/', fn($m) => $vars[$m[1]] ?? '', $html);
 };
 $travellerHtml = $fill('traveller.html', $vars);
-$companyHtml = $fill('company.html', $vars + ['source' => $e($source), 'language' => $rtl ? 'Arabic' : 'English', 'page' => $e($page)]);
+$companyHtml = $fill('company.html', $vars + ['source' => $e($source), 'language' => $rtl ? 'Arabic' : 'English', 'page' => $e($page), 'lead_source' => $e($leadSource), 'lead_landing' => $e($leadLanding)]);
 
 require __DIR__ . '/mailer.php';
 $from = (string)$cfg['from_email']; $fromName = (string)($cfg['from_name'] ?? 'The Retreat Collection');

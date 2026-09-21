@@ -70,13 +70,17 @@ const QUERY = `{
   "settings": *[_id=="siteSettings"][0]{
     showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
     contacts[]{_key, type, value, show}, socials[]{_key, network, url, show},
-    showSignature, signatureName, signatureUrl
+    showSignature, signatureName, signatureUrl,
+    analyticsEnabled, ga4Id, clarityId, askConsent, analyticsDomain
   }
 }`;
 
 // Site-wide switches from the CMS (mutated in place at hydration, like
 // everything else). Defaults apply when Sanity is unreachable.
-export const SETTINGS = { showLanguageSwitch: false };
+export const SETTINGS = {
+  showLanguageSwitch: false,
+  analytics: { enabled: false, ga4Id: "", clarityId: "", askConsent: true, domain: "" }
+};
 
 let mediaN = 0;
 // register a media slot and return the key components will carry as "slug"
@@ -146,6 +150,7 @@ export async function hydrateFromCms(): Promise<boolean> {
       contacts?: Array<{ _key?: string; type?: string; value?: string; show?: boolean }>;
       socials?: Array<{ _key?: string; network?: string; url?: string; show?: boolean }>;
       showSignature?: boolean; signatureName?: string; signatureUrl?: string;
+      analyticsEnabled?: boolean; ga4Id?: string; clarityId?: string; askConsent?: boolean; analyticsDomain?: string;
     } | null;
   };
   // Reuse this route's last published response when the network is slow;
@@ -223,6 +228,13 @@ export async function hydrateFromCms(): Promise<boolean> {
 
   // ---- site settings ----
   SETTINGS.showLanguageSwitch = data.settings?.showLanguageSwitch ?? false;
+  SETTINGS.analytics = {
+    enabled: data.settings?.analyticsEnabled === true,
+    ga4Id: (data.settings?.ga4Id ?? "").trim(),
+    clarityId: (data.settings?.clarityId ?? "").trim(),
+    askConsent: data.settings?.askConsent !== false,
+    domain: (data.settings?.analyticsDomain ?? "").trim()
+  };
 
   // ---- Arabic: overlay the copywriter's strings onto the raw documents
   // BEFORE any mapping, so every consumer downstream sees Arabic ----

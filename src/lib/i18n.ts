@@ -129,6 +129,10 @@ const EN: Record<string, string> = {
   "enq.confirm": "Confirm enquiry",
   "enq.sent": "Sent — we'll be in touch within 24 hours",
   "enq.failed": "Could not send — your mail app is opening instead",
+  "consent.title": "A note on privacy.",
+  "consent.text": "We use analytics to understand which journeys interest our visitors and to improve the site. No personal details are collected.",
+  "consent.accept": "Accept",
+  "consent.decline": "Decline",
   "enq.cities": "United Arab Emirates",
   "enq.message": "Your journey",
   "enq.messagePlaceholder": "Tell us where you'd like to go, when, and who's travelling.",
@@ -223,6 +227,7 @@ export function t(key: string, vars?: Record<string, string | number>): string {
 // Shows a full-screen loader (in the target language) and reloads; the
 // stored language then drives dir/lang/fonts and Arabic hydration.
 export function switchLanguage(lang: Lang) {
+  import("./analytics").then(({ track }) => track("language_switch", { to: lang })).catch(() => undefined);
   try {
     localStorage.setItem(KEY, lang);
   } catch {

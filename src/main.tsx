@@ -31,7 +31,9 @@ const page = routeMatch
     : import("./pages/Tier2").then(({ default: Page }) => <Page />);
 
 // The HTML loading mark covers the network wait, before React is ready.
-import { hydrateFromCms } from "./lib/cms";
+import { hydrateFromCms, SETTINGS } from "./lib/cms";
+import { initAnalytics } from "./lib/analytics";
+import ConsentBanner from "./components/ConsentBanner";
 import { isAr } from "./lib/i18n";
 
 // direction + Arabic type must be in place BEFORE first paint
@@ -44,7 +46,9 @@ if (isAr()) {
   document.head.appendChild(link);
 }
 Promise.all([hydrateFromCms(), page]).then(([, content]) => {
-  createRoot(document.getElementById("root")!).render(content);
+  createRoot(document.getElementById("root")!).render(<>{content}<ConsentBanner /></>);
+  // after first paint, so measurement never delays the page
+  (window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 1200)))(() => initAnalytics(SETTINGS.analytics));
 }).catch(() => {
   const status = document.getElementById("boot-status");
   if (status) status.textContent = "The route could not load. Please refresh to try again.";

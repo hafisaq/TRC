@@ -9,6 +9,7 @@ export const siteSettings = defineType({
     { name: 'footerCopy', title: 'Footer — words', options: { collapsible: true, collapsed: false } },
     { name: 'footerContact', title: 'Footer — contact details', options: { collapsible: true, collapsed: false } },
     { name: 'signature', title: 'Footer — signature', options: { collapsible: true, collapsed: true } },
+    { name: 'analytics', title: 'Analytics', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
     defineField({
@@ -66,6 +67,17 @@ export const siteSettings = defineType({
       description: 'A small hand-signed credit at the very end of the footer.' }),
     defineField({ name: 'signatureName', title: 'Signature name', type: 'string', fieldset: 'signature' }),
     defineField({ name: 'signatureUrl', title: 'Signature link', type: 'url', fieldset: 'signature' }),
+    defineField({ name: 'analyticsEnabled', title: 'Analytics on', type: 'boolean', fieldset: 'analytics', initialValue: false,
+      description: 'Master switch. With it off, nothing is loaded and nothing is tracked.' }),
+    defineField({ name: 'ga4Id', title: 'Google Analytics 4 — Measurement ID', type: 'string', fieldset: 'analytics',
+      description: 'Looks like G-XXXXXXXXXX. From Google Analytics → Admin → Data streams.',
+      validation: (r) => r.regex(/^G-[A-Z0-9]{6,}$/, { name: 'GA4 ID' }).warning('Usually starts with G-') }),
+    defineField({ name: 'clarityId', title: 'Microsoft Clarity — Project ID', type: 'string', fieldset: 'analytics',
+      description: 'The short code from clarity.microsoft.com → Settings → Overview. Heatmaps and session recordings.' }),
+    defineField({ name: 'analyticsDomain', title: 'Only measure on this domain', type: 'string', fieldset: 'analytics',
+      description: 'Optional. e.g. theretreatcollection.travel — when filled in, every other address (the replica, local testing) stays silent. Leave empty to measure everywhere.' }),
+    defineField({ name: 'askConsent', title: 'Ask visitors for consent first', type: 'boolean', fieldset: 'analytics', initialValue: true,
+      description: 'Recommended. Shows a small banner; recordings and cookies start only after the visitor accepts.' }),
   ],
   preview: { prepare: () => ({ title: 'Site settings' }) },
 })

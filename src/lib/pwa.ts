@@ -52,6 +52,7 @@ export function initializeAppFeatures() {
     publish();
   };
   const installed = () => {
+    import("./analytics").then(({ track }) => track("pwa_install")).catch(() => undefined);
     installedThisSession = true;
     deferredPrompt = null;
     publish();

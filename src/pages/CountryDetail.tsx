@@ -11,6 +11,7 @@ import { getCountryPage, type CountryChapter, type EssentialCard } from "../data
 import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, lqipVar, lqipVarForPoster, lqipStyle } from "../lib/media";
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
+import { track } from "../lib/analytics";
 import LanguageSwitch from "../components/tier2/LanguageSwitch";
 import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
@@ -648,7 +649,7 @@ function CountryDetailInner({
             <StaysRail
               entries={group.entries}
               country={page.country}
-              onOpen={(e) => setOpenStay(e)}
+              onOpen={(e) => { track("dossier_open", { stay: e.name, country: page.country }); setOpenStay(e); }}
               onEnquire={(name) => handleEnquire(name)}
             />
 
@@ -1407,7 +1408,7 @@ function GallerySection({
               <button
                 key={item.poster}
                 type="button"
-                onClick={() => setOpen(i)}
+                onClick={() => { track("gallery_open", { country: page.country, frame: i + 1, kind: item.video ? "film" : "still" }); setOpen(i); }}
                 style={lqipVarForPoster(item.poster)}
                 className={`media-shell group relative block overflow-hidden rounded-lg border border-navy/12 shadow-[0_16px_44px_rgba(22,36,60,.14)] ${SPANS[i % SPANS.length]}`}
               >
@@ -1439,6 +1440,7 @@ function GallerySection({
                 type="button"
                 aria-expanded={expanded}
                 onClick={() => {
+                  track("gallery_expand", { country: page.country, expanded: !expanded });
                   setExpanded((v) => !v);
                   if (expanded) document.getElementById("cd-gallery")?.scrollIntoView({ block: "start" });
                 }}
