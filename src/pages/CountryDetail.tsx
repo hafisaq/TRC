@@ -351,6 +351,12 @@ function CountryDetailInner({
   // (a two-line block sits higher so it clears the copy that follows)
   const heroCentre = heroLines.length > 1 ? (isSmall ? 0.4 : 0.47) : isSmall ? 0.46 : 0.52;
   const heroTextY = heroBox.h * heroCentre - ((heroLines.length - 1) * heroFontSize * 1.02) / 2 + heroFontSize * 0.36;
+  // the price line and copy start a clear gap under the word's baseline —
+  // a short name ("INDIA") is set so large that a fixed offset ran into it
+  const heroCopyTop = Math.max(
+    heroBox.h * (isSmall ? 0.58 : 0.62),
+    heroTextY + (heroLines.length - 1) * heroFontSize * 1.02 + Math.max(22, heroFontSize * 0.16)
+  );
   const heroTspans = heroLines.map((line, i) => (
     <tspan key={line} x={heroTextX} dy={i === 0 ? 0 : heroFontSize * 1.02}>
       {line}
@@ -552,7 +558,8 @@ function CountryDetailInner({
           </svg>
           <div
             ref={heroCopyRef}
-            className="pointer-events-none absolute inset-x-0 top-[58%] flex flex-col items-center px-5 text-center sm:top-[62%]"
+            className="pointer-events-none absolute inset-x-0 flex flex-col items-center px-5 text-center"
+            style={{ top: heroCopyTop }}
           >
             <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.3em] text-gold-light sm:gap-4 sm:text-[10px]">
               <span className="h-px w-8 bg-gold/60 sm:w-10" />
