@@ -130,7 +130,7 @@ export default function AboutPage() {
     <div ref={root} className="about-page">
       <header id="tier2-nav" className="about-header">
         <a href="/" className="about-brand" aria-label={t("brand.name")}>
-          <img src="/media/brand/newaccentlogo-720.png" alt="" width={697} height={226} decoding="async" fetchPriority="high" />
+          <img src="/media/brand/newaccentlogo-720.webp" alt="" width={697} height={226} decoding="async" fetchPriority="high" />
         </a>
         <MobileAppTools tone="dark" />
         {SETTINGS.showLanguageSwitch && <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>}

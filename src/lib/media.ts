@@ -9,18 +9,26 @@ const films = new Map<string, string>();
 // film lookup for content that carries a poster URL/path instead of a key
 // (stay galleries, dossier lead media)
 const filmByPoster = new Map<string, string>();
+// Phones and tablets get the 720p copy of a film when Sanity holds one:
+// half the pixels to decode and download, no visible difference on a
+// small screen. Decided once at load — a window is not resized mid-scroll.
+const PHONE = typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches;
+const films720 = new Map<string, string>();
+const film720ByPoster = new Map<string, string>();
 // Sanity's ~20px base64 LQIP per image — painted as a blurred background
 // behind every media shell so a cold load never shows a blank frame
 const lqips = new Map<string, string>();
 const lqipByPoster = new Map<string, string>();
 
-export function registerMedia(key: string, urls: { poster?: string; film?: string; lqip?: string }) {
+export function registerMedia(key: string, urls: { poster?: string; film?: string; film720?: string; lqip?: string }) {
   if (urls.poster) {
     posters.set(key, urls.poster);
     if (urls.film) filmByPoster.set(urls.poster, urls.film);
+    if (urls.film720) film720ByPoster.set(urls.poster, urls.film720);
     if (urls.lqip) lqipByPoster.set(urls.poster, urls.lqip);
   }
   if (urls.film) films.set(key, urls.film);
+  if (urls.film720) films720.set(key, urls.film720);
   if (urls.lqip) lqips.set(key, urls.lqip);
 }
 
@@ -72,12 +80,13 @@ export function imageSrcSet(url: string, maxWidth = 1600): string | undefined {
 
 export const posterUrl = (key: string, w = 1600) => imgSized(posters.get(key) ?? `/media/poster/${key}.jpg`, w);
 
-export const videoUrl = (key: string) => films.get(key) ?? `/media/video/${key}.mp4`;
+export const videoUrl = (key: string) => (PHONE && films720.get(key)) || films.get(key) || `/media/video/${key}.mp4`;
 
 // For poster paths/URLs: the matching film if one is registered, else the
 // demo convention (poster path -> sibling mp4).
 export const videoForPoster = (poster: string) =>
-  filmByPoster.get(poster) ??
+  (PHONE && film720ByPoster.get(poster)) ||
+  filmByPoster.get(poster) ||
   (poster.startsWith("/media/poster/")
     ? poster.replace("/media/poster/", "/media/video/").replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")
     : undefined);
@@ -101,7 +110,7 @@ export function keyForPoster(poster: string): string {
 
 // The registered film for a poster, or undefined — lets components render
 // a playing film for CMS entries that have one and a still otherwise.
-export const filmForPoster = (poster: string) => filmByPoster.get(poster);
+export const filmForPoster = (poster: string) => (PHONE && film720ByPoster.get(poster)) || filmByPoster.get(poster);
 
 // Whether a media key has real footage: registered CMS keys must carry a
 // film explicitly; bare demo slugs are presumed to have their bundled mp4.

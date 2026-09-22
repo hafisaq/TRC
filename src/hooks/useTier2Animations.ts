@@ -377,7 +377,14 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             flightHolds.forEach(hold => { hold.focus = hold.top + hold.film.offsetHeight * 0.55; });
           });
           flightHolds.forEach(hold => flightHoldObserver?.observe(hold.film));
+          // Touch scroll fires this on every frame with sub-pixel changes.
+          // The plane cannot move a visible amount for a change under
+          // 1/2000 of the route, so skip those frames on phones — the
+          // style write and the two path lookups are what cost there.
+          let lastApplied = -1;
           const applyProgress = (progress: number) => {
+            if (COARSE_POINTER() && progress > 0 && progress < 1 && Math.abs(progress - lastApplied) < 0.0005) return;
+            lastApplied = progress;
             document.documentElement.style.setProperty("--route-progress", String(progress));
             options.onProgressChange?.(progress);
             const scrollP = Math.min(1, progress / LAND_AT);
