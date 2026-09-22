@@ -86,6 +86,9 @@ a {
   100% { transform: scale(1.14) translate3d(-1.5%, -1.5%, 0); }
 }
 .kenburns { animation: kenburns 16s ease-out both; }
+/* phones: the opening chapter already scales its window with the scroll —
+   a second animated transform on the same film costs frames there */
+@media (pointer: coarse) { .kenburns { animation: none; } }
 
 
 /* the quote signing itself in — words ink in one after another once the

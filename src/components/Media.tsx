@@ -44,6 +44,37 @@ function dropWarmSlot(video: HTMLVideoElement) {
   if (warming.delete(video)) [...warmWaiters].forEach(wake => wake());
 }
 
+// iOS in Low Power Mode refuses every play() that does not come from a
+// touch. Worse, WebKit only lifts that rule per element, and only for an
+// element that was played inside a gesture. So the first touch on the page
+// "unlocks" every film on it — play() then pause(), inside the gesture —
+// and every later touch restarts any film that wants to play but was
+// refused. Before the first touch, the poster shows; nothing else can.
+const refusedVideos = new Set<HTMLVideoElement>();
+let unlocked = false;
+function unlockOnGesture() {
+  if (!unlocked) {
+    unlocked = true;
+    document.querySelectorAll<HTMLVideoElement>("video[data-managed-video]").forEach((v) => {
+      if (v.dataset.wanted === "1") return; // playing or about to: leave it be
+      // the restriction is lifted the moment play() is called inside the
+      // gesture; pausing straight after keeps warm films parked and a
+      // sourceless element from starting on its own once it gets a source
+      v.play()?.catch(() => undefined);
+      v.pause();
+    });
+  }
+  [...refusedVideos].forEach((v) => {
+    refusedVideos.delete(v);
+    if (v.dataset.wanted === "1") v.play()?.catch(() => refusedVideos.add(v));
+  });
+}
+if (typeof window !== "undefined") {
+  window.addEventListener("touchend", unlockOnGesture, { passive: true });
+  window.addEventListener("pointerdown", unlockOnGesture, { passive: true });
+  window.addEventListener("keydown", unlockOnGesture, { passive: true });
+}
+
 // Poster and film share one surface. The still stays underneath until the
 // first frame is playing; films on or near the screen are warmed, the rest
 // hold no source at all.
@@ -100,29 +131,17 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
       && !motion.matches && !connection?.saveData && !["slow-2g", "2g"].includes(connection?.effectiveType || "");
     const wanted = () => allowed() && visible && active && (!hover || interacting);
     // iOS only autoplays inline films that are muted at the element level
-    // (React sets the property, not the attribute) — and Low Power Mode
-    // refuses every autoplay until the visitor touches the page, so the
-    // first gesture retries any film that was refused.
+    // (React sets the property, not the attribute)
     video.muted = true;
     video.defaultMuted = true;
     video.setAttribute("muted", "");
     video.setAttribute("autoplay", "");
-    let retryArmed = false;
-    const armGestureRetry = () => {
-      if (retryArmed) return;
-      retryArmed = true;
-      const retry = () => {
-        retryArmed = false;
-        window.removeEventListener("touchend", retry);
-        window.removeEventListener("pointerdown", retry);
-        if (wanted()) video.play()?.catch(() => undefined);
-      };
-      window.addEventListener("touchend", retry, { once: true, passive: true });
-      window.addEventListener("pointerdown", retry, { once: true, passive: true });
-    };
+    const armGestureRetry = () => refusedVideos.add(video);
     const play = () => {
       clearTimeout(releaseTimer);
+      video.dataset.wanted = wanted() ? "1" : "0";
       if (!wanted()) {
+        refusedVideos.delete(video);
         video.pause();
         if (allowed() && close && holdWarmSlot(video)) {
           if (video.getAttribute("src") !== src) {
@@ -159,10 +178,11 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
     warmWaiters.add(play);
     play();
     return () => {
+      // no pause here: a deps change re-runs play() at once, and pausing in
+      // between would drop a frame on every flip. Unmount pauses below.
       cancelled = true;
       clearTimeout(releaseTimer);
       warmWaiters.delete(play);
-      video.pause();
       video.removeEventListener("canplay", play);
       document.removeEventListener("visibilitychange", play);
       motion.removeEventListener("change", play);
@@ -172,7 +192,12 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
 
   useEffect(() => {
     const video = videoRef.current;
-    return () => { if (video) dropWarmSlot(video); };
+    return () => {
+      if (!video) return;
+      video.pause();
+      refusedVideos.delete(video);
+      dropWarmSlot(video);
+    };
   }, []);
 
   return <span ref={surfaceRef} className={`absolute inset-0 block overflow-hidden ${className}`}>
