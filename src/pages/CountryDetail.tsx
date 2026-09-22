@@ -459,7 +459,7 @@ function CountryDetailInner({
       >
         <a href="/" aria-label={t("footer.home")} className="mx-auto block w-fit xl:mx-0">
           <MediaImage
-            src="/media/brand/newaccentlogo-720.png"
+            src="/media/brand/newaccentlogo-480.webp"
             alt={t("brand.name")}
             width={2101}
             height={691}

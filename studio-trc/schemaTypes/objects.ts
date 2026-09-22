@@ -27,6 +27,13 @@ export const mediaSlot = defineType({
       options: { accept: 'video/mp4' },
       description: 'Optional — when set, this footage plays where the site supports video.',
     }),
+    defineField({
+      name: 'film720',
+      title: 'Phone film (720p)',
+      type: 'file',
+      options: { accept: 'video/mp4' },
+      description: 'Optional lighter copy of the film for phones and tablets. Made automatically for existing films; leave empty and the full film is used.',
+    }),
   ],
 })
 

@@ -41,10 +41,10 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
           aria-label={t("brand.name")}
         >
           <img
-            src="/media/brand/newaccentlogo-720.png"
+            src="/media/brand/newaccentlogo-480.webp"
             alt={t("brand.name")}
-            width={720}
-            height={240}
+            width={480}
+            height={160}
             decoding="async"
             fetchPriority="high"
             className="w-[154px] h-auto xl:w-[190px]"

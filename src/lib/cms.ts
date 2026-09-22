@@ -18,11 +18,11 @@ const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
 const API_VERSION = "2026-08-01";
 
-type Media = { poster?: string | null; film?: string | null; lqip?: string | null };
+type Media = { poster?: string | null; film?: string | null; film720?: string | null; lqip?: string | null };
 type TitlePair = { line1?: string; line2?: string };
 type Fact = { label?: string; value?: string };
 
-const MEDIA_PROJ = `{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}`;
+const MEDIA_PROJ = `{"poster": media.poster.asset->url, "film": media.film.asset->url, "film720": media.film720.asset->url, "lqip": media.poster.asset->metadata.lqip}`;
 
 const QUERY = `{
   "destinations": *[_type=="destination" && $home]|order(order asc){
@@ -42,14 +42,14 @@ const QUERY = `{
         _id, name, location, description, coordinates, season, highlights,
         facts[]{_key, label, value}, assets[]{_key, title, category, "url": file.asset->url},
         "media": ${MEDIA_PROJ},
-        "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url, "lqip": poster.asset->metadata.lqip}
+        "gallery": gallery[]{"poster": poster.asset->url, "film": film.asset->url, "film720": film720.asset->url, "lqip": poster.asset->metadata.lqip}
       }, [])
     }
   },
   "pages": *[_type=="countryPage" && !$home && slug.current == $country]{
     _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
-    "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url, "lqip": heroMedia.poster.asset->metadata.lqip},
+    "heroMedia": {"poster": heroMedia.poster.asset->url, "film": heroMedia.film.asset->url, "film720": heroMedia.film720.asset->url, "lqip": heroMedia.poster.asset->metadata.lqip},
     chapters[]{_key, navLabel, eyebrow, title, paragraphs, light, "media": ${MEDIA_PROJ}},
     days[]{_key, title, copy, details, "media": ${MEDIA_PROJ}},
     essentials[]{_key, title, copy, points[]{_key, label, value}}
@@ -57,7 +57,7 @@ const QUERY = `{
   "about": select($about => *[_id=="aboutPage"][0]{
     tagline, intro, sections[]{_key, title, paragraphs, "media": ${MEDIA_PROJ}}, closing,
     "films": *[_type=="destination" && _id!="destination-about" && defined(media.film.asset)]|order(order asc)[0...3]{"media": ${MEDIA_PROJ}},
-    "media": *[_id=="destination-about"][0]{"poster": media.poster.asset->url, "film": media.film.asset->url, "lqip": media.poster.asset->metadata.lqip}
+    "media": *[_id=="destination-about"][0]{"poster": media.poster.asset->url, "film": media.film.asset->url, "film720": media.film720.asset->url, "lqip": media.poster.asset->metadata.lqip}
   }, null),
   "translations": *[_type=="translation" && lang=="ar" && $arabic && (
     source == "ui" || source == "siteSettings" || ($about && source == "aboutPage") ||
@@ -87,7 +87,7 @@ let mediaN = 0;
 function mediaKey(media: Media | null | undefined, fallback: string): string {
   if (!media?.poster) return fallback;
   const key = `cms-${(mediaN++).toString(36)}`;
-  registerMedia(key, { poster: media.poster, film: media.film ?? undefined, lqip: media.lqip ?? undefined });
+  registerMedia(key, { poster: media.poster, film: media.film ?? undefined, film720: media.film720 ?? undefined, lqip: media.lqip ?? undefined });
   return key;
 }
 
