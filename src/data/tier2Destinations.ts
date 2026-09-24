@@ -47,7 +47,7 @@ export const DESTINATIONS: Destination[] = [
     mapPos: [0.64, 0.4],
     eyebrow: "Coast, temple & garden",
     title: ["The region", "of Asia"],
-    copy: "Bali's quiet coastlines, Maldivian reefs, Sri Lankan hill country, Rajasthan's forts — one region, four very different ways to disappear.",
+    copy: "Bali's quiet coastlines, Maldivian reefs, Sri Lankan hill country, or Rajasthan's forts — one region, many ways to disappear.",
     coords: "13.7°N 100.5°E",
     slug: "bali-coast",
     season: "Year-round",
