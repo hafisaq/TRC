@@ -3,6 +3,7 @@ import type { Region } from "../../data/regions/types";
 import { posterUrl, videoUrl, hasFilm, lqipVar } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
+import MoreDoodle from "../MoreDoodle";
 import { MediaVideo } from "../Media";
 import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
@@ -153,7 +154,9 @@ export default function CountryStrip({ region, onMore }: { region: Region; onMor
                   } hover:border-gold`}
                 >
                   {!stop.slug ? (
-                    <div className="absolute inset-0 bg-ink" />
+                    <div className="absolute inset-0 grid place-items-center bg-ink">
+                      <MoreDoodle kind="tropics" className="w-[62%] max-w-[280px]" />
+                    </div>
                   ) : (
                     <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 900)}
                       hover={pinned} active={pinned || i === snap} sizes="(min-width: 1024px) 34vw, (min-width: 640px) 52vw, 76vw"

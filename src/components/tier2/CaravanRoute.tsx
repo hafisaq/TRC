@@ -4,6 +4,7 @@ import { posterUrl, videoUrl, hasFilm, lqipVar, lqipStyle } from "../../lib/medi
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
+import MoreDoodle from "../MoreDoodle";
 import { MediaVideo } from "../Media";
 import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
@@ -123,6 +124,7 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
         <div className="relative mt-8 max-w-[560px] px-5 sm:px-10 lg:mt-0 lg:px-16">
           {activeStop && (
             <div key={activeStop.id} className="hidden lg:block">
+              {isMoreStop(activeStop) && <MoreDoodle kind="desert" className="mb-4 w-[220px]" />}
               <div className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-light">
                 {String(active + 1).padStart(2, "0")} · {activeStop.eyebrow} · {activeStop.coords}
               </div>
@@ -202,6 +204,11 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
                 {near && !pinned && stop.slug && (
                   <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 800)}
                     active={i === active} sizes="(min-width: 640px) 52vw, 76vw" />
+                )}
+                {isMoreStop(stop) && (
+                  <div className="absolute inset-0 grid place-items-center">
+                    <MoreDoodle kind="desert" className="w-[62%]" />
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.78),rgba(14,13,12,.08)_55%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-5">

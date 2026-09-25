@@ -7,6 +7,7 @@ import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../.
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
+import MoreDoodle from "../MoreDoodle";
 import { MediaImage, MediaVideo } from "../Media";
 import CentreFilm from "../CentreFilm";
 
@@ -155,8 +156,10 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                         <CentreFilm slug={stop.slug} />
                       </span>
                     )}
+                    {isMoreStop(stop) && <MoreDoodle kind="mountains" className="mt-3 h-24 w-auto sm:hidden" />}
                   </span>
                   <span className="hidden text-right sm:block">
+                    {isMoreStop(stop) && <MoreDoodle kind="mountains" className="ml-auto mb-1 h-14 w-auto" />}
                     <span className={`block font-mono text-[8.5px] tracking-[0.2em] transition-colors duration-500 ${isActive ? "text-gold-light" : "text-white/30"}`}>
                       {stop.coords}
                     </span>
