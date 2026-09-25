@@ -80,6 +80,11 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
         {/* legibility veil — heavier on the text side, open on the right */}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(14,13,12,.92)_0%,rgba(14,13,12,.78)_44%,rgba(14,13,12,.35)_75%,rgba(14,13,12,.55)_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.85),transparent_18%,transparent_82%,rgba(14,13,12,.9))]" />
+        {/* the More row owns the whole sky: the last film dims away and the
+            section's doodle sketches itself across the open right half */}
+        <div className={`absolute inset-0 hidden bg-ink/85 transition-opacity duration-700 lg:block ${isMoreStop(stops[active]) ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+          <MoreDoodle kind="mountains" play={isMoreStop(stops[active])} className="absolute right-[6vw] top-1/2 w-[min(46vw,760px)] -translate-y-1/2" />
+        </div>
       </div>
 
       <div className="relative mx-auto grid max-w-[1380px] gap-10 px-5 py-20 sm:px-10 sm:py-24 lg:h-full lg:grid-cols-[auto_1fr] lg:grid-rows-[minmax(0,1fr)] lg:gap-16 lg:px-16 lg:pb-8 lg:pt-[calc(env(safe-area-inset-top)+116px)]">
@@ -148,9 +153,7 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                         isActive ? "translate-x-1.5 text-white" : "text-white/45"
                       }`}
                     >
-                      {isMoreStop(stop)
-                        ? <span className="inline-flex items-end gap-5">{stop.country}<MoreDoodle kind="mountains" className="hidden h-[0.95em] w-auto mb-[0.08em] sm:block" /></span>
-                        : stop.country}
+                      {stop.country}
                     </span>
                     {/* mobile: inline still so the rows aren't blind */}
                     {stop.slug && (
