@@ -32,6 +32,7 @@ type MediaVideoProps = {
 // downloading from nothing. Only a few may warm at once: the film on screen
 // keeps the bandwidth, and phones keep their memory.
 const WARM_LIMIT = 3;
+const CAN_HOVER = typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
 const warming = new Set<HTMLVideoElement>();
 const warmWaiters = new Set<() => void>();
 function holdWarmSlot(video: HTMLVideoElement) {
@@ -143,7 +144,10 @@ export function MediaVideo({ src, poster, active = true, priority = false, hover
       if (!wanted()) {
         refusedVideos.delete(video);
         video.pause();
-        if (allowed() && close && holdWarmSlot(video)) {
+        // hover-only films (gallery tiles, dossier frames) warm on a mouse
+        // device, where they will play on hover; on touch they never play
+        // untapped, so warming them is decode work the tablet can skip
+        if (allowed() && close && (!hover || CAN_HOVER) && holdWarmSlot(video)) {
           if (video.getAttribute("src") !== src) {
             setPlaying(false);
             video.preload = "auto";
