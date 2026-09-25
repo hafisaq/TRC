@@ -4,6 +4,7 @@ import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar } from "../../lib/media
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
+import MoreDoodle from "../MoreDoodle";
 import { MediaImage, MediaVideo } from "../Media";
 import { useIsPinnedLayout, useSnapIndex } from "../../lib/useSnapIndex";
 
@@ -149,7 +150,10 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                     : <MediaImage src={imgSized(posterUrl(stop.slug, 1200), 1200)} alt="" loading="lazy" decoding="async" sizes="44vw" className="absolute inset-0 h-full w-full object-cover" />)}
                   {isMoreStop(stop) && (
                     <div className="absolute inset-0 grid place-items-center bg-cream-deep">
-                      <span className="font-serif text-[clamp(30px,3.4vw,52px)] font-light text-navy">{stop.country}</span>
+                      <div className="flex flex-col items-center gap-2">
+                        <MoreDoodle kind="coast" tone="dark" className="w-[46%] max-w-[240px]" />
+                        <span className="font-serif text-[clamp(30px,3.4vw,52px)] font-light text-navy">{stop.country}</span>
+                      </div>
                     </div>
                   )}
                   <div className={`absolute inset-0 bg-ink/35 transition-opacity duration-500 ${isActive ? "opacity-0" : "opacity-100"}`} />
@@ -192,6 +196,11 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                   {near && !pinned && stop.slug && (
                     <MediaVideo src={hasFilm(stop.slug) ? videoUrl(stop.slug) : undefined} poster={posterUrl(stop.slug, 900)}
                       active={i === snap} sizes="(min-width: 640px) 54vw, 80vw" />
+                  )}
+                  {isMoreStop(stop) && (
+                    <div className="absolute inset-0 grid place-items-center bg-cream-deep">
+                      <MoreDoodle kind="coast" tone="dark" className="w-[56%]" />
+                    </div>
                   )}
                   <div className="absolute right-3 top-3 grid h-14 w-14 rotate-[8deg] place-items-center rounded-full border border-dashed border-white/70 bg-ink/20 text-center">
                     <div className="font-mono text-[6px] uppercase leading-[1.5] tracking-[0.12em] text-white/90">TRC<br />{stop.coords}</div>

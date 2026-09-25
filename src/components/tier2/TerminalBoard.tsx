@@ -4,6 +4,7 @@ import { posterUrl, videoUrl, hasFilm, imgSized, lqipVar, lqipStyle } from "../.
 import { useNearViewport } from "../../lib/useNearViewport";
 import { isAr, t } from "../../lib/i18n";
 import { withMore, isMoreStop, exploreLabel } from "../../lib/moreStop";
+import MoreDoodle from "../MoreDoodle";
 import { MediaImage, MediaVideo } from "../Media";
 import CentreFilm from "../CentreFilm";
 
@@ -201,7 +202,7 @@ export default function TerminalBoard({ region, onMore }: { region: Region; onMo
                       className="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-white/[0.07] py-4 sm:grid-cols-[64px_1fr_64px_110px] sm:gap-x-5 lg:py-[clamp(4px,1.1svh,11px)]"
                     >
                       <span className={`hidden font-mono text-[10px] tracking-[0.12em] transition-colors duration-500 sm:block ${isActive ? "text-gold" : "text-white/30"}`}>
-                        TRC {String(i + 1).padStart(2, "0")}0
+                        {isMoreStop(stop) ? <MoreDoodle kind="cities" className="h-9 w-auto" /> : <>TRC {String(i + 1).padStart(2, "0")}0</>}
                       </span>
                       <span className="min-w-0">
                         <span
@@ -222,6 +223,7 @@ export default function TerminalBoard({ region, onMore }: { region: Region; onMo
                             <CentreFilm slug={stop.slug} />
                           </span>
                         )}
+                        {isMoreStop(stop) && <MoreDoodle kind="cities" className="mt-3 h-24 w-auto sm:hidden" />}
                       </span>
                       <span className={`hidden font-mono text-[10px] tracking-[0.12em] transition-colors duration-500 sm:block ${isActive ? "text-gold-light" : "text-white/30"}`}>
                         {String.fromCharCode(65 + (i % 4))}{(i % 9) + 1}
@@ -257,6 +259,11 @@ export default function TerminalBoard({ region, onMore }: { region: Region; onMo
                           poster={posterUrl(stop.slug, 1280)} active={active === i} sizes="40vw" />}
                       </div>
                     ))}
+                  {isMoreStop(activeStop) && (
+                    <div className="absolute inset-0 grid place-items-center bg-ink">
+                      <MoreDoodle kind="cities" className="w-[52%]" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_50%,rgba(14,13,12,.82))]" />
                   <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-5">
                     <div>
