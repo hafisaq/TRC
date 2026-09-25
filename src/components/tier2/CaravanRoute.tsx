@@ -108,6 +108,11 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
           ))}
           {/* dusk veil for legibility */}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,13,12,.78)_0%,rgba(14,13,12,.25)_38%,rgba(14,13,12,.15)_60%,rgba(14,13,12,.86)_100%)]" />
+          {/* More owns the sky: the last country's film dims away and the
+              souq doodle sketches itself across the right of the screen */}
+          <div className={`absolute inset-0 hidden bg-ink/85 transition-opacity duration-700 lg:block ${isMoreStop(activeStop) ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+            <MoreDoodle kind="desert" play={isMoreStop(activeStop)} className="absolute right-[8vw] top-[42%] w-[min(44vw,720px)] -translate-y-1/2" />
+          </div>
         </div>
 
         <div className="relative px-5 sm:px-10 lg:px-16">
@@ -131,9 +136,8 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
                 href={activeGid ? `/${region.slug}/${activeGid}` : "#tier2-enquire"}
                 className="group mt-2 block"
               >
-                <span className="inline-flex items-end gap-6 font-serif text-[clamp(44px,6vw,84px)] font-light leading-[0.98] text-white transition-colors duration-300 group-hover:text-gold-light">
+                <span className="font-serif text-[clamp(44px,6vw,84px)] font-light leading-[0.98] text-white transition-colors duration-300 group-hover:text-gold-light">
                   {activeStop.country}
-                  {isMoreStop(activeStop) && <MoreDoodle kind="desert" className="h-[1.05em] w-auto mb-[0.06em]" />}
                 </span>
               </a>
               <p className="mt-4 text-[13.5px] font-light leading-[1.8] text-white/75">{activeStop.copy}</p>
