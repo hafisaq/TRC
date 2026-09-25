@@ -148,7 +148,9 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                         isActive ? "translate-x-1.5 text-white" : "text-white/45"
                       }`}
                     >
-                      {stop.country}
+                      {isMoreStop(stop)
+                        ? <span className="inline-flex items-end gap-5">{stop.country}<MoreDoodle kind="mountains" className="hidden h-[0.95em] w-auto mb-[0.08em] sm:block" /></span>
+                        : stop.country}
                     </span>
                     {/* mobile: inline still so the rows aren't blind */}
                     {stop.slug && (
@@ -159,7 +161,6 @@ export default function DescentBoard({ region, onMore }: { region: Region; onMor
                     {isMoreStop(stop) && <MoreDoodle kind="mountains" className="mt-3 h-24 w-auto sm:hidden" />}
                   </span>
                   <span className="hidden text-right sm:block">
-                    {isMoreStop(stop) && <MoreDoodle kind="mountains" className="ml-auto mb-1 h-14 w-auto" />}
                     <span className={`block font-mono text-[8.5px] tracking-[0.2em] transition-colors duration-500 ${isActive ? "text-gold-light" : "text-white/30"}`}>
                       {stop.coords}
                     </span>

@@ -10,7 +10,9 @@
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: doodle-draw 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards, doodle-still 1s linear forwards;
+  animation-play-state: paused;
 }
+.more-doodle--on .more-doodle__stroke { animation-play-state: running; }
 .more-doodle__stroke--sway { animation-name: doodle-draw, doodle-sway; animation-duration: 1.1s, 5s; animation-iteration-count: 1, infinite; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease-in-out; }
 .more-doodle__stroke--bob { animation-name: doodle-draw, doodle-bob; animation-duration: 1.1s, 4s; animation-iteration-count: 1, infinite; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease-in-out; }
 .more-doodle__stroke--rise { animation-name: doodle-draw, doodle-rise; animation-duration: 1.1s, 7s; animation-iteration-count: 1, infinite; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease-in-out; transform-origin: 50% 50%; }
@@ -18,11 +20,14 @@
 
 @keyframes doodle-draw { to { stroke-dashoffset: 0; } }
 @keyframes doodle-still { to { opacity: 1; } }
-@keyframes doodle-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
-@keyframes doodle-bob { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
-@keyframes doodle-rise { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-4px) scale(1.06); } }
+@keyframes doodle-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes doodle-bob { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+@keyframes doodle-rise { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-7px) scale(1.08); } }
 @keyframes doodle-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
 @media (prefers-reduced-motion: reduce) {
   .more-doodle__stroke { animation: none; stroke-dashoffset: 0; }
 }
+/* a redraw needs a fresh start: when the doodle leaves the screen its
+   strokes reset, so the next arrival sketches again */
+.more-doodle:not(.more-doodle--on) .more-doodle__stroke { animation: none; stroke-dashoffset: 1; }
