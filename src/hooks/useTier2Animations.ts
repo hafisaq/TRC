@@ -263,7 +263,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         flightCtx = gsap.context(() => {
         const journey = $<HTMLElement>("#tier2-journey")!;
         const path = $<SVGPathElement>("#tier2-flight-path")!;
-        const plane = $<SVGGElement>("#tier2-flight-plane")!;
+        const plane = $<SVGSVGElement>("#tier2-flight-plane")!;
         const planeIcon = $<SVGPathElement>("#tier2-flight-plane-icon");
 
         const length = path.getTotalLength();
@@ -377,6 +377,7 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             flightHolds.forEach(hold => { hold.focus = hold.top + hold.film.offsetHeight * 0.55; });
           });
           flightHolds.forEach(hold => flightHoldObserver?.observe(hold.film));
+          let lastTrailAt = 0;
           const applyProgress = (progress: number) => {
             document.documentElement.style.setProperty("--route-progress", String(progress));
             options.onProgressChange?.(progress);
@@ -396,7 +397,14 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
               flightY += (window.scrollY + hold.focus - flightY) * eased;
             }
             const flightP = fractionAtY(flightY);
-            gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
+            // The trail lives in a document-tall SVG; every dash update
+            // re-rasterises it. The plane covers the trail's tip, so on
+            // touch the trail can follow at ~15fps with nothing to see.
+            const now = performance.now();
+            if (!COARSE_POINTER() || now - lastTrailAt > 64 || flightP >= ARRIVAL || flightP === 0) {
+              lastTrailAt = now;
+              gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
+            }
             planeTween.progress(flightP);
 
             const showTrail = progress < TRAIL_FADE;
