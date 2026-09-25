@@ -139,7 +139,15 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
 
   if (!geometry) return null;
 
+  // The plane lives OUTSIDE the document-tall trail SVG, in a 28px SVG of
+  // its own that the motion path moves as a whole. Inside the big SVG,
+  // every nudge of the plane (and its glow) re-rasterised the entire
+  // trail layer — on Android tablets that is what blanked the gallery
+  // tiles for a frame at a time while scrolling.
+  const planeScale = geometry.w < 640 ? 0.62 : geometry.w < 1024 ? 0.82 : 1;
+  const planeSize = Math.round(28 * planeScale);
   return (
+    <>
     <svg
       id="tier2-flight-svg"
       className="absolute top-0 left-0 z-[2] pointer-events-none"
@@ -169,18 +177,24 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
           <circle data-landing-ring r="4" fill="none" stroke="#e3c682" strokeWidth="1" opacity="0" />
         </g>
       ))}
-
-      <g id="tier2-flight-plane" opacity={0}>
-        <g transform={`scale(${geometry.w < 640 ? 0.62 : geometry.w < 1024 ? 0.82 : 1})`}>
-        <g transform="rotate(90 12 12) translate(-14 -14) scale(1)">
-          <path
-            id="tier2-flight-plane-icon"
-            fill="#e3c682"
-            d="M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z"
-          />
-        </g>
-        </g>
+    </svg>
+    <svg
+      id="tier2-flight-plane"
+      className="absolute top-0 left-0 z-[3] pointer-events-none will-change-transform"
+      width={planeSize}
+      height={planeSize}
+      viewBox="0 0 24 24"
+      opacity={0}
+      aria-hidden="true"
+    >
+      <g transform="rotate(90 12 12)">
+        <path
+          id="tier2-flight-plane-icon"
+          fill="#e3c682"
+          d="M21,16V14L13,9V3.5C13,2.67 12.33,2 11.5,2C10.67,2 10,2.67 10,3.5V9L2,14V16L10,13.5V19L7.5,20.5V22L11.5,21L15.5,22V20.5L13,19V13.5L21,16Z"
+        />
       </g>
     </svg>
+    </>
   );
 }
