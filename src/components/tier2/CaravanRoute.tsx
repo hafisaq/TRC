@@ -124,7 +124,6 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
         <div className="relative mt-8 max-w-[560px] px-5 sm:px-10 lg:mt-0 lg:px-16">
           {activeStop && (
             <div key={activeStop.id} className="hidden lg:block">
-              {isMoreStop(activeStop) && <MoreDoodle kind="desert" className="mb-4 w-[220px]" />}
               <div className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-light">
                 {String(active + 1).padStart(2, "0")} · {activeStop.eyebrow} · {activeStop.coords}
               </div>
@@ -132,8 +131,9 @@ export default function CaravanRoute({ region, onMore }: { region: Region; onMor
                 href={activeGid ? `/${region.slug}/${activeGid}` : "#tier2-enquire"}
                 className="group mt-2 block"
               >
-                <span className="font-serif text-[clamp(44px,6vw,84px)] font-light leading-[0.98] text-white transition-colors duration-300 group-hover:text-gold-light">
+                <span className="inline-flex items-end gap-6 font-serif text-[clamp(44px,6vw,84px)] font-light leading-[0.98] text-white transition-colors duration-300 group-hover:text-gold-light">
                   {activeStop.country}
+                  {isMoreStop(activeStop) && <MoreDoodle kind="desert" className="h-[1.05em] w-auto mb-[0.06em]" />}
                 </span>
               </a>
               <p className="mt-4 text-[13.5px] font-light leading-[1.8] text-white/75">{activeStop.copy}</p>

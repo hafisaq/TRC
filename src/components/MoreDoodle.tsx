@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import "./more-doodle.css";
 
 // The trailing "More" item of every country selector carries no footage,
@@ -38,12 +39,12 @@ const ART: Record<DoodleKind, Stroke[]> = {
     { d: "M154 34 a10 10 0 1 1 0.1 0", delay: 1.7, drift: "rise" },                      // sun
   ],
   desert: [
-    { d: "M10 92 C 50 70, 80 70, 110 88 S 170 98, 190 84", delay: 0 },                   // dunes
-    { d: "M40 100 C 70 84, 120 82, 190 100", delay: 0.5 },
-    { d: "M136 36 a14 14 0 1 1 0.1 0", delay: 0.9, drift: "rise" },                      // sun
-    { d: "M116 36 l -8 0 M156 36 l 8 0 M136 16 l 0 -8 M122 22 l -6 -6 M150 22 l 6 -6", delay: 1.3, drift: "twinkle" }, // rays
-    { d: "M46 86 C 47 74, 49 64, 52 56", delay: 1.6 },                                   // palm
-    { d: "M52 56 C 62 48, 74 50, 80 60 M52 56 C 42 48, 30 50, 24 60 M52 56 C 60 62, 66 70, 68 78 M52 56 C 44 62, 38 70, 36 78 M52 56 C 51 48, 55 42, 62 40", delay: 1.8, drift: "sway" },
+    { d: "M10 100 C 50 80, 80 80, 110 96 S 170 104, 190 92", delay: 0 },                 // dunes
+    { d: "M60 92 V 58 a 24 24 0 0 1 48 0 V 92", delay: 0.5 },                            // souq arch
+    { d: "M66 92 V 60 a 18 18 0 0 1 36 0 V 92", delay: 0.8 },
+    { d: "M84 34 V 46 M78 46 h 12 l -2 14 h -8 z M84 60 v 4", delay: 1.2, drift: "sway" }, // lantern
+    { d: "M150 30 a 11 11 0 1 0 10 16 a 8 8 0 0 1 -10 -16 z", delay: 1.5, drift: "rise" }, // crescent
+    { d: "M132 52 l 2 -4 l 2 4 l -4 0 M170 44 l 1.5 -3 l 1.5 3 z", delay: 1.8, drift: "twinkle" }, // stars
   ],
   cities: [
     { d: "M14 96 L 186 96", delay: 0 },                                                  // ground
@@ -58,10 +59,24 @@ const ART: Record<DoodleKind, Stroke[]> = {
   ],
 };
 
-export default function MoreDoodle({ kind, tone = "light", className = "" }: { kind: DoodleKind; tone?: "light" | "dark"; className?: string }) {
+// The strokes draw only while the doodle is on screen (and while the parent
+// says the item is in play), and draw again each time it comes back — a
+// card that sketched itself at page load, unseen, is no doodle at all.
+export default function MoreDoodle({ kind, tone = "light", className = "", play = true }: { kind: DoodleKind; tone?: "light" | "dark"; className?: string; play?: boolean }) {
+  const ref = useRef<SVGSVGElement>(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => setSeen(entries.some((e) => e.isIntersecting)), { threshold: 0.3 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const on = seen && play;
   return (
     <svg
-      className={`more-doodle block more-doodle--${tone} ${className}`}
+      ref={ref}
+      className={`more-doodle block more-doodle--${tone}${on ? " more-doodle--on" : ""} ${className}`}
       viewBox="0 0 200 120"
       fill="none"
       stroke="currentColor"

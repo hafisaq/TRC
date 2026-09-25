@@ -151,7 +151,7 @@ export default function PostcardFan({ region, onMore }: { region: Region; onMore
                   {isMoreStop(stop) && (
                     <div className="absolute inset-0 grid place-items-center bg-cream-deep">
                       <div className="flex flex-col items-center gap-2">
-                        <MoreDoodle kind="coast" tone="dark" className="w-[46%] max-w-[240px]" />
+                        <MoreDoodle kind="coast" tone="dark" play={isActive} className="w-[64%] max-w-[420px]" />
                         <span className="font-serif text-[clamp(30px,3.4vw,52px)] font-light text-navy">{stop.country}</span>
                       </div>
                     </div>
