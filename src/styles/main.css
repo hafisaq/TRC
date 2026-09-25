@@ -484,6 +484,13 @@ html[data-display-mode="fullscreen"] body {
 @media (pointer: coarse) {
   [class*="backdrop-blur"] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
   #tier2-nav { background-color: rgb(243 239 231 / 97%) !important; }
+  /* the blur-up underlay is a 20px image scaled to the tile: the GPU's own
+     upscaling already softens it, so the extra filter layer per tile — one
+     more thing Android re-rasterises on every scroll — buys nothing */
+  .media-shell::before, .lqip-layer { filter: none; }
+  /* each gallery tile on its own layer, so a neighbour's repaint cannot
+     blank it */
+  #cd-gallery .media-shell { transform: translateZ(0); backface-visibility: hidden; }
 }
 .media-fade { opacity: 0; transition: opacity 0.6s ease; }
 .media-fade.media-ready { opacity: 1; }
