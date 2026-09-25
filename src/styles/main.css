@@ -474,6 +474,17 @@ html[data-display-mode="fullscreen"] body {
   0% { background-position: 120% 0; }
   100% { background-position: -120% 0; }
 }
+/* the shimmer has done its job once a frame is showing — an infinite
+   animation under every tile is what Android's compositor trips on */
+.media-shell:has(.media-ready), .media-shell:has(video[data-managed-video]) { animation: none; }
+
+/* Touch devices: no backdrop blur anywhere. A blurred bar over a scrolling
+   grid of tiles makes Chrome on Android drop the tiles for a frame at a
+   time (the "flicker"); a denser tint reads the same and costs nothing. */
+@media (pointer: coarse) {
+  [class*="backdrop-blur"] { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  #tier2-nav { background-color: rgb(243 239 231 / 97%) !important; }
+}
 .media-fade { opacity: 0; transition: opacity 0.6s ease; }
 .media-fade.media-ready { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {

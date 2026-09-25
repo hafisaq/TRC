@@ -1432,10 +1432,10 @@ function GallerySection({
                 <span className="pointer-events-none absolute inset-2 rounded-md border border-gold-light/0 transition-colors duration-500 group-hover:border-gold-light/55" />
                 {/* media tag — a film frame announces itself */}
                 <span
-                  className={`absolute right-3 top-3 flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-[7.5px] uppercase tracking-[0.2em] backdrop-blur-sm transition-opacity duration-500 ${
+                  className={`absolute right-3 top-3 flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-[7.5px] uppercase tracking-[0.2em] transition-opacity duration-500 ${
                     item.video
-                      ? "border-gold-light/40 bg-ink/30 text-gold-light"
-                      : "border-white/25 bg-ink/25 text-white/75 opacity-0 group-hover:opacity-100"
+                      ? "border-gold-light/40 bg-ink/55 text-gold-light"
+                      : "border-white/25 bg-ink/45 text-white/75 opacity-0 group-hover:opacity-100"
                   }`}
                 >
                   {item.video && <span className="h-1 w-1 rounded-full bg-gold-light" />}
