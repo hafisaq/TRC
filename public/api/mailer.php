@@ -19,13 +19,24 @@ function trc_send(array $cfg, string $from, string $fromName, string $to, string
     return @mail($to, $enc($subject), $body, implode("\r\n", $headers), '-f' . $from);
   }
 
-  $sock = @stream_socket_client('ssl://' . $cfg['smtp_host'] . ':' . (int)($cfg['smtp_port'] ?? 465), $errno, $errstr, 12);
+  // Port 465 speaks TLS from the first byte (Hostinger, Gmail). Port 587
+  // starts in the clear and upgrades with STARTTLS (Microsoft 365, most
+  // business mail) — the mailbox the client's domain already runs on.
+  $port = (int)($cfg['smtp_port'] ?? 465);
+  $starttls = $port === 587 || (($cfg['smtp_secure'] ?? '') === 'tls');
+  $sock = @stream_socket_client(($starttls ? 'tcp://' : 'ssl://') . $cfg['smtp_host'] . ':' . $port, $errno, $errstr, 12);
   if (!$sock) return false;
   stream_set_timeout($sock, 12);
   $read = function () use ($sock): string { $r = ''; while (($l = fgets($sock, 600)) !== false) { $r .= $l; if (isset($l[3]) && $l[3] === ' ') break; } return $r; };
   $cmd = function (string $c, string $expect) use ($sock, $read): bool { fwrite($sock, $c . "\r\n"); return str_starts_with($read(), $expect); };
-  $ok = str_starts_with($read(), '220')
-    && $cmd('EHLO ' . ($_SERVER['HTTP_HOST'] ?? 'localhost'), '250')
+  $me = $_SERVER['HTTP_HOST'] ?? 'localhost';
+  $ok = str_starts_with($read(), '220') && $cmd("EHLO $me", '250');
+  if ($ok && $starttls) {
+    $ok = $cmd('STARTTLS', '220')
+      && stream_socket_enable_crypto($sock, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) === true
+      && $cmd("EHLO $me", '250');
+  }
+  $ok = $ok
     && $cmd('AUTH LOGIN', '334') && $cmd(base64_encode((string)$cfg['smtp_user']), '334') && $cmd(base64_encode((string)$cfg['smtp_pass']), '235')
     && $cmd("MAIL FROM:<$from>", '250') && $cmd("RCPT TO:<$to>", '250') && $cmd('DATA', '354');
   if ($ok) {
