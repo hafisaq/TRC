@@ -9,7 +9,10 @@ return [
   'reply_to'   => 'hello@example.com',        // where a traveller's reply lands
   'site_url'   => 'https://www.example.com',  // used for the logo in the email
 
-  // Hostinger mailbox SMTP — leave these three empty to use PHP mail() for a first test
+  // SMTP — leave user/pass empty to use PHP mail() for a first test.
+  // Hostinger mailbox: smtp.hostinger.com, port 465.
+  // Microsoft 365 mailbox (what the client's domain runs on): smtp.office365.com,
+  // port 587 — SMTP AUTH must be enabled for that mailbox in the Microsoft 365 admin.
   'smtp_host'  => 'smtp.hostinger.com',
   'smtp_port'  => 465,
   'smtp_user'  => '',

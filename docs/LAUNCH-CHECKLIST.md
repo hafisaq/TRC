@@ -19,8 +19,8 @@ export const SITE_URL = "https://www.theretreatcollection.travel";
 On the next build this updates the canonical links, `sitemap.xml`, and `robots.txt`.
 The production build (`npm run build`) also drops the "hide from Google" guard that the replica build (`npm run build:replica`) adds on purpose.
 
-- [ ] Decide: with or without `www`
-- [ ] Update `SITE_URL`
+- [x] Decided: without `www` (the old site already sent `www` to the bare domain)
+- [x] `SITE_URL` set to `https://theretreatcollection.travel`
 
 ## 2. Allow the new domain in Sanity — *developer, one command*
 
@@ -32,12 +32,17 @@ npx sanity cors add https://theretreatcollection.travel --no-credentials
 npx sanity cors add https://www.theretreatcollection.travel --no-credentials
 ```
 
-- [ ] Both origins added
-- [ ] Confirm with `npx sanity cors list`
+- [x] Both origins added (27 Sep 2026)
 
-## 3. Hosting and deploy — *owner, in Hostinger and GitHub*
+## 3. Hosting and deploy — *owner, in Hostinger, GoDaddy and GitHub*
 
-- [ ] Point the domain at the Hostinger site
+**What the domain looks like today (checked 27 Sep 2026):** registered at GoDaddy, DNS at GoDaddy, an old GoDaddy Website Builder page on it, and **the client's email runs on Microsoft 365** (`Hello@theretreatcollection.travel`).
+
+So: do **not** move the nameservers to Hostinger — that would break the email. Keep DNS at GoDaddy and point only the website:
+
+- [ ] In Hostinger, add the domain to the new website; it will show the site's IP address
+- [ ] In GoDaddy → DNS, change the `A` record for `@` to that IP, and the `www` record to the same (or a CNAME to the bare domain). Leave every MX, TXT and autodiscover record alone.
+- [ ] The old Website Builder page disappears when the A record changes — tell the client
 - [ ] Turn on SSL in hPanel
 - [ ] Add GitHub repo secrets: `PROD_FTP_HOST`, `PROD_FTP_USER`, `PROD_FTP_PASS`
   - Use the **site-scoped** FTP account (hPanel → the website → Files → FTP Accounts), not the account-level one
@@ -47,30 +52,33 @@ npx sanity cors add https://www.theretreatcollection.travel --no-credentials
 
 Production never deploys by itself. Only a push to `replica` auto-deploys, and only to the replica.
 
-## 4. Email — *owner, about ten minutes*
+## 4. Email — *owner + client, about ten minutes*
 
-- [ ] Create a real mailbox in hPanel, e.g. `enquiries@theretreatcollection.travel`
+The domain's mail is on Microsoft 365, so the site sends through the client's own mailbox — no Hostinger mailbox needed. The mailer supports Microsoft's port 587.
+
+- [ ] Client: in the Microsoft 365 admin centre, open the mailbox the site will send from (e.g. `Hello@`), and under **Mail → Email apps** turn on **Authenticated SMTP**
+- [ ] Client: give you that mailbox's password *directly*, not through this chat
 - [ ] Upload `config.php` into the production site's `public_html/api/` folder:
 
 ```php
 <?php
 return [
   'to_email'   => 'Hello@theretreatcollection.travel',
-  'from_email' => 'enquiries@theretreatcollection.travel',
+  'from_email' => 'Hello@theretreatcollection.travel',
   'from_name'  => 'The Retreat Collection',
   'reply_to'   => 'Hello@theretreatcollection.travel',
-  'site_url'   => 'https://www.theretreatcollection.travel',
+  'site_url'   => 'https://theretreatcollection.travel',
 
-  'smtp_host'  => 'smtp.hostinger.com',
-  'smtp_port'  => 465,
-  'smtp_user'  => 'enquiries@theretreatcollection.travel',
+  'smtp_host'  => 'smtp.office365.com',
+  'smtp_port'  => 587,
+  'smtp_user'  => 'Hello@theretreatcollection.travel',
   'smtp_pass'  => 'THE-MAILBOX-PASSWORD',
 
   'salt'       => 'choose-any-random-text',
 ];
 ```
 
-- [ ] Turn on **SPF** and **DKIM** for the domain (hPanel → Emails), so confirmations reach inboxes
+- [ ] SPF and DKIM already exist for Microsoft 365 at GoDaddy — nothing to add
 - [ ] Send a test enquiry from the live site; check both emails arrive in the inbox, not Spam
 - [ ] Delete the "TRC website" app password in the `trc.hafis@gmail.com` Google account
 
