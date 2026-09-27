@@ -104,3 +104,7 @@ jobs:
           password: ${{ secrets.PROD_FTP_PASS }}
           local-dir: dist/
           server-dir: ${{ vars.PROD_SERVER_DIR || 'public_html/' }}
+          # its own state file: the first production run wrote a state file
+          # at the FTP root while uploading into a nested folder, and later
+          # runs trusted it and uploaded nothing
+          state-name: .ftp-deploy-sync-state-prod.json
