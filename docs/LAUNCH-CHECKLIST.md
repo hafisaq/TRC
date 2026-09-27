@@ -40,15 +40,17 @@ npx sanity cors add https://www.theretreatcollection.travel --no-credentials
 
 So: do **not** move the nameservers to Hostinger — that would break the email. Keep DNS at GoDaddy and point only the website:
 
-- [ ] In Hostinger, add the domain to the new website; it will show the site's IP address
-- [ ] In GoDaddy → DNS, change the `A` record for `@` to that IP, and the `www` record to the same (or a CNAME to the bare domain). Leave every MX, TXT and autodiscover record alone.
-- [ ] The old Website Builder page disappears when the A record changes — tell the client
+- [x] Hostinger: separate website `theretreatcollection.travel` (the replica stays its own site). Server IP `82.25.120.108`
+- [x] GoDaddy DNS: `A @ → 82.25.120.108`, `CNAME www → theretreatcollection.travel`; old Website Builder A record removed; mail records untouched (27 Sep 2026)
+- [x] SSL: Let's Encrypt issued by Hostinger, auto-renews
 - [ ] Turn on SSL in hPanel
 - [ ] Add GitHub repo secrets: `PROD_FTP_HOST`, `PROD_FTP_USER`, `PROD_FTP_PASS`
   - Use the **site-scoped** FTP account (hPanel → the website → Files → FTP Accounts), not the account-level one
   - Secrets go straight into GitHub, never through chat
-- [ ] Optional: set the repo variable `PROD_SERVER_DIR` if the web root is not `public_html/`
-- [ ] Deploy with the manual **Run workflow** button on the Deploy action
+- [x] Repo variable `PROD_SERVER_DIR = ./` — the site-scoped FTP account already lands in `public_html`
+- [x] First production deploy: 27 Sep 2026. **Site live.**
+
+Every later production release is the same button: Actions → Deploy → Run workflow → branch `replica`.
 
 Production never deploys by itself. Only a push to `replica` auto-deploys, and only to the replica.
 
