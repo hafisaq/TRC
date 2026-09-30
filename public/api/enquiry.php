@@ -77,7 +77,18 @@ $companyHtml = $fill('company.html', $vars + ['source' => $e($source), 'language
 
 require __DIR__ . '/mailer.php';
 $from = (string)$cfg['from_email']; $fromName = (string)($cfg['from_name'] ?? 'The Retreat Collection');
+// A failed send leaves one line in smtp-log.php beside this file: the step
+// and the mail server's reply, no traveller details and no password. It is
+// read in the host's File Manager; opened in a browser it shows nothing.
+$note = function (string $which): void {
+  $file = __DIR__ . '/smtp-log.php';
+  $lines = is_file($file) ? array_slice(file($file, FILE_IGNORE_NEW_LINES) ?: [], 1) : [];
+  $lines[] = gmdate('Y-m-d H:i:s') . " UTC  $which  " . ($GLOBALS['trc_smtp_error'] ?: 'unknown');
+  @file_put_contents($file, "<?php exit; ?>\n" . implode("\n", array_slice($lines, -20)) . "\n");
+};
 $okCompany = trc_send($cfg, $from, $fromName, (string)$cfg['to_email'], "New enquiry — $name" . ($interest ? " · $interest" : ''), $companyHtml, $email, $name);
+if (!$okCompany) $note('company');
 $okTraveller = trc_send($cfg, $from, $fromName, $email, $strings['subject'], $travellerHtml, (string)($cfg['reply_to'] ?? $cfg['to_email']), $fromName);
+if (!$okTraveller) $note('traveller');
 if (!$okCompany) out(502, ['ok' => false, 'error' => 'send']);
 out(200, ['ok' => true, 'confirmation' => $okTraveller]);
