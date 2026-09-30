@@ -4,7 +4,12 @@
 // falls back to PHP's mail(), which is enough for a first test.
 declare(strict_types=1);
 
+// When a send fails, the step that failed and the mail server's own reply
+// are left here (never the password) so enquiry.php can note them down.
+$GLOBALS['trc_smtp_error'] = '';
+
 function trc_send(array $cfg, string $from, string $fromName, string $to, string $subject, string $html, string $replyTo = '', string $replyName = ''): bool {
+  $GLOBALS['trc_smtp_error'] = '';
   $enc = fn(string $s): string => '=?UTF-8?B?' . base64_encode($s) . '?=';
   $headers = [
     'From: ' . $enc($fromName) . " <$from>",
@@ -25,24 +30,29 @@ function trc_send(array $cfg, string $from, string $fromName, string $to, string
   $port = (int)($cfg['smtp_port'] ?? 465);
   $starttls = $port === 587 || (($cfg['smtp_secure'] ?? '') === 'tls');
   $sock = @stream_socket_client(($starttls ? 'tcp://' : 'ssl://') . $cfg['smtp_host'] . ':' . $port, $errno, $errstr, 12);
-  if (!$sock) return false;
+  if (!$sock) { $GLOBALS['trc_smtp_error'] = "connect: $errno $errstr"; return false; }
   stream_set_timeout($sock, 12);
-  $read = function () use ($sock): string { $r = ''; while (($l = fgets($sock, 600)) !== false) { $r .= $l; if (isset($l[3]) && $l[3] === ' ') break; } return $r; };
+  $last = ''; $step = '';
+  $read = function () use ($sock, &$last): string { $r = ''; while (($l = fgets($sock, 600)) !== false) { $r .= $l; if (isset($l[3]) && $l[3] === ' ') break; } return $last = $r; };
   $cmd = function (string $c, string $expect) use ($sock, $read): bool { fwrite($sock, $c . "\r\n"); return str_starts_with($read(), $expect); };
+  // remembers the first step that went wrong
+  $try = function (string $name, bool $ok) use (&$step): bool { if (!$ok && $step === '') $step = $name; return $ok; };
   $me = $_SERVER['HTTP_HOST'] ?? 'localhost';
-  $ok = str_starts_with($read(), '220') && $cmd("EHLO $me", '250');
+  $ok = $try('greeting', str_starts_with($read(), '220')) && $try('ehlo', $cmd("EHLO $me", '250'));
   if ($ok && $starttls) {
-    $ok = $cmd('STARTTLS', '220')
-      && stream_socket_enable_crypto($sock, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) === true
-      && $cmd("EHLO $me", '250');
+    $ok = $try('starttls', $cmd('STARTTLS', '220'))
+      && $try('tls', stream_socket_enable_crypto($sock, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) === true)
+      && $try('ehlo-tls', $cmd("EHLO $me", '250'));
   }
   $ok = $ok
-    && $cmd('AUTH LOGIN', '334') && $cmd(base64_encode((string)$cfg['smtp_user']), '334') && $cmd(base64_encode((string)$cfg['smtp_pass']), '235')
-    && $cmd("MAIL FROM:<$from>", '250') && $cmd("RCPT TO:<$to>", '250') && $cmd('DATA', '354');
+    && $try('auth', $cmd('AUTH LOGIN', '334')) && $try('auth-user', $cmd(base64_encode((string)$cfg['smtp_user']), '334'))
+    && $try('auth-password', $cmd(base64_encode((string)$cfg['smtp_pass']), '235'))
+    && $try('mail-from', $cmd("MAIL FROM:<$from>", '250')) && $try('rcpt-to', $cmd("RCPT TO:<$to>", '250')) && $try('data', $cmd('DATA', '354'));
   if ($ok) {
     $msg = implode("\r\n", array_merge($headers, ["To: <$to>", 'Subject: ' . $enc($subject), 'Date: ' . date('r'), 'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . substr(strrchr($from, '@'), 1) . '>'])) . "\r\n\r\n" . $body;
-    $ok = $cmd($msg . "\r\n.", '250');
+    $ok = $try('message', $cmd($msg . "\r\n.", '250'));
   }
+  if (!$ok) $GLOBALS['trc_smtp_error'] = $step . ': ' . mb_substr(trim((string)preg_replace('/\s+/', ' ', $last)), 0, 400);
   $cmd('QUIT', '221');
   fclose($sock);
   return $ok;

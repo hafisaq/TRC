@@ -1,4 +1,4 @@
-const ENQUIRY_EMAIL = import.meta.env.VITE_ENQUIRY_EMAIL || "hello@theretreatcollection.com";
+const ENQUIRY_EMAIL = import.meta.env.VITE_ENQUIRY_EMAIL || "hello@theretreatcollection.travel";
 // The site ships its own endpoint (public/api/enquiry.php on the host). In
 // local dev there is no PHP, so the request fails and the caller falls back.
 const ENQUIRY_ENDPOINT = import.meta.env.VITE_ENQUIRY_ENDPOINT || (import.meta.env.PROD ? "/api/enquiry.php" : "");
