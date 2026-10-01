@@ -70,6 +70,42 @@ a {
 
 .anim-ring { animation: ring-spin 18s linear infinite; }
 
+/* The sanctuary (wellness): a ring that breathes on an eight-second
+   count, the two words of the breath taking turns, and rings widening
+   from the film like a drop on still water. Transforms and opacity only. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: .5; }
+  42%, 56% { transform: scale(1.11); opacity: 1; }
+}
+.breath-ring { animation: breathe 8s cubic-bezier(.45, 0, .35, 1) infinite; will-change: transform; }
+.breath-ring--late { animation-delay: -.35s; }
+@keyframes breath-word-in { 0%, 38% { opacity: 1; } 48%, 90% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes breath-word-out { 0%, 38% { opacity: 0; } 48%, 90% { opacity: 1; } 100% { opacity: 0; } }
+.breath-word--in { animation: breath-word-in 8s ease-in-out infinite; }
+.breath-word--out { animation: breath-word-out 8s ease-in-out infinite; }
+@keyframes sanctuary-ripple {
+  0% { transform: scale(.55); opacity: .55; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+.sanctuary-ripple {
+  position: absolute; inset: 0; border-radius: 9999px;
+  border: 1px solid rgba(200, 162, 76, .45);
+  animation: sanctuary-ripple 9s linear infinite;
+}
+/* stepping stones (the wellness selector): on the pinned layout each stone
+   sits at its own height on the wave; the dotted wake drifts along the
+   path under the drawn line */
+@media (min-width: 1024px) {
+  .stone { margin-top: calc(40px + var(--lift, 0px)); }
+}
+@keyframes stones-wake { to { stroke-dashoffset: -110; } }
+.stones-wake { animation: stones-wake 14s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .stones-wake { animation: none; }
+  .breath-ring, .sanctuary-ripple, .breath-word--in, .breath-word--out { animation: none; }
+  .breath-word--out, .sanctuary-ripple { display: none; }
+}
+
 /* content entrance replayed on each moment change (via React key remount) */
 @keyframes moment-in {
   0% { opacity: 0; transform: translateY(26px); filter: blur(4px); }

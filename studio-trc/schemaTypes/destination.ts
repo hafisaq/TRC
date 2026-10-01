@@ -29,6 +29,7 @@ export const destination = defineType({
           { title: 'Portal — round film, centred text', value: 'portal' },
           { title: 'Editorial — wide framed film above the text', value: 'editorial' },
           { title: 'Horizon — large headline, full-bleed film band', value: 'horizon' },
+          { title: 'Sanctuary — round film that breathes, ringed by meditation doodles (Wellness)', value: 'sanctuary' },
         ],
         layout: 'radio',
       },

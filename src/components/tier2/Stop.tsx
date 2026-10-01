@@ -3,10 +3,13 @@ import { posterUrl, videoUrl, hasFilm, lqipStyle } from "../../lib/media";
 import { MediaVideo } from "../Media";
 import { t as tr } from "../../lib/i18n";
 import OpenCountry from "./OpenCountry";
+import MoreDoodle from "../MoreDoodle";
 
 export type StopTheme = "gold" | "white";
 // "horizon" — the wide masthead + full-bleed film band (OpenCountry)
-export type StopLayout = "split" | "cinematic" | "portal" | "editorial" | "horizon";
+// "sanctuary" — the wellness stop: a round film that breathes, ringed by
+// meditation doodles that sketch themselves in as you arrive
+export type StopLayout = "split" | "cinematic" | "portal" | "editorial" | "horizon" | "sanctuary";
 
 type StopProps = {
   id: string;
@@ -111,6 +114,78 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
           <a href={cta.href} onClick={cta.onClick} className="inline-block mt-6 sm:mt-7 w-fit text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase text-white border-b border-white/40 pb-1.5">
             {cta.label}
           </a>
+        </div>
+      </section>
+    );
+  }
+
+  if (layout === "sanctuary") {
+    return (
+      <section id={id} data-tier2-stop={id} data-stop-theme={theme} className="sanctuary relative min-h-[100svh] w-full overflow-hidden px-5 py-20 sm:px-6 sm:py-24 flex items-center justify-center">
+        {wash}
+        {/* a quieter ground than the rest of the route: cream, with a soft
+            sage breath at the centre and rings widening from the film */}
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: "radial-gradient(60% 50% at 50% 48%, rgba(127,148,120,.20), transparent 70%)" }} />
+        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[min(70vw,420px)] w-[min(70vw,420px)] -translate-x-1/2 -translate-y-[62%] sm:-translate-y-[58%]">
+          <span className="sanctuary-ripple" />
+          <span className="sanctuary-ripple" style={{ animationDelay: "3s" }} />
+          <span className="sanctuary-ripple" style={{ animationDelay: "6s" }} />
+        </div>
+
+        <div className="relative w-full max-w-[1160px] grid grid-cols-1 items-center gap-6 sm:gap-8 lg:grid-cols-[1fr_auto_1fr] lg:gap-12">
+          {/* left: a figure sitting with the breath */}
+          <div data-stop-text className="order-2 hidden opacity-0 lg:block lg:justify-self-end">
+            <MoreDoodle kind="meditate" tone="dark" className="w-[200px] xl:w-[240px]" />
+          </div>
+
+          {/* centre: the film, breathing */}
+          <div className="order-1 flex flex-col items-center lg:order-2">
+            <div data-stop-text className="opacity-0 flex flex-col items-center text-center">
+              <div className={`font-mono text-[8.5px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] ${t.seasonText}`}>{idx}</div>
+              <div className={`mt-3 text-[9px] sm:text-[10.5px] tracking-[0.28em] sm:tracking-[0.4em] uppercase ${t.eyebrow}`}>{eyebrow}</div>
+            </div>
+            <div data-stop-video className="group relative mt-7 h-[230px] w-[230px] opacity-0 scale-95 sm:h-[320px] sm:w-[320px] xl:h-[360px] xl:w-[360px]">
+              <div className="breath-ring absolute -inset-5 rounded-full border border-gold/80 sm:-inset-7" />
+              <div className="breath-ring breath-ring--late absolute -inset-9 rounded-full border border-gold/50 sm:-inset-12" style={{ borderStyle: "dashed" }} />
+              <div className="media-shell relative h-full w-full overflow-hidden rounded-full bg-ink shadow-[0_30px_80px_rgba(22,36,60,.18)] transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                <VideoTag slug={slug} posterW={900} />
+                <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle,rgba(0,0,0,0) 58%,rgba(0,0,0,.38) 100%)" }} />
+              </div>
+              {/* the breath, counted out loud */}
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-9 inset-x-0 h-5 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep sm:-bottom-11">
+                <span className="breath-word breath-word--in absolute inset-0">{tr("wellness.breatheIn")}</span>
+                <span className="breath-word breath-word--out absolute inset-0">{tr("wellness.breatheOut")}</span>
+              </div>
+              {/* small doodles at the circle's shoulders on phones, where the
+                  side figures have no room */}
+              <MoreDoodle kind="steam" tone="dark" className="absolute -right-14 -top-8 w-[86px] rotate-6 sm:-right-20 sm:-top-6 sm:w-[110px]" />
+              <MoreDoodle kind="stones" tone="dark" className="absolute -left-16 bottom-2 w-[92px] sm:-left-24 sm:w-[120px] lg:hidden" />
+            </div>
+          </div>
+
+          {/* right: stones and a leaf */}
+          <div data-stop-text className="order-3 hidden opacity-0 lg:block lg:justify-self-start">
+            <MoreDoodle kind="stones" tone="dark" className="w-[200px] xl:w-[240px]" />
+          </div>
+
+          {/* the words, under everything, with the lotus */}
+          <div data-stop-text className="order-4 opacity-0 mt-10 flex flex-col items-center text-center lg:col-span-3 lg:mt-6">
+            <h2 data-stop-title className={`font-serif font-light text-[clamp(38px,12vw,72px)] leading-[0.98] ${t.heading}`}>
+              {title[0]}<br />{title[1]}
+            </h2>
+            <p className={`mt-4 sm:mt-5 max-w-[520px] text-[13.5px] sm:text-[14.5px] font-light leading-[1.75] sm:leading-[1.9] ${t.copy}`}>{copy}</p>
+            {highlights.length > 0 && (
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                {highlights.map((h) => (
+                  <span key={h} className={`rounded-full border px-3 py-1 text-[8.5px] uppercase tracking-[0.2em] ${t.tagBorder} ${t.tagText}`}>{h}</span>
+                ))}
+              </div>
+            )}
+            <a href={cta.href} onClick={cta.onClick} className={`inline-block mt-6 sm:mt-7 text-[9px] sm:text-[10px] tracking-[0.22em] sm:tracking-[0.3em] uppercase border-b pb-1.5 ${t.link}`}>
+              {cta.label}
+            </a>
+            <MoreDoodle kind="lotus" tone="dark" className="mt-6 w-[120px] sm:w-[150px]" />
+          </div>
         </div>
       </section>
     );

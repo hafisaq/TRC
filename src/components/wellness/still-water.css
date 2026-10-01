@@ -1,0 +1,38 @@
+/* still water: rings spreading, reeds swaying, leaves turning on the current */
+@keyframes water-ring {
+  0% { transform: scale(0.12); opacity: 0.55; }
+  80% { opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.water-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: water-ring 9s ease-out infinite;
+}
+@keyframes reed-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.reed-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: reed-sway 5s ease-in-out infinite;
+}
+.ambient-leaf {
+  offset-rotate: auto;
+  animation: ambient-fly linear infinite;
+}
+@keyframes leaf-turn {
+  0%, 100% { transform: rotate(-10deg) translateY(0); }
+  50% { transform: rotate(12deg) translateY(-3px); }
+}
+.leaf-turn { transform-origin: 20% 80%; animation: leaf-turn 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .water-ring, .reed-sway, .ambient-leaf, .leaf-turn { animation: none; }
+  .ambient-leaf { display: none; }
+}
+@media (pointer: coarse) {
+  /* phones draw the rings but skip the drifting leaves: three more
+     animated layers over a page already full of film */
+  .ambient-leaf { display: none; }
+}

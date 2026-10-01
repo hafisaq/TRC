@@ -23,7 +23,7 @@ function buildPath(points: Point[]): string {
  * not here — this component only builds the geometry.
  */
 export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { stops: FlightStop[]; startId?: string }) {
-  const [geometry, setGeometry] = useState<{ w: number; h: number; d: string; stopPoints: Point[] } | null>(null);
+  const [geometry, setGeometry] = useState<{ w: number; h: number; d: string; stopPoints: Point[]; ids: string[] } | null>(null);
   const lastWidth = useRef(0);
   const lastHeight = useRef(0);
   const lastEndY = useRef(0);
@@ -87,9 +87,12 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
             return { x: r.left + window.scrollX + r.width / 2, y: r.top + window.scrollY + r.height / 2 };
           })()
         : { x: w / 2, y: docY(hero, 0.42) };
-      const stopPoints: Point[] = stops.map((s, i) => {
-        const el = document.getElementById(s.id);
-        if (!el) return { x: w / 2, y: heroPoint.y };
+      // A stop with no element (a selector that renders nothing until the
+      // CMS hands it content, say) is left out of the geometry rather than
+      // pulled back to the hero, which would fold the path on itself.
+      const present = stops.filter((s) => document.getElementById(s.id));
+      const stopPoints: Point[] = present.map((s, i) => {
+        const el = document.getElementById(s.id)!;
         // A stop may declare an exact landing anchor (e.g. a timeline node):
         // the plane then lands ON it, and consecutive anchors sharing an x
         // make the path fly that line dead straight.
@@ -103,7 +106,7 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
       });
 
       lastEndY.current = stopPoints[stopPoints.length - 1]?.y ?? 0;
-      setGeometry({ w, h, d: buildPath([heroPoint, ...stopPoints]), stopPoints });
+      setGeometry({ w, h, d: buildPath([heroPoint, ...stopPoints]), stopPoints, ids: present.map((s) => s.id) });
     };
 
     measure();
@@ -171,8 +174,8 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
         strokeLinecap="round"
       />
 
-      {stops.map((s, i) => (
-        <g key={s.id} id={`tier2-landing-${s.id}`} data-landing transform={`translate(${geometry.stopPoints[i].x} ${geometry.stopPoints[i].y})`}>
+      {geometry.ids.map((id, i) => (
+        <g key={id} id={`tier2-landing-${id}`} data-landing transform={`translate(${geometry.stopPoints[i].x} ${geometry.stopPoints[i].y})`}>
           <circle data-landing-glow r="4" fill="#e3c682" opacity="0" />
           <circle data-landing-ring r="4" fill="none" stroke="#e3c682" strokeWidth="1" opacity="0" />
         </g>
