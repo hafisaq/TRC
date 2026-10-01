@@ -291,7 +291,11 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         // viewport above where the user is looking. Build a Y→arc-fraction
         // lookup (the path only ever descends, so Y is monotonic) and drive
         // the plane by the Y the scroll implies instead.
-        const SAMPLES = 512;
+        // one sample every few pixels of path: with 512 on a page this tall
+        // each sample spanned ~30px, and the straight-line guess between
+        // samples put the plane a pixel or two off, up and down, wherever
+        // the path curves — visible as a shake where it should hold still
+        const SAMPLES = Math.min(8000, Math.max(512, Math.round(length / 3)));
         const sampleY: number[] = new Array(SAMPLES + 1);
         for (let i = 0; i <= SAMPLES; i++) {
           sampleY[i] = path.getPointAtLength((i / SAMPLES) * length).y;
@@ -311,12 +315,25 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
           return (lo + (y - sampleY[lo]) / span) / SAMPLES;
         };
 
-        const planeTween = gsap.to(plane, {
-          motionPath: { path, align: path, autoRotate: true, alignOrigin: [0.5, 0.5] },
-          duration: 1,
-          ease: "none",
-          paused: true
-        });
+        // The plane is placed by hand from the path's own geometry rather
+        // than by a motion-path tween: the tween samples each curve at a
+        // fixed resolution and walks straight lines between the samples,
+        // which on curves hundreds of pixels long put the plane a pixel or
+        // two off the line — and where the plane should hold still beside
+        // a pinned film, that error came and went as a visible shake.
+        // getPointAtLength is exact, and two calls a frame cost nothing.
+        const planeBox = plane.getBoundingClientRect();
+        const half = { x: planeBox.width / 2 || 14, y: planeBox.height / 2 || 14 };
+        gsap.set(plane, { transformOrigin: "50% 50%" });
+        const placePlane = (p: number) => {
+          const at = Math.min(length, Math.max(0, p * length));
+          const here = path.getPointAtLength(at);
+          const ahead = path.getPointAtLength(Math.min(length, at + 2));
+          const behind = path.getPointAtLength(Math.max(0, at - 2));
+          const rotation = (Math.atan2(ahead.y - behind.y, ahead.x - behind.x) * 180) / Math.PI;
+          gsap.set(plane, { x: here.x - half.x, y: here.y - half.y, rotation });
+        };
+        const planeTween = { progress: placePlane };
 
         // Each stop owns a vertical band of scroll progress; while inside
         // it, the path/plane wear that stop's accent color.
