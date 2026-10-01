@@ -34,10 +34,10 @@ export default function StillWaterChart() {
 
         {/* rings spreading on still water */}
         <g fill="none" stroke={GOLD_INK} strokeWidth="1">
-          {[[360, 410], [980, 640], [1180, 380]].map(([x, y], i) => (
+          {[[360, 410], [980, 640], [1180, 380], [560, 720]].map(([x, y], i) => (
             <g key={i}>
-              {[0, 1].map((k) => (
-                <circle key={k} className="water-ring" cx={x} cy={y} r="70" style={{ animationDelay: `${i * 3.1 + k * 7}s` }} />
+              {[0, 1, 2].map((k) => (
+                <circle key={k} className="water-ring" cx={x} cy={y} r="70" style={{ animationDelay: `${i * 2.1 + k * 3}s` }} />
               ))}
               <circle cx={x} cy={y} r="2" fill={GOLD_INK} stroke="none" />
             </g>
