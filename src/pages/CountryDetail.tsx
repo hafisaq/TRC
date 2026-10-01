@@ -17,7 +17,7 @@ import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
-import StillWaterChart, { BreathInterlude, HeroBreath } from "../components/wellness/StillWater";
+import StillWaterChart, { StillInterlude, HeroBreath } from "../components/wellness/StillWater";
 import { staySlug } from "../components/tier2/SteppingStones";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -665,9 +665,9 @@ function CountryDetailInner({
             a soft glow that breathes in when the plane lands, not a slab. */}
         <SignedQuote text={page.quote.text} attribution={page.quote.attribution} />
 
-        {/* the breath — wellness only: a pinned moment where the scroll
-            itself is the inhale and the exhale */}
-        {wellness && <BreathInterlude />}
+        {/* still water — wellness only: a drop falls with the scroll, meets
+            the surface, and sends its rings out */}
+        {wellness && <StillInterlude />}
 
         <SignatureJourney days={page.days} country={page.country} />
 
