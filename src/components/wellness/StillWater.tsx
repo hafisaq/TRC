@@ -114,14 +114,24 @@ export function HeroBreath() {
   );
 }
 
-// The breath, scroll-driven: a pinned moment where scrolling down IS the
-// inhale (the circle swells), a short hold at the top, then the exhale on
-// the way out. A figure sits on one side, an enso draws on the other.
-export function BreathInterlude() {
+// Still water, scroll-driven — and the route at a glance. A pinned moment
+// where a single drop falls as you scroll, meets the water line and sends
+// rings out across it; with each ring, one line of the route's facts
+// surfaces. The heading is there from the start, so the screen never
+// waits empty for the drop.
+const GLANCE = [
+  ["wellness.glance1Label", "wellness.glance1Value"],
+  ["wellness.glance2Label", "wellness.glance2Value"],
+  ["wellness.glance3Label", "wellness.glance3Value"],
+  ["wellness.glance4Label", "wellness.glance4Value"]
+] as const;
+
+export function StillInterlude() {
   const ref = useRef<HTMLElement>(null);
-  const circleRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const [phase, setPhase] = useState<"in" | "hold" | "out">("in");
+  const dropRef = useRef<HTMLDivElement>(null);
+  const ringsRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+  const factsRef = useRef<HTMLDivElement>(null);
   const [seen, setSeen] = useState(false);
 
   useEffect(() => {
@@ -134,17 +144,40 @@ export function BreathInterlude() {
       frame = 0;
       const rect = el.getBoundingClientRect();
       const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
-      const p = clamp(-rect.top / scrollable, 0, 1);
+      const p = reduced ? 1 : clamp(-rect.top / scrollable, 0, 1);
       if (rect.top < window.innerHeight && rect.bottom > 0) setSeen(true);
       if (Math.abs(p - last) < 0.002) return;
       last = p;
-      // in: 0–.42 · hold: .42–.58 · out: .58–1
-      const inhale = clamp(p / 0.42, 0, 1);
-      const exhale = clamp((p - 0.58) / 0.42, 0, 1);
-      const size = reduced ? 1 : 0.62 + (1 - 0.62) * (inhale - exhale);
-      if (circleRef.current) circleRef.current.style.transform = `scale(${size})`;
-      if (glowRef.current) glowRef.current.style.opacity = String(0.35 + 0.65 * (inhale - exhale));
-      setPhase(p < 0.42 ? "in" : p < 0.58 ? "hold" : "out");
+      // the fall: 0–.3 · the touch: .3 · the rings and the facts: .3–1
+      const fall = clamp(p / 0.3, 0, 1);
+      const spread = clamp((p - 0.3) / 0.7, 0, 1);
+      const eased = 1 - Math.pow(1 - spread, 2.2);
+      if (dropRef.current) {
+        // the fall starts just inside the top of the water box, whatever
+        // its size on this screen, so the drop never sits over the heading
+        const box = dropRef.current.parentElement;
+        const from = box ? box.offsetHeight / 2 - 6 : 120;
+        dropRef.current.style.transform = `translate(-50%, ${-from + fall * from}px) scaleY(${1 + fall * 0.3})`;
+        dropRef.current.style.opacity = String(p < 0.3 ? 0.9 : clamp(1 - spread * 8, 0, 1));
+      }
+      if (ringsRef.current) {
+        ringsRef.current.querySelectorAll<HTMLElement>("[data-ring]").forEach((ring, i) => {
+          const lag = clamp((eased - i * 0.14) / (1 - i * 0.14), 0, 1);
+          ring.style.transform = `translate(-50%, -50%) scale(${0.08 + lag * (1.1 + i * 0.35)})`;
+          ring.style.opacity = String(p > 0.3 ? 1 - lag * 0.75 : 0);
+        });
+      }
+      if (lineRef.current) {
+        const dip = p > 0.3 ? Math.sin(Math.min(1, spread * 3) * Math.PI) * 10 : 0;
+        lineRef.current.style.setProperty("--dip", `${dip.toFixed(1)}px`);
+      }
+      if (factsRef.current) {
+        factsRef.current.querySelectorAll<HTMLElement>("[data-fact]").forEach((fact, i) => {
+          const at = clamp((spread - (0.08 + i * 0.2)) / 0.16, 0, 1);
+          fact.style.opacity = String(at);
+          fact.style.transform = `translateY(${(1 - at) * 14}px)`;
+        });
+      }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(apply); };
     apply();
@@ -157,30 +190,53 @@ export function BreathInterlude() {
     };
   }, []);
 
-  const word = phase === "in" ? t("wellness.breatheIn") : phase === "hold" ? t("wellness.hold") : t("wellness.breatheOut");
-
   return (
-    <section ref={ref} id="cd-breath" className="relative h-[170svh] w-full sm:h-[200svh]">
-      <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden px-5">
-        <div className="relative grid w-full max-w-[1100px] grid-cols-1 items-center justify-items-center gap-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-10">
+    <section ref={ref} id="cd-breath" className="relative h-[190svh] w-full sm:h-[220svh]">
+      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center overflow-hidden px-5 pt-20 pb-[calc(env(safe-area-inset-bottom)+96px)] sm:pb-10">
+        <div className="text-center">
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.34em] text-gold-deep">{t("wellness.glanceEyebrow")}</div>
+          <h2 className="mt-3 font-serif text-[clamp(28px,4.4vw,48px)] font-light leading-[1.02] text-navy">{t("wellness.glanceTitle")}</h2>
+        </div>
+
+        <div className="relative mt-2 grid w-full max-w-[1100px] grid-cols-1 items-center justify-items-center lg:grid-cols-[1fr_auto_1fr] lg:gap-6">
           <div className="hidden lg:block lg:justify-self-end">
-            <MoreDoodle kind="meditate" tone="dark" className="w-[220px]" play={seen} />
+            <MoreDoodle kind="meditate" tone="dark" className="w-[180px]" play={seen} />
           </div>
-          <div className="relative flex h-[min(78vw,420px)] w-[min(78vw,420px)] items-center justify-center">
-            <div ref={glowRef} className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, rgba(127,148,120,.28), rgba(200,162,76,.08) 55%, transparent 72%)", opacity: 0.35 }} />
-            <div ref={circleRef} className="absolute inset-[6%] rounded-full border border-gold/70 transition-transform duration-150 ease-out will-change-transform" style={{ transform: "scale(.62)" }}>
-              <div className="absolute inset-[10%] rounded-full border border-gold/35" style={{ borderStyle: "dashed" }} />
-              <div className="absolute inset-[26%] rounded-full border border-gold/25" />
+          <div className="relative h-[min(46vw,240px)] w-[min(92vw,620px)]">
+            <div ref={lineRef} className="still-line absolute inset-x-0 top-1/2" />
+            <div ref={ringsRef} className="absolute left-1/2 top-1/2 h-[min(44vw,220px)] w-[min(44vw,220px)]" style={{ transform: "translate(-50%, -50%)" }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} data-ring className="absolute left-1/2 top-1/2 h-full w-full rounded-full border border-gold-deep/80 will-change-transform" style={{ transform: "translate(-50%, -50%) scale(0.08)", opacity: 0, borderStyle: i === 1 ? "dashed" : "solid" }} />
+              ))}
             </div>
-            <div className="relative text-center">
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.34em] text-gold-deep">{word}</div>
-              <div className="mt-3 font-serif text-[clamp(26px,4vw,40px)] font-light leading-[1.05] text-navy">{t("wellness.breathTitle")}</div>
+            <div ref={dropRef} className="absolute left-1/2 top-1/2 will-change-transform" style={{ transform: "translate(-50%, -120px)", opacity: 0, transformOrigin: "50% 100%" }}>
+              {/* a drop: pointed at the top, round below, a catch of light */}
+              <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true" className="block">
+                <defs>
+                  <radialGradient id="still-drop-fill" cx="40%" cy="40%" r="65%">
+                    <stop offset="0" stopColor="#f1dfa8" />
+                    <stop offset="0.55" stopColor="#c8a24c" />
+                    <stop offset="1" stopColor="#8f7231" />
+                  </radialGradient>
+                </defs>
+                <path d="M7 1 C7 1 0.5 10 0.5 14.5 a6.5 6.5 0 0 0 13 0 C13.5 10 7 1 7 1 Z" fill="url(#still-drop-fill)" />
+                <ellipse cx="5" cy="13" rx="1.4" ry="2.2" fill="rgba(255,255,255,.55)" transform="rotate(-20 5 13)" />
+              </svg>
             </div>
           </div>
           <div className="hidden lg:block lg:justify-self-start">
-            <MoreDoodle kind="enso" tone="dark" className="w-[220px]" play={seen} />
+            <MoreDoodle kind="enso" tone="dark" className="w-[180px]" play={seen} />
           </div>
-          <p className="max-w-[420px] text-center text-[12.5px] font-light leading-[1.8] text-navy/60 lg:col-span-3">{t("wellness.breathLine")}</p>
+        </div>
+
+        {/* the route's facts, surfacing one ring at a time */}
+        <div ref={factsRef} className="mt-4 grid w-full max-w-[920px] grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 sm:gap-y-6">
+          {GLANCE.map(([label, value], i) => (
+            <div key={label} data-fact className={`border-t border-gold/40 pt-3 ${i % 2 ? "sm:text-right" : ""}`} style={{ opacity: 0 }}>
+              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t(label)}</div>
+              <div className="mt-1.5 font-serif text-[clamp(18px,2.2vw,26px)] font-light leading-[1.2] text-navy">{t(value)}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

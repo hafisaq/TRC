@@ -38,3 +38,23 @@
   .water-ring, .reed-sway { animation: none; }
   .water-ring { transform: scale(0.5); opacity: 0.3; }
 }
+
+/* the still interlude: a hairline surface that dips under the drop, and
+   the drop itself — a teardrop of gold */
+.still-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(143, 114, 49, .55) 20%, rgba(143, 114, 49, .55) 80%, transparent);
+}
+.still-line::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 120px;
+  height: var(--dip, 0px);
+  transform: translateX(-50%);
+  border-bottom: 1px solid rgba(143, 114, 49, .55);
+  border-radius: 0 0 60px 60px / 0 0 var(--dip, 0px) var(--dip, 0px);
+  background: linear-gradient(180deg, #f3efe7, #f3efe7);
+  margin-top: -1px;
+}
