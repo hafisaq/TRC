@@ -100,8 +100,8 @@ export default function StillWaterChart() {
 }
 
 // The hero's breath: a hairline ring behind the cut-out name, swelling
-// and settling on the eight-second count, with the words of the breath
-// taking turns under it.
+// and settling on the eight-second count. No words here — the name is
+// the only text the hero needs.
 export function HeroBreath() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -109,11 +109,6 @@ export function HeroBreath() {
         <div className="breath-ring absolute inset-0 rounded-full border border-gold-light/40" />
         <div className="breath-ring breath-ring--late absolute -inset-[7%] rounded-full border border-gold-light/20" style={{ borderStyle: "dashed" }} />
         <div className="breath-ring absolute inset-[9%] rounded-full" style={{ background: "radial-gradient(circle, rgba(127,148,120,.16), transparent 70%)" }} />
-      </div>
-      {/* the words of the breath sit just above the ring, under the header */}
-      <div className="absolute inset-x-0 h-5 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-light/80" style={{ top: "calc(46% - min(36vw, 28vh) - 30px)" }}>
-        <span className="breath-word breath-word--in absolute inset-0">{t("wellness.breatheIn")}</span>
-        <span className="breath-word breath-word--out absolute inset-0">{t("wellness.breatheOut")}</span>
       </div>
     </div>
   );
