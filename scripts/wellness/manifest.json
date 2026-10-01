@@ -1,0 +1,323 @@
+{
+ "lanserhof": {
+  "lead": [
+   [
+    "lanserhof/lanserhof-hero.mp4",
+    0,
+    29.6
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "lanserhof/lanserhof-02.jpg",
+   "lanserhof/lanserhof-03.jpg",
+   "lanserhof/lanserhof-04.jpg",
+   "lanserhof/lanserhof-05.jpg",
+   "lanserhof/lanserhof-06.jpg",
+   "lanserhof/lanserhof-07.jpg",
+   "lanserhof/lanserhof-08.jpg",
+   "lanserhof/lanserhof-09.jpg",
+   "lanserhof/lanserhof-10.jpg",
+   "lanserhof/lanserhof-11.jpg",
+   "lanserhof/lanserhof-13.jpg",
+   "lanserhof/lanserhof-14.jpg"
+  ],
+  "galleryFilms": []
+ },
+ "sha-wellness": {
+  "lead": [
+   [
+    "sha-wellness/sha-wellness-spain.mp4",
+    0,
+    21.3
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "sha-wellness/sha-wellness-01.jpg",
+   "sha-wellness/sha-wellness-02.jpg",
+   "sha-wellness/sha-wellness-03.jpg",
+   "sha-wellness/sha-wellness-04.jpg",
+   "sha-wellness/sha-wellness-05.jpg",
+   "sha-wellness/sha-wellness-06.jpg",
+   "sha-wellness/sha-wellness-07.jpg",
+   "sha-wellness/sha-wellness-08.jpg",
+   "sha-wellness/sha-wellness-09.jpg",
+   "sha-wellness/sha-wellness-10.jpg",
+   "sha-wellness/sha-wellness-11.jpg",
+   "sha-wellness/sha-wellness-12.jpg",
+   "sha-wellness/sha-wellness-13.jpg"
+  ],
+  "galleryFilms": [
+   [
+    [
+     "sha-wellness/sha-wellness-programs.mp4",
+     8,
+     19
+    ]
+   ]
+  ]
+ },
+ "chenot-palace": {
+  "lead": [
+   [
+    "chenot-palace/chenot-palace-video-01.mp4",
+    8,
+    40.4
+   ]
+  ],
+  "poster": "chenot-palace/chenot-palace-02.jpg",
+  "gallery": [
+   "chenot-palace/chenot-palace-01.jpg",
+   "chenot-palace/chenot-palace-02.jpg",
+   "chenot-palace/chenot-palace-03.jpg",
+   "chenot-palace/chenot-palace-04.jpg",
+   "chenot-palace/chenot-palace-05.jpg",
+   "chenot-palace/chenot-palace-06.jpg",
+   "chenot-palace/chenot-palace-07.jpg",
+   "chenot-palace/chenot-palace-08.jpg",
+   "chenot-palace/chenot-palace-11.jpg",
+   "chenot-palace/chenot-palace-12.jpg",
+   "chenot-palace/chenot-palace-13.jpg",
+   "chenot-palace/chenot-palace-14.jpg"
+  ],
+  "galleryFilms": []
+ },
+ "zulal": {
+  "lead": [
+   [
+    "zulal/zulal-video-01.mp4",
+    4,
+    44
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "zulal/zulal-02.jpg",
+   "zulal/zulal-03.jpg",
+   "zulal/zulal-04.jpg",
+   "zulal/zulal-05.jpg",
+   "zulal/zulal-06.jpg",
+   "zulal/zulal-07.jpg",
+   "zulal/zulal-08.jpg",
+   "zulal/zulal-10.jpg",
+   "zulal/zulal-11.jpg",
+   "zulal/zulal-12.jpg",
+   "zulal/zulal-13.jpg",
+   "zulal/zulal-14.jpg"
+  ],
+  "galleryFilms": [
+   [
+    [
+     "chiva-som/chiva-som-06.mp4",
+     9.5,
+     15.5
+    ]
+   ]
+  ]
+ },
+ "chiva-som": {
+  "lead": [
+   [
+    "chiva-som/chiva-som-02.mp4",
+    0,
+    40
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "chiva-som/chiva-som-01.jpg",
+   "chiva-som/chiva-som-02.jpg",
+   "chiva-som/chiva-som-03.jpg",
+   "chiva-som/chiva-som-04.jpg",
+   "chiva-som/chiva-som-05.jpg",
+   "chiva-som/chiva-som-06.jpg",
+   "chiva-som/chiva-som-07.jpg",
+   "chiva-som/chiva-som-08.jpg",
+   "chiva-som/chiva-som-10.jpg",
+   "chiva-som/chiva-som-11.jpg",
+   "chiva-som/chiva-som-12.jpg",
+   "chiva-som/chiva-som-13.jpg",
+   "chiva-som/chiva-som-14.jpg"
+  ],
+  "galleryFilms": [
+   [
+    [
+     "chiva-som/chiva-som-06.mp4",
+     0,
+     9.4
+    ]
+   ]
+  ]
+ },
+ "tulah": {
+  "lead": [
+   [
+    "tulah/tulah-01.mp4",
+    0,
+    6.4
+   ],
+   [
+    "tulah/tulah-01.mp4",
+    19,
+    25
+   ],
+   [
+    "tulah/tulah-01.mp4",
+    44,
+    57
+   ],
+   [
+    "tulah/tulah-01.mp4",
+    70,
+    89
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "tulah/tulah-01.jpg",
+   "tulah/tulah-02.jpg",
+   "tulah/tulah-03.jpg",
+   "tulah/tulah-04.jpg",
+   "tulah/tulah-05.jpg",
+   "tulah/tulah-06.jpg",
+   "tulah/tulah-07.jpg",
+   "tulah/tulah-08.jpg",
+   "tulah/tulah-09.jpg",
+   "tulah/tulah-10.jpg",
+   "tulah/tulah-11.jpg",
+   "tulah/tulah-12.jpg",
+   "tulah/tulah-13.jpg",
+   "tulah/tulah-14.jpg"
+  ],
+  "galleryFilms": [
+   [
+    [
+     "tulah/tulah-01.mp4",
+     25,
+     32
+    ],
+    [
+     "tulah/tulah-01.mp4",
+     57,
+     63
+    ]
+   ]
+  ]
+ },
+ "ananda": {
+  "lead": [
+   [
+    "ananda/ananda-video-01.mp4",
+    0,
+    9
+   ],
+   [
+    "ananda/ananda-video-03.mp4",
+    0,
+    9
+   ],
+   [
+    "ananda/ananda-video-04.mp4",
+    0,
+    9
+   ],
+   [
+    "ananda/ananda-video-02.mp4",
+    0,
+    9
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "ananda/ananda-01.jpg",
+   "ananda/ananda-03.jpg",
+   "ananda/ananda-04.jpg",
+   "ananda/ananda-05.jpg",
+   "ananda/ananda-06.jpg",
+   "ananda/ananda-08.jpg",
+   "ananda/ananda-09.jpg",
+   "ananda/ananda-10.jpg",
+   "ananda/ananda-11.jpg",
+   "ananda/ananda-12.jpg",
+   "ananda/ananda-13.jpg",
+   "ananda/ananda-14.jpg"
+  ],
+  "galleryFilms": [
+   [
+    [
+     "ananda/ananda-video-06.mp4",
+     0,
+     18
+    ]
+   ]
+  ]
+ },
+ "zem-altea": {
+  "lead": [
+   [
+    "zem-altea/zem-altea-video-04.mp4",
+    13,
+    16.8
+   ],
+   [
+    "zem-altea/zem-altea-video-05.mp4",
+    0,
+    21.5
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [
+   "zem-altea/zem-altea-01.jpg",
+   "zem-altea/zem-altea-02.jpg",
+   "zem-altea/zem-altea-03.jpg",
+   "zem-altea/zem-altea-04.jpg",
+   "zem-altea/zem-altea-05.jpg",
+   "zem-altea/zem-altea-06.jpg",
+   "zem-altea/zem-altea-07.jpg",
+   "zem-altea/zem-altea-08.jpg",
+   "zem-altea/zem-altea-09.jpg",
+   "zem-altea/zem-altea-10.jpg",
+   "zem-altea/zem-altea-11.jpg",
+   "zem-altea/zem-altea-12.jpg"
+  ],
+  "galleryFilms": []
+ },
+ "wellness-hero": {
+  "lead": [
+   [
+    "_out/ananda/ananda-lead.mp4",
+    0,
+    9
+   ],
+   [
+    "_out/tulah/tulah-lead.mp4",
+    6.4,
+    12.4
+   ],
+   [
+    "_out/chiva-som/chiva-som-lead.mp4",
+    8,
+    16
+   ],
+   [
+    "_out/lanserhof/lanserhof-lead.mp4",
+    0,
+    8
+   ],
+   [
+    "_out/zulal/zulal-lead.mp4",
+    14,
+    21
+   ],
+   [
+    "_out/chenot-palace/chenot-palace-lead.mp4",
+    8,
+    14
+   ]
+  ],
+  "poster": "frame:0.5",
+  "gallery": [],
+  "galleryFilms": []
+ }
+}

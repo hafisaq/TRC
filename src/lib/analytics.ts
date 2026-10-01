@@ -102,7 +102,7 @@ export function track(name: string, params: Params = {}) {
   if (allowed()) window.clarity?.("event", name);
 }
 
-const pageType = () => (/^\/(asia|alpine|coast|desert|cities)\//.test(location.pathname) ? "country" : location.pathname.startsWith("/about") ? "about" : "home");
+const pageType = () => (/^\/(asia|alpine|coast|desert|cities)\//.test(location.pathname) || location.pathname.startsWith("/wellness") ? "country" : location.pathname.startsWith("/about") ? "about" : "home");
 const sectionOf = (el: Element | null) => el?.closest("[data-tier2-stop], section[id], footer[id]")?.id || "";
 
 export function initAnalytics(next: AnalyticsSettings) {
@@ -159,7 +159,7 @@ function instrument() {
     if (!a) return;
     const href = a.getAttribute("href") || "";
     const section = sectionOf(a);
-    const country = href.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/);
+    const country = href.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/) ?? (/^\/wellness\/?(\?|#|$)/.test(href) ? [href, "wellness", "wellness"] : null);
     if (country) return track("select_country", { region: country[1], country: country[2], section });
     if (/^https:\/\/wa\.me\//.test(href)) return track("contact_click", { method: "whatsapp", section });
     if (href.startsWith("tel:")) return track("contact_click", { method: "phone", section });

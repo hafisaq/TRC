@@ -7,6 +7,7 @@ import { ALPINE } from "../data/regions/alpine";
 import { COAST } from "../data/regions/coast";
 import { DESERT } from "../data/regions/desert";
 import { CITIES } from "../data/regions/cities";
+import { WELLNESS } from "../data/regions/wellness";
 import { setCountryPage, type CountryPageData } from "../data/regions/countryContent";
 import type { CatalogEntry, CatalogGroup, PropertyAsset, RegionStop } from "../data/regions/types";
 import { registerMedia } from "./media";
@@ -46,6 +47,9 @@ const QUERY = `{
       }, [])
     }
   },
+  "retreats": select($home => *[_id=="region-wellness"][0].catalog[id=="wellness"][0].entries[]->{
+    _id, name, location, coordinates, highlights, "media": ${MEDIA_PROJ}
+  }, null),
   "pages": *[_type=="countryPage" && !$home && slug.current == $country]{
     _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
@@ -64,7 +68,8 @@ const QUERY = `{
     source in *[_type=="destination" && $home]._id ||
     source in *[_type=="region" && ($home || slug.current == $region)]._id ||
     source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
-    source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref
+    source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref ||
+    ($home && source in *[_id=="region-wellness"][0].catalog[id=="wellness"][0].entries[]._ref)
   )]{source, strings[]{path, value}},
   "uiEn": *[_id=="en--ui"][0].strings[]{path, value},
   "settings": *[_id=="siteSettings"][0]{
@@ -119,7 +124,8 @@ function frameFocus(stops: Array<{ mapPos: [number, number] }>) {
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export async function hydrateFromCms(): Promise<boolean> {
-  const route = window.location.pathname.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/);
+  const route = window.location.pathname.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)\/?$/)
+    ?? (/^\/wellness(\/wellness)?\/?$/.test(window.location.pathname) ? ["/wellness", "wellness", "wellness"] : null);
   const about = /^\/about\/?$/.test(window.location.pathname);
   const params = new URLSearchParams({
     query: QUERY,
@@ -137,6 +143,7 @@ export async function hydrateFromCms(): Promise<boolean> {
     destinations?: Array<Record<string, unknown> & { _id: string; media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
+    retreats?: Array<Record<string, unknown> & { _id: string; media?: Media }> | null;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
     uiEn?: Array<{ path?: string; value?: string }> | null;
     about?: {
@@ -276,6 +283,7 @@ export async function hydrateFromCms(): Promise<boolean> {
       }
     }
     for (const p of (data.pages ?? []) as Array<Record<string, unknown>>) apply(p, p._id as string);
+    for (const r of data.retreats ?? []) apply(r, r._id);
     apply(data.settings as Record<string, unknown> | null, "siteSettings");
     apply(data.about as Record<string, unknown> | null, "aboutPage");
     const uiStrings = byId.get("ui");
@@ -362,11 +370,16 @@ export async function hydrateFromCms(): Promise<boolean> {
           DESTINATIONS.push(mapped);
         }
       }
+      // The CMS decides the route order (a stop added later — Wellness,
+      // say — is appended above, which would fly it last). Re-sort the
+      // array in place so the journey, the nav and the path all agree.
+      const rank = new Map(data.destinations.map((d, i) => [`tier2-${d._id.replace(/^destination-/, "")}`, i]));
+      DESTINATIONS.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99));
     }
 
     // ---- regions (Asia, Mountain & Ice, ...) — each maps into its
     // bundled container in place ----
-    const REGION_TARGETS = { asia: ASIA, alpine: ALPINE, coast: COAST, desert: DESERT, cities: CITIES } as const;
+    const REGION_TARGETS = { asia: ASIA, alpine: ALPINE, coast: COAST, desert: DESERT, cities: CITIES, wellness: WELLNESS } as const;
     for (const r of (data.regions ?? []) as Array<{
           slug?: string;
           title?: string;
@@ -432,6 +445,22 @@ export async function hydrateFromCms(): Promise<boolean> {
         }));
         target.catalog.splice(0, target.catalog.length, ...groups);
       }
+    }
+
+    // ---- the wellness retreats on the home page: the stepping stones need
+    // only a name, a place and a film, so the home query carries just that ----
+    if (data.retreats?.length) {
+      const entries = data.retreats.filter((r) => r?.media?.poster).map((r): CatalogEntry => {
+        mediaKey(r.media, "");
+        return {
+          name: (r.name as string) ?? "",
+          location: (r.location as string) ?? "",
+          poster: r.media?.poster as string,
+          ...(r.coordinates ? { coordinates: r.coordinates as string } : {}),
+          ...((r.highlights as string[])?.length ? { highlights: r.highlights as string[] } : {})
+        };
+      });
+      WELLNESS.catalog.splice(0, WELLNESS.catalog.length, { id: "wellness", label: "Wellness", entries });
     }
 
     // ---- country pages ----

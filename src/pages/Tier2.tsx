@@ -20,6 +20,8 @@ import { ALPINE } from "../data/regions/alpine";
 import { COAST } from "../data/regions/coast";
 import { DESERT } from "../data/regions/desert";
 import { CITIES } from "../data/regions/cities";
+import { WELLNESS, wellnessRetreats } from "../data/regions/wellness";
+import SteppingStones from "../components/tier2/SteppingStones";
 
 // The loader's night sky: deterministic pseudo-random star placements (a
 // seeded hash, not Math.random, so every visit renders the same sky and
@@ -69,6 +71,7 @@ export default function Tier2() {
     // path flies each pinned selector as one dead-straight vertical lane
     // instead of drifting across the board on a single long segment.
     const holds: Record<string, { ids: [string, string]; mapPos: [number, number] }> = {
+      "tier2-wellness": { ids: ["tier2-wellness-hold-in", "tier2-wellness-hold-out"], mapPos: [0.55, 0.36] },
       "tier2-asia": { ids: ["tier2-asia-hold-in", "tier2-asia-hold-out"], mapPos: [0.74, 0.44] },
       "tier2-alpine": { ids: ["tier2-alpine-hold-in", "tier2-alpine-hold-out"], mapPos: [0.53, 0.24] },
       "tier2-bali": { ids: ["tier2-coast-hold-in", "tier2-coast-hold-out"], mapPos: [0.53, 0.28] },
@@ -172,6 +175,9 @@ export default function Tier2() {
               ctaLabel={s.ctaLabel}
               ctaHref={s.ctaHref}
             />
+            {/* after the Wellness stop: the retreats as stepping stones (renders
+                only once the CMS has handed over the retreats) */}
+            {s.id === "tier2-wellness" && <SteppingStones region={WELLNESS} entries={wellnessRetreats()} onMore={() => handleEnquire(s.interest)} />}
             {/* right after the Asia stop: the scroll-glide country selector */}
             {s.id === "tier2-asia" && <CountryStrip region={ASIA} onMore={() => handleEnquire(s.interest)} />}
             {/* after the Mountain & Ice stop: the descent board — its own

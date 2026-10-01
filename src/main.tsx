@@ -5,7 +5,10 @@ import { initializeAppFeatures } from "./lib/pwa";
 initializeAppFeatures();
 
 const path = window.location.pathname.replace(/\/+$/, "");
-const routeMatch = path.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)$/);
+// /wellness is one route, not a continent of countries: it renders as a
+// country page whose region and "country" are both wellness
+const routeMatch = path.match(/^\/(asia|alpine|coast|desert|cities)\/([a-z0-9-]+)$/)
+  ?? (path === "/wellness" || path === "/wellness/wellness" ? ["/wellness", "wellness", "wellness"] : null);
 // the standalone region pages are gone — home's per-region selector is the
 // region browser now; old links land there
 if (path === "/asia") {

@@ -144,6 +144,7 @@ export const flightPathStops = () => {
   // anchors sharing an x give the path a dead-straight lane through the
   // tall section instead of the plane drifting across its content
   const holdAfter: Record<string, string> = {
+    "tier2-wellness": "tier2-wellness",
     "tier2-asia": "tier2-asia",
     "tier2-alpine": "tier2-alpine",
     "tier2-bali": "tier2-coast",

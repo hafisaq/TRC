@@ -17,6 +17,8 @@ import MobileAppTools from "../components/MobileAppTools";
 import RouteBar from "../components/RouteBar";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
+import StillWaterChart, { BreathInterlude, HeroBreath } from "../components/wellness/StillWater";
+import { staySlug } from "../components/tier2/SteppingStones";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -31,11 +33,13 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 function StaysRail({
   entries,
   country,
+  title,
   onOpen,
   onEnquire
 }: {
   entries: CatalogEntry[];
   country: string;
+  title?: string;
   onOpen: (e: CatalogEntry) => void;
   onEnquire: (name: string) => void;
 }) {
@@ -124,7 +128,7 @@ function StaysRail({
         <div data-stop-text className="opacity-0">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t("page.whereStay")}</div>
           <h2 className="mt-3 font-serif text-[clamp(34px,5.6vw,64px)] font-light leading-[1.0]">
-            {t("page.staysIn", { country })}
+            {title ?? t("page.staysIn", { country })}
           </h2>
         </div>
         <div className="relative mt-10">
@@ -198,7 +202,7 @@ export default function CountryDetail({ region, slug }: { region: Region; slug: 
   const data = getCountryPage(region, slug);
   if (!data) {
     // unknown slug — send them back to the region
-    window.location.replace("/asia");
+    window.location.replace(region.slug === "wellness" ? "/" : "/asia");
     return null;
   }
   return <CountryDetailInner region={region} slug={slug} data={data} />;
@@ -219,6 +223,23 @@ function CountryDetailInner({
   const [openStay, setOpenStay] = useState<CatalogEntry | null>(null);
   const { group, stop, page } = data;
   const heroId = `cd-hero`;
+  // Wellness is one route of retreats, not a country: the page keeps the
+  // country grammar (hero, chapters, signatures, stays) and adds a quieter
+  // backdrop, a breath, and the meditation doodles.
+  const wellness = region.slug === "wellness";
+  const staysLabel = wellness ? t("wellness.theRetreats") : t("page.staysIn", { country: page.country });
+
+  // /wellness?stay=<name> (the home stepping stones) opens that retreat's
+  // dossier straight away, over the page
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("stay");
+    if (!want) return;
+    const entry = group.entries.find((e) => staySlug(e.name) === want);
+    if (entry) {
+      setOpenStay(entry);
+      track("dossier_open", { stay: entry.name, country: page.country, via: "link" });
+    }
+  }, [group, page.country]);
 
   // Flight stops: both chapters, the quote, every day, and the stays block.
   // mapPos jitters around the country's own dot so DotMap bursts cluster
@@ -398,7 +419,7 @@ function CountryDetailInner({
           line and plane read like ink on a navigator's map */}
       <div aria-hidden="true" className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-cream-deep" />
-        <AtlasChart />
+        {wellness ? <StillWaterChart /> : <AtlasChart />}
         <div className="atlas-sheen-a absolute inset-0 bg-[radial-gradient(58%_42%_at_16%_6%,rgba(200,162,76,.14),transparent_62%)]" />
         <div className="atlas-sheen-b absolute inset-0 bg-[radial-gradient(46%_36%_at_86%_72%,rgba(200,162,76,.11),transparent_60%)]" />
         {/* ambient traffic on the chart's corridors */}
@@ -427,7 +448,7 @@ function CountryDetailInner({
           </svg>
         </div>
         {/* sailboats on the sea lanes, rocking as they go */}
-        <div
+        {!wellness && <div
           className="ambient-boat absolute left-0 top-0"
           style={{ offsetPath: 'path("M -60 706 C 400 668, 900 726, 1560 684")', animationDuration: "110s" }}
         >
@@ -436,8 +457,8 @@ function CountryDetailInner({
             <path d="M13.5 5 L13.5 13 L18.5 13 Z" fill="rgba(22,36,60,.32)" />
             <path d="M4 15 L20 15 L16.5 19.5 L7.5 19.5 Z" fill="#8f7231" />
           </svg>
-        </div>
-        <div
+        </div>}
+        {!wellness && <div
           className="ambient-boat absolute left-0 top-0"
           style={{ offsetPath: 'path("M 1560 470 C 1080 500, 620 452, -80 496")', animationDuration: "88s", animationDelay: "40s" }}
         >
@@ -446,7 +467,7 @@ function CountryDetailInner({
             <path d="M13.5 5 L13.5 13 L18.5 13 Z" fill="rgba(22,36,60,.32)" />
             <path d="M4 15 L20 15 L16.5 19.5 L7.5 19.5 Z" fill="#8f7231" />
           </svg>
-        </div>
+        </div>}
       </div>
 
       {/* fixed header — the home screen's exact pattern: wordmark left, nav
@@ -571,6 +592,7 @@ function CountryDetailInner({
               <span>{page.coords}</span>
             </div>
           </div>
+          {wellness && <HeroBreath />}
           <div className="pointer-events-none absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 text-white/50">
             <div className="text-[8.5px] uppercase tracking-[0.34em]">{t("hero.scrollRoute")}</div>
             <div className="h-10 w-px" style={{ background: "linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0))" }} />
@@ -616,7 +638,7 @@ function CountryDetailInner({
                     onClick={() => handleEnquire()}
                     className="mt-7 border-b border-gold-deep/60 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-gold-deep transition-opacity hover:opacity-70"
                   >
-                    {t("page.speakToUs", { country: page.country })}
+                    {region.slug === "wellness" ? t("wellness.speakToUs") : t("page.speakToUs", { country: page.country })}
                   </button>
                 </div>
                 <div data-stop-video style={lqipVar(ch.slug)} className="media-shell relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-gold/40 opacity-0 scale-95 lg:[direction:ltr]">
@@ -632,6 +654,7 @@ function CountryDetailInner({
               index={i}
               chapter={ch}
               country={page.country}
+              speakLabel={wellness ? t("wellness.speakToUs") : undefined}
               onEnquire={() => handleEnquire()}
             />
           )
@@ -641,6 +664,10 @@ function CountryDetailInner({
         {/* Quote stays on the shared dark ground — gold lives in the type and
             a soft glow that breathes in when the plane lands, not a slab. */}
         <SignedQuote text={page.quote.text} attribution={page.quote.attribution} />
+
+        {/* the breath — wellness only: a pinned moment where the scroll
+            itself is the inhale and the exhale */}
+        {wellness && <BreathInterlude />}
 
         <SignatureJourney days={page.days} country={page.country} />
 
@@ -656,12 +683,13 @@ function CountryDetailInner({
             <StaysRail
               entries={group.entries}
               country={page.country}
+              title={staysLabel}
               onOpen={(e) => { track("dossier_open", { stay: e.name, country: page.country }); setOpenStay(e); }}
               onEnquire={(name) => handleEnquire(name)}
             />
 
             {/* other routes in the region */}
-            <div className="mt-16 border-t border-navy/12 pt-8">
+            {otherCountries.length > 0 && <div className="mt-16 border-t border-navy/12 pt-8">
               <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-navy/50">{t("page.otherRoutes")} {region.title}</div>
               <div className="mt-4 flex flex-wrap gap-3">
                 {otherCountries.map((c) => {
@@ -680,7 +708,7 @@ function CountryDetailInner({
                   );
                 })}
               </div>
-            </div>
+            </div>}
           </div>
         </section>
 
@@ -726,12 +754,14 @@ function ExpandChapter({
   index,
   chapter,
   country,
+  speakLabel,
   onEnquire
 }: {
   id: string;
   index: number;
   chapter: CountryChapter;
   country: string;
+  speakLabel?: string;
   onEnquire: () => void;
 }) {
   const ref = useRef<HTMLElement | null>(null);
@@ -859,7 +889,7 @@ function ExpandChapter({
               onClick={onEnquire}
               className="mt-6 border-b border-white/55 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-white transition-opacity hover:opacity-70"
             >
-              {t("page.speakToUs", { country })}
+              {speakLabel ?? t("page.speakToUs", { country })}
             </button>
           </div>
         </div>
