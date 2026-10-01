@@ -4,6 +4,34 @@ import { MediaVideo } from "../Media";
 import { t as tr } from "../../lib/i18n";
 import OpenCountry from "./OpenCountry";
 import MoreDoodle from "../MoreDoodle";
+import { useEffect, useState } from "react";
+import { wellnessRetreats } from "../../data/regions/wellness";
+
+// Under the sanctuary's film: the eight retreats, one at a time, each
+// name and place fading in for a few seconds — a roll-call of where the
+// route goes, read from the same CMS entries the stepping stones use.
+function RetreatRollCall() {
+  const retreats = wellnessRetreats();
+  const [i, setI] = useState(0);
+  const [shown, setShown] = useState(true);
+  useEffect(() => {
+    if (retreats.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tick = setInterval(() => {
+      setShown(false);
+      setTimeout(() => { setI((n) => (n + 1) % retreats.length); setShown(true); }, 500);
+    }, 3200);
+    return () => clearInterval(tick);
+  }, [retreats.length]);
+  const r = retreats[i];
+  if (!r) return null;
+  return (
+    <div aria-hidden="true" className={`pointer-events-none absolute -bottom-10 inset-x-[-40px] text-center font-mono text-[8.5px] uppercase tracking-[0.26em] text-gold-deep transition-opacity duration-500 sm:-bottom-12 ${shown ? "opacity-100" : "opacity-0"}`}>
+      <span className="text-navy/80">{r.name}</span>
+      <span className="mx-2 text-gold/70">—</span>
+      <span>{r.location}</span>
+    </div>
+  );
+}
 
 export type StopTheme = "gold" | "white";
 // "horizon" — the wide masthead + full-bleed film band (OpenCountry)
@@ -151,11 +179,7 @@ export default function Stop({ id, index, total = 4, eyebrow, title, copy, coord
                 <VideoTag slug={slug} posterW={900} />
                 <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle,rgba(0,0,0,0) 58%,rgba(0,0,0,.38) 100%)" }} />
               </div>
-              {/* the breath, counted out loud */}
-              <div aria-hidden="true" className="pointer-events-none absolute -bottom-9 inset-x-0 h-5 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep sm:-bottom-11">
-                <span className="breath-word breath-word--in absolute inset-0">{tr("wellness.breatheIn")}</span>
-                <span className="breath-word breath-word--out absolute inset-0">{tr("wellness.breatheOut")}</span>
-              </div>
+              <RetreatRollCall />
               {/* small doodles at the circle's shoulders on phones, where the
                   side figures have no room */}
               <MoreDoodle kind="steam" tone="dark" className="absolute -right-14 -top-8 w-[86px] rotate-6 sm:-right-20 sm:-top-6 sm:w-[110px]" />
