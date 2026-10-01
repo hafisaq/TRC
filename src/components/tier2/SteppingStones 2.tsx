@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { CatalogEntry, Region } from "../../data/regions/types";
-import { smallFilmForPoster, imgSized, lqipVarForPoster } from "../../lib/media";
+import { filmForPoster, imgSized, lqipVarForPoster } from "../../lib/media";
 import { isAr, t } from "../../lib/i18n";
 import MoreDoodle, { type DoodleKind } from "../MoreDoodle";
 import { MediaVideo } from "../Media";
@@ -41,7 +41,6 @@ export default function SteppingStones({ region, entries, onMore }: { region: Re
     let current = -1;
     let raf = 0;
     let length = 1;
-    let lastDrawn = -1;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // the path threads the centre of every stone; measured from layout so
@@ -118,13 +117,7 @@ export default function SteppingStones({ region, entries, onMore }: { region: Re
       // the path draws a little ahead of the glide, so the next stone is
       // always already joined by the time it reaches the centre
       if (pathRef.current && maxShift > 0) {
-        const drawn = clamp(current * 1.15 + 0.12, 0, 1);
-        // a dash update repaints the whole wide SVG: only redraw once the
-        // line has moved a visible step, never every frame of the glide
-        if (Math.abs(drawn - lastDrawn) > 0.012 || drawn === 1) {
-          lastDrawn = drawn;
-          pathRef.current.style.strokeDashoffset = String(length * (1 - drawn));
-        }
+        pathRef.current.style.strokeDashoffset = String(length * (1 - clamp(current * 1.15 + 0.12, 0, 1)));
       }
       if (!settled) raf = requestAnimationFrame(tick);
     };
@@ -180,7 +173,7 @@ export default function SteppingStones({ region, entries, onMore }: { region: Re
             {/* the path between the stones, drawn by the scroll */}
             <svg ref={svgRef} aria-hidden="true" className={`pointer-events-none absolute left-0 top-0 hidden lg:block transition-opacity duration-700 ${drawn ? "opacity-100" : "opacity-0"}`} fill="none">
               <path ref={pathRef} stroke="rgba(227,198,130,.55)" strokeWidth="1.2" strokeDasharray="1" strokeLinecap="round" style={{ strokeDashoffset: 1 }} />
-              <path ref={wakeRef} stroke="rgba(127,148,120,.4)" strokeWidth="1" strokeDasharray="2 9" />
+              <path ref={wakeRef} className="stones-wake" stroke="rgba(127,148,120,.4)" strokeWidth="1" strokeDasharray="2 9" />
             </svg>
             {entries.map((entry, i) => {
               const slug = staySlug(entry.name);
@@ -196,10 +189,8 @@ export default function SteppingStones({ region, entries, onMore }: { region: Re
                     gold ? "border-gold/45 shadow-[0_22px_60px_rgba(200,162,76,.14)]" : "border-white/15 shadow-[0_22px_60px_rgba(0,0,0,.45)]"
                   } hover:border-gold-light`}
                 >
-                  {/* the stones play on their own (the lighter 720p copies, as a
-                      few are on screen together); on touch the centred one plays */}
-                  <MediaVideo src={smallFilmForPoster(entry.poster)} poster={imgSized(entry.poster, 900)}
-                    active={pinned || i === snap} sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 72vw"
+                  <MediaVideo src={filmForPoster(entry.poster)} poster={imgSized(entry.poster, 900)}
+                    hover={pinned} active={pinned || i === snap} sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 72vw"
                     className="transition-transform duration-[1400ms] ease-out group-hover:scale-[1.07]" />
                   <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(14,13,12,.82),rgba(14,13,12,.08)_52%,rgba(14,13,12,.22))] transition-opacity duration-500 group-hover:opacity-80" />
                   <div className={`absolute left-4 top-4 flex items-center gap-3 rounded-sm px-2.5 py-1.5 font-mono text-[8.5px] uppercase tracking-[0.22em] ${gold ? "bg-gold/85 text-white" : "bg-cream/85 text-gold-deep"}`}>

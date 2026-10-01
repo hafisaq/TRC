@@ -98,10 +98,7 @@ a {
 @media (min-width: 1024px) {
   .stone { margin-top: calc(40px + var(--lift, 0px)); }
 }
-@keyframes stones-wake { to { stroke-dashoffset: -110; } }
-.stones-wake { animation: stones-wake 14s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .stones-wake { animation: none; }
   .breath-ring, .sanctuary-ripple, .breath-word--in, .breath-word--out { animation: none; }
   .breath-word--out, .sanctuary-ripple { display: none; }
 }

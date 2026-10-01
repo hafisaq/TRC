@@ -7,7 +7,7 @@
 .water-ring {
   transform-box: fill-box;
   transform-origin: center;
-  animation: water-ring 14s ease-out infinite;
+  animation: water-ring 9s ease-out infinite;
 }
 @keyframes reed-sway {
   0%, 100% { transform: rotate(-3deg); }
@@ -32,9 +32,7 @@
   .ambient-leaf { display: none; }
 }
 @media (pointer: coarse) {
-  /* phones get the still picture: every one of these animates inside the
-     page-wide SVG, which repaints whole on each frame */
+  /* phones draw the rings but skip the drifting leaves: three more
+     animated layers over a page already full of film */
   .ambient-leaf { display: none; }
-  .water-ring, .reed-sway { animation: none; }
-  .water-ring { transform: scale(0.5); opacity: 0.3; }
 }
