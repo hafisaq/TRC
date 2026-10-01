@@ -102,6 +102,9 @@ a {
   .breath-ring, .sanctuary-ripple, .breath-word--in, .breath-word--out { animation: none; }
   .breath-word--out, .sanctuary-ripple { display: none; }
 }
+/* touch screens keep the breath and skip the ripples: three more layers
+   animating under a film and a flying plane */
+@media (pointer: coarse) { .sanctuary-ripple { display: none; } }
 
 /* content entrance replayed on each moment change (via React key remount) */
 @keyframes moment-in {

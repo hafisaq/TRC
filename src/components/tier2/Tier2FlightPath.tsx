@@ -173,7 +173,20 @@ export default function Tier2FlightPath({ stops, startId = "tier2-hero" }: { sto
         vectorEffect="non-scaling-stroke"
         strokeLinecap="round"
       />
-
+    </svg>
+    {/* the landing marks live in their own SVG: on touch screens the trail
+        above is revealed with a compositor clip at the plane's height (no
+        re-rasterising of a page-tall drawing), and a pulse at the plane's
+        own position would otherwise be cut in half by that clip */}
+    <svg
+      id="tier2-flight-marks"
+      className="absolute top-0 left-0 z-[2] pointer-events-none"
+      width={geometry.w}
+      height={geometry.h}
+      viewBox={`0 0 ${geometry.w} ${geometry.h}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
       {geometry.ids.map((id, i) => (
         <g key={id} id={`tier2-landing-${id}`} data-landing transform={`translate(${geometry.stopPoints[i].x} ${geometry.stopPoints[i].y})`}>
           <circle data-landing-glow r="4" fill="#e3c682" opacity="0" />
