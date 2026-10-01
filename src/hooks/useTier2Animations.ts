@@ -267,7 +267,21 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
         const planeIcon = $<SVGPathElement>("#tier2-flight-plane-icon");
 
         const length = path.getTotalLength();
-        gsap.set(path, { strokeDasharray: length, strokeDashoffset: prefersReducedMotion ? 0 : length, opacity: 1 });
+        // Touch screens: the trail is drawn in full once and REVEALED with a
+        // clip on its own SVG element, moved by the compositor — a dash
+        // offset re-rasterises the page-tall drawing on every update, which
+        // phones feel as a shaking plane. Pointer screens keep the dash.
+        const trailSvg = $<SVGSVGElement>("#tier2-flight-svg");
+        const clipTrail = COARSE_POINTER() && !!trailSvg;
+        const trailHeight = trailSvg ? Number(trailSvg.getAttribute("height")) || trailSvg.getBoundingClientRect().height : 0;
+        if (clipTrail && trailSvg) {
+          gsap.set(path, { strokeDasharray: "none", strokeDashoffset: 0, opacity: 1 });
+          trailSvg.style.willChange = "clip-path";
+          trailSvg.style.clipPath = prefersReducedMotion ? "none" : "inset(0 0 100% 0)";
+        } else {
+          gsap.set(path, { strokeDasharray: length, strokeDashoffset: prefersReducedMotion ? 0 : length, opacity: 1 });
+          if (trailSvg) { trailSvg.style.clipPath = ""; trailSvg.style.willChange = ""; }
+        }
         gsap.set(plane, { opacity: 1 });
 
         // Scroll is linear in document Y, but motionPath progress is linear
@@ -400,10 +414,17 @@ export function useTier2Animations(dotMapRef: RefObject<DotMapHandle | null>, st
             // The trail lives in a document-tall SVG; every dash update
             // re-rasterises it. The plane covers the trail's tip, so on
             // touch the trail can follow at ~15fps with nothing to see.
-            const now = performance.now();
-            if (!COARSE_POINTER() || now - lastTrailAt > 64 || flightP >= ARRIVAL || flightP === 0) {
-              lastTrailAt = now;
-              gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
+            if (clipTrail && trailSvg) {
+              // the path only ever descends, so everything above the
+              // plane's height is exactly the part already flown
+              const planeY = Math.min(endY, Math.max(startY, flightY));
+              trailSvg.style.clipPath = `inset(0 0 ${Math.max(0, trailHeight - planeY).toFixed(1)}px 0)`;
+            } else {
+              const now = performance.now();
+              if (!COARSE_POINTER() || now - lastTrailAt > 64 || flightP >= ARRIVAL || flightP === 0) {
+                lastTrailAt = now;
+                gsap.set(path, { strokeDashoffset: length * (1 - flightP) });
+              }
             }
             planeTween.progress(flightP);
 
