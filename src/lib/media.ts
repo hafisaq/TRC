@@ -111,10 +111,10 @@ export function keyForPoster(poster: string): string {
 // The registered film for a poster, or undefined — lets components render
 // a playing film for CMS entries that have one and a still otherwise.
 export const filmForPoster = (poster: string) => (PHONE && film720ByPoster.get(poster)) || filmByPoster.get(poster);
-// for a small card that plays on its own (not on hover): the lighter copy
-// on every screen, since several may be decoding at once
-export const smallFilmForPoster = (poster: string) => film720ByPoster.get(poster) || filmByPoster.get(poster);
 
 // Whether a media key has real footage: registered CMS keys must carry a
 // film explicitly; bare demo slugs are presumed to have their bundled mp4.
 export const hasFilm = (key: string) => films.has(key) || !posters.has(key);
+
+// a stay's name as a URL token (tulåh → tulah), for /wellness?stay=<name>
+export const staySlug = (name: string) => name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

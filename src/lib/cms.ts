@@ -47,9 +47,6 @@ const QUERY = `{
       }, [])
     }
   },
-  "retreats": select($home => *[_id=="region-wellness"][0].catalog[id=="wellness"][0].entries[]->{
-    _id, name, location, coordinates, highlights, "media": ${MEDIA_PROJ}
-  }, null),
   "pages": *[_type=="countryPage" && !$home && slug.current == $country]{
     _id, "slug": slug.current, country, tagline, priceLine, season, coords,
     quote{text, attribution},
@@ -68,8 +65,7 @@ const QUERY = `{
     source in *[_type=="destination" && $home]._id ||
     source in *[_type=="region" && ($home || slug.current == $region)]._id ||
     source in *[_type=="countryPage" && !$home && slug.current == $country]._id ||
-    source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref ||
-    ($home && source in *[_id=="region-wellness"][0].catalog[id=="wellness"][0].entries[]._ref)
+    source in *[_type=="region" && !$home && slug.current == $region].catalog[id == $country].entries[]._ref
   )]{source, strings[]{path, value}},
   "uiEn": *[_id=="en--ui"][0].strings[]{path, value},
   "settings": *[_id=="siteSettings"][0]{
@@ -143,7 +139,6 @@ export async function hydrateFromCms(): Promise<boolean> {
     destinations?: Array<Record<string, unknown> & { _id: string; media?: Media; title?: TitlePair; mapPos?: { x: number; y: number } }>;
     regions?: Array<Record<string, unknown>> | null;
     pages?: Array<Record<string, unknown>>;
-    retreats?: Array<Record<string, unknown> & { _id: string; media?: Media }> | null;
     translations?: Array<{ source?: string; strings?: Array<{ path?: string; value?: string }> }>;
     uiEn?: Array<{ path?: string; value?: string }> | null;
     about?: {
@@ -283,7 +278,6 @@ export async function hydrateFromCms(): Promise<boolean> {
       }
     }
     for (const p of (data.pages ?? []) as Array<Record<string, unknown>>) apply(p, p._id as string);
-    for (const r of data.retreats ?? []) apply(r, r._id);
     apply(data.settings as Record<string, unknown> | null, "siteSettings");
     apply(data.about as Record<string, unknown> | null, "aboutPage");
     const uiStrings = byId.get("ui");
@@ -445,22 +439,6 @@ export async function hydrateFromCms(): Promise<boolean> {
         }));
         target.catalog.splice(0, target.catalog.length, ...groups);
       }
-    }
-
-    // ---- the wellness retreats on the home page: the stepping stones need
-    // only a name, a place and a film, so the home query carries just that ----
-    if (data.retreats?.length) {
-      const entries = data.retreats.filter((r) => r?.media?.poster).map((r): CatalogEntry => {
-        mediaKey(r.media, "");
-        return {
-          name: (r.name as string) ?? "",
-          location: (r.location as string) ?? "",
-          poster: r.media?.poster as string,
-          ...(r.coordinates ? { coordinates: r.coordinates as string } : {}),
-          ...((r.highlights as string[])?.length ? { highlights: r.highlights as string[] } : {})
-        };
-      });
-      WELLNESS.catalog.splice(0, WELLNESS.catalog.length, { id: "wellness", label: "Wellness", entries });
     }
 
     // ---- country pages ----

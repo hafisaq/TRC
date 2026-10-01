@@ -8,7 +8,7 @@ import { useTier2Animations, type Tier2Stop } from "../hooks/useTier2Animations"
 import { scrollToHash } from "../lib/scroll";
 import type { CatalogEntry, Region } from "../data/regions/types";
 import { getCountryPage, type CountryChapter, type EssentialCard } from "../data/regions/countryContent";
-import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, lqipVar, lqipVarForPoster, lqipStyle } from "../lib/media";
+import { posterUrl, videoUrl, videoForPoster, filmForPoster, hasFilm, imgSized, lqipVar, lqipVarForPoster, lqipStyle, staySlug } from "../lib/media";
 import { useNearViewport } from "../lib/useNearViewport";
 import { t } from "../lib/i18n";
 import { track } from "../lib/analytics";
@@ -18,7 +18,6 @@ import RouteBar from "../components/RouteBar";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
 import StillWaterChart, { StillInterlude, HeroBreath } from "../components/wellness/StillWater";
-import { staySlug } from "../components/tier2/SteppingStones";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
