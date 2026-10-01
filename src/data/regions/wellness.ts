@@ -12,6 +12,3 @@ export const WELLNESS: Region = {
   stops: [],
   catalog: []
 };
-
-// The home selector and the page both read the retreats from here.
-export const wellnessRetreats = () => WELLNESS.catalog.find((g) => g.id === "wellness")?.entries ?? [];

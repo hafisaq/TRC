@@ -92,12 +92,6 @@ a {
   border: 1px solid rgba(200, 162, 76, .45);
   animation: sanctuary-ripple 9s linear infinite;
 }
-/* stepping stones (the wellness selector): on the pinned layout each stone
-   sits at its own height on the wave; the dotted wake drifts along the
-   path under the drawn line */
-@media (min-width: 1024px) {
-  .stone { margin-top: calc(40px + var(--lift, 0px)); }
-}
 @media (prefers-reduced-motion: reduce) {
   .breath-ring, .sanctuary-ripple, .breath-word--in, .breath-word--out { animation: none; }
   .breath-word--out, .sanctuary-ripple { display: none; }
