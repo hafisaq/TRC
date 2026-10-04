@@ -24,7 +24,12 @@
     "wellness.glance3Label": "قبل أن تبدأ",
     "wellness.glance3Value": "استشارة، في كل بيت",
     "wellness.glance4Label": "الافتتاح",
-    "wellness.glance4Value": "لانسرهوف 1984 · تشيفا-سوم 1995 · قصر شينو 2020"
+    "wellness.glance4Value": "لانسرهوف 1984 · تشيفا-سوم 1995 · قصر شينو 2020",
+    "sound.mute": "كتم الصوت",
+    "sound.unmute": "تشغيل الصوت",
+    "sound.on": "الصوت يعمل",
+    "sound.off": "الصوت مكتوم",
+    "sound.tap": "المس لتشغيل الصوت"
   },
   "destination-wellness": {
     "navLabel": "العافية",

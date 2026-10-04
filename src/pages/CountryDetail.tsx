@@ -18,6 +18,7 @@ import RouteBar from "../components/RouteBar";
 import { MediaImage, MediaVideo } from "../components/Media";
 import SignatureJourney from "../components/SignatureJourney";
 import StillWaterChart, { StillInterlude, HeroBreath } from "../components/wellness/StillWater";
+import SoundToggle from "../components/wellness/SoundToggle";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -489,6 +490,9 @@ function CountryDetailInner({
         </a>
         <MobileAppTools tone="dark" />
         <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>
+        {/* wellness only: the page's sound, and its switch (one instance —
+            it sits by the menu on phones and moves into the nav on desktop) */}
+        {wellness && <SoundToggle className="wellness-sound" />}
         <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label={t("a11y.pageSections")}>
           <a
             href="/"
