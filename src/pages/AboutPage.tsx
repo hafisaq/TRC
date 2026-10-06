@@ -134,6 +134,7 @@ export default function AboutPage() {
         </a>
         <MobileAppTools tone="dark" />
         {SETTINGS.showLanguageSwitch && <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>}
+        <span className="sound-slot" />
         <nav className="about-desktop-nav" aria-label={t("a11y.pageSections")}>
           <a href="/" className="about-home">{t("page.home")} <span aria-hidden="true">/</span> {t("nav.about")}</a>
           {sections.map(s => <a key={s.id} href={`#${s.id}`} onClick={e => jump(e, `#${s.id}`)} aria-current={active === s.id ? "location" : undefined}>{s.label}</a>)}

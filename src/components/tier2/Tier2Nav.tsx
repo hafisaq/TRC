@@ -54,6 +54,7 @@ export default function Tier2Nav({ destinations, activeStopId, statusText, onEnq
         <div className="mobile-language-switch">
           <LanguageSwitch tone="dark" />
         </div>
+        <span className="sound-slot" />
         <nav className="mt-3 hidden flex-1 items-center justify-center gap-7 xl:flex xl:justify-end">
           <div className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 lg:flex">
             <span className="h-px w-8 bg-gold/60" />
