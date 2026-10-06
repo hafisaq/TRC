@@ -3,38 +3,36 @@
    hairline bars ride while the sound plays, rest low while the browser
    waits for a first touch (a soft ring pulses then), and are struck
    through when muted. */
-.sound-control {
-  position: fixed;
-  z-index: 60;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: calc(env(safe-area-inset-bottom) + 112px); /* above the mobile route bar */
-  color: #8f7231;
-  font-family: var(--font-sans);
-}
-html[dir="rtl"] .sound-control { right: auto; left: max(16px, env(safe-area-inset-left)); }
-@media (min-width: 640px) { .sound-control { bottom: max(24px, env(safe-area-inset-bottom)); } }
+/* The slot each header renders: beside the menu dots on phones and
+   tablets (opposite the language switch), the last item of the header row
+   on wide screens. The control itself is a round bars icon; its panel
+   opens downward from it. */
+.sound-slot { position: absolute; left: calc(max(12px, env(safe-area-inset-left)) + 46px); top: calc(env(safe-area-inset-top) + 14px); display: block; }
+@media (min-width: 1280px) { .sound-slot { position: static; order: 99; flex: 0 0 auto; margin-inline-start: -14px; } }
+.about-header .sound-slot { top: 50%; transform: translateY(-50%); }
+@media (min-width: 1280px) { .about-header .sound-slot { transform: none; } }
+.sound-control { position: relative; color: #8f7231; font-family: var(--font-sans); }
+/* a page with no header: float at the bottom right instead */
+.sound-control-float { position: fixed; z-index: 60; right: max(16px, env(safe-area-inset-right)); bottom: calc(env(safe-area-inset-bottom) + 112px); }
+@media (min-width: 640px) { .sound-control-float { bottom: max(24px, env(safe-area-inset-bottom)); } }
+html[dir="rtl"] .sound-control-float { right: auto; left: max(16px, env(safe-area-inset-left)); }
 
 .sound-control__pill {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 14px 0 12px;
-  border: 1px solid rgb(200 162 76 / 45%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
   border-radius: 9999px;
-  background: rgb(250 248 244 / 94%);
+  background: transparent;
   color: inherit;
-  box-shadow: 0 10px 30px rgb(22 36 60 / 16%);
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 }
-@media (pointer: coarse) { .sound-control__pill { -webkit-backdrop-filter: none; backdrop-filter: none; } }
-.sound-control__pill:hover { border-color: rgb(200 162 76 / 80%); background: #faf8f4; }
+.sound-control__pill:hover { background: rgb(200 162 76 / 12%); }
 .sound-control__pill:focus-visible, .sound-control__mute:focus-visible { outline: 2px solid #8f7231; outline-offset: 3px; }
-.sound-control__label { font-size: 9px; letter-spacing: .24em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
 .sound-control__bars { display: flex; align-items: center; gap: 3px; height: 16px; }
 .sound-control__bars i { display: block; width: 1.5px; height: 5px; border-radius: 1px; background: currentColor; transform-origin: 50% 50%; }
 .sound-control.is-on .sound-control__bars i { height: 16px; animation: sound-bar 1.6s ease-in-out infinite; }
@@ -49,19 +47,20 @@ html[dir="rtl"] .sound-control { right: auto; left: max(16px, env(safe-area-inse
 .sound-control.is-waiting .sound-control__pill::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 4px;
   border-radius: 9999px;
   border: 1px solid rgb(200 162 76 / 70%);
   animation: sound-wait 2.2s ease-out infinite;
   pointer-events: none;
 }
-@keyframes sound-wait { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.18, 1.6); opacity: 0; } }
+@keyframes sound-wait { 0% { transform: scale(.9); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
 
-/* the panel: hidden until the pill is pressed */
+/* the panel: hidden until the icon is pressed, then unfolds below it */
 .sound-control__panel {
   position: absolute;
-  top: 0;
-  right: calc(100% + 8px); /* unfolds beside the pill, taking no room of its own */
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 61;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -69,14 +68,18 @@ html[dir="rtl"] .sound-control { right: auto; left: max(16px, env(safe-area-inse
   padding: 0 14px 0 8px;
   border: 1px solid rgb(200 162 76 / 45%);
   border-radius: 9999px;
-  background: rgb(250 248 244 / 96%);
+  background: rgb(250 248 244 / 97%);
   box-shadow: 0 10px 30px rgb(22 36 60 / 16%);
   opacity: 0;
-  transform: translateX(8px) scale(.96);
+  transform: translateY(-6px) scale(.97);
+  transform-origin: top left;
   pointer-events: none;
   transition: opacity .22s ease, transform .22s ease;
 }
-html[dir="rtl"] .sound-control__panel { right: auto; left: calc(100% + 8px); transform: translateX(-8px) scale(.96); }
+@media (min-width: 1280px) { .sound-control__panel { left: auto; right: 0; transform-origin: top right; } }
+html[dir="rtl"] .sound-control__panel { left: auto; right: 0; transform-origin: top right; }
+@media (min-width: 1280px) { html[dir="rtl"] .sound-control__panel { right: auto; left: 0; transform-origin: top left; } }
+.sound-control-float .sound-control__panel { top: auto; bottom: calc(100% + 6px); left: auto; right: 0; transform-origin: bottom right; }
 .sound-control.is-open .sound-control__panel { opacity: 1; transform: none; pointer-events: auto; }
 .sound-control__mute {
   display: grid;
@@ -92,12 +95,13 @@ html[dir="rtl"] .sound-control__panel { right: auto; left: calc(100% + 8px); tra
 }
 .sound-control__mute:hover { background: rgb(200 162 76 / 14%); }
 .sound-control__value { min-width: 2ch; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; color: rgb(22 36 60 / 60%); text-align: right; }
+.sound-control__state { padding-left: 6px; border-left: 1px solid rgb(22 36 60 / 15%); font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; white-space: nowrap; }
 
 /* the slider: a hairline track that fills in gold up to the thumb */
 .sound-control__slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 120px;
+  width: 110px;
   height: 20px;
   margin: 0;
   background: transparent;

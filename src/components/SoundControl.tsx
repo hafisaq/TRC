@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createAmbient } from "../lib/ambient";
 import { t } from "../lib/i18n";
 import "./sound-control.css";
@@ -6,12 +7,13 @@ import "./sound-control.css";
 const MUTE_KEY = "trc-sound";       // session: a mute lasts the visit
 const VOLUME_KEY = "trc-sound-vol"; // remembered
 
-// The site's sound and its controls, on every page: a small pill that
-// shows the state, opens to a volume slider and a mute, and reads "Tap for
-// sound" while the browser is still waiting for the visitor's first touch
-// (browsers accept a click, tap or key — never a scroll). Sound is ON by
-// default on every visit; a mute lasts for the browsing session, the
-// volume is remembered.
+// The site's sound and its controls, on every page: a small bars icon in
+// the header (each page's header renders a `.sound-slot` for it to live
+// in) that opens a panel below itself with a mute and a volume slider.
+// The icon's ring pulses while the browser is still waiting for the
+// visitor's first touch (browsers accept a click, tap or key — never a
+// scroll). Sound is ON by default on every visit; a mute lasts for the
+// browsing session, the volume is remembered.
 export default function SoundControl() {
   const ambient = useRef<ReturnType<typeof createAmbient> | null>(null);
   const [muted, setMuted] = useState(() => { try { return sessionStorage.getItem(MUTE_KEY) === "off"; } catch { return false; } });
@@ -21,6 +23,8 @@ export default function SoundControl() {
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
   const rootRef = useRef<HTMLDivElement>(null);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => { setSlot(document.querySelector<HTMLElement>(".sound-slot")); }, []);
 
   useEffect(() => {
     const a = (ambient.current = createAmbient());
@@ -77,8 +81,18 @@ export default function SoundControl() {
   const on = playing && !muted;
   const state = muted ? t("sound.off") : waiting ? t("sound.tap") : t("sound.on");
 
-  return (
+  const control = (
     <div ref={rootRef} data-sound-control className={`sound-control ${open ? "is-open" : ""} ${on ? "is-on" : ""} ${muted ? "is-muted" : ""} ${waiting ? "is-waiting" : ""}`}>
+      <button
+        type="button"
+        className="sound-control__pill"
+        onClick={() => { ensureStarted(); setOpen((o) => !o); }}
+        aria-expanded={open}
+        aria-label={state}
+        title={state}
+      >
+        <span className="sound-control__bars" aria-hidden="true"><i /><i /><i /><i /></span>
+      </button>
       <div className="sound-control__panel" role="group" aria-label={t("sound.volume")}>
         <button type="button" className="sound-control__mute" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? t("sound.unmute") : t("sound.mute")}>
           <SpeakerIcon muted={muted} />
@@ -91,20 +105,13 @@ export default function SoundControl() {
           style={{ ["--fill" as string]: `${Math.round((muted ? 0 : volume) * 100)}%` }}
         />
         <span className="sound-control__value">{Math.round((muted ? 0 : volume) * 100)}</span>
+        <span className="sound-control__state">{state}</span>
       </div>
-      <button
-        type="button"
-        className="sound-control__pill"
-        onClick={() => { ensureStarted(); setOpen((o) => !o); }}
-        aria-expanded={open}
-        aria-label={state}
-        title={state}
-      >
-        <span className="sound-control__bars" aria-hidden="true"><i /><i /><i /><i /></span>
-        <span className="sound-control__label">{state}</span>
-      </button>
     </div>
   );
+  // in the header when the page offers a slot; otherwise (no header on
+  // the page) at the bottom right of the screen
+  return slot ? createPortal(control, slot) : <div className="sound-control-float">{control}</div>;
 }
 
 function SpeakerIcon({ muted }: { muted: boolean }) {

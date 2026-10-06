@@ -489,14 +489,17 @@ function CountryDetailInner({
         </a>
         <MobileAppTools tone="dark" />
         <div className="mobile-language-switch"><LanguageSwitch tone="dark" /></div>
-        <nav className="mt-3 hidden flex-1 items-center justify-end gap-7 xl:flex" aria-label={t("a11y.pageSections")}>
+        <span className="sound-slot" />
+        <nav className="mt-3 hidden min-w-0 flex-1 items-center justify-end gap-6 xl:flex" aria-label={t("a11y.pageSections")}>
+          {/* the breadcrumb gives way first when the row is tight (a long
+              section list plus the sound icon): it shrinks and trims */}
           <a
             href="/"
-            className="mr-auto hidden items-center gap-3 text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep lg:flex"
+            className="mr-auto hidden min-w-0 shrink items-center gap-3 overflow-hidden whitespace-nowrap text-[9px] tracking-[0.22em] uppercase text-navy/50 transition-colors hover:text-gold-deep min-[1400px]:flex"
           >
-            <span>← {t("page.home")}</span>
-            <span className="h-px w-8 bg-gold/45" />
-            <span>{page.country}</span>
+            <span className="shrink-0">← {t("page.home")}</span>
+            <span className="h-px w-8 shrink-0 bg-gold/45" />
+            <span className="overflow-hidden text-ellipsis">{page.country}</span>
           </a>
           {sections.map((s) => (
             <a
