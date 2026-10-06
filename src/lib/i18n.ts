@@ -36,6 +36,7 @@ const EN: Record<string, string> = {
   "sound.on": "Sound on",
   "sound.off": "Sound off",
   "sound.tap": "Tap for sound",
+  "sound.volume": "Volume",
   "wellness.breatheIn": "Breathe in",
   "wellness.breatheOut": "Breathe out",
   "wellness.enter": "Enter the sanctuary →",

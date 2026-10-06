@@ -1,0 +1,138 @@
+/* The sound control: a pill at the bottom right of every page. Pressed, a
+   small panel unfolds beside it with a mute and a volume slider. Four
+   hairline bars ride while the sound plays, rest low while the browser
+   waits for a first touch (a soft ring pulses then), and are struck
+   through when muted. */
+.sound-control {
+  position: fixed;
+  z-index: 60;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(env(safe-area-inset-bottom) + 112px); /* above the mobile route bar */
+  color: #8f7231;
+  font-family: var(--font-sans);
+}
+html[dir="rtl"] .sound-control { right: auto; left: max(16px, env(safe-area-inset-left)); }
+@media (min-width: 640px) { .sound-control { bottom: max(24px, env(safe-area-inset-bottom)); } }
+
+.sound-control__pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px 0 12px;
+  border: 1px solid rgb(200 162 76 / 45%);
+  border-radius: 9999px;
+  background: rgb(250 248 244 / 94%);
+  color: inherit;
+  box-shadow: 0 10px 30px rgb(22 36 60 / 16%);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+@media (pointer: coarse) { .sound-control__pill { -webkit-backdrop-filter: none; backdrop-filter: none; } }
+.sound-control__pill:hover { border-color: rgb(200 162 76 / 80%); background: #faf8f4; }
+.sound-control__pill:focus-visible, .sound-control__mute:focus-visible { outline: 2px solid #8f7231; outline-offset: 3px; }
+.sound-control__label { font-size: 9px; letter-spacing: .24em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
+.sound-control__bars { display: flex; align-items: center; gap: 3px; height: 16px; }
+.sound-control__bars i { display: block; width: 1.5px; height: 5px; border-radius: 1px; background: currentColor; transform-origin: 50% 50%; }
+.sound-control.is-on .sound-control__bars i { height: 16px; animation: sound-bar 1.6s ease-in-out infinite; }
+.sound-control.is-on .sound-control__bars i:nth-child(2) { animation-delay: -.5s; animation-duration: 1.9s; }
+.sound-control.is-on .sound-control__bars i:nth-child(3) { animation-delay: -1s; animation-duration: 1.4s; }
+.sound-control.is-on .sound-control__bars i:nth-child(4) { animation-delay: -.2s; animation-duration: 2.1s; }
+@keyframes sound-bar { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+.sound-control.is-muted .sound-control__pill { color: rgb(22 36 60 / 50%); }
+.sound-control.is-muted .sound-control__bars { position: relative; }
+.sound-control.is-muted .sound-control__bars::after { content: ""; position: absolute; left: -3px; right: -3px; top: 50%; height: 1.5px; background: currentColor; transform: rotate(-38deg); }
+/* waiting for the browser's first touch: a soft ring pulses off the pill */
+.sound-control.is-waiting .sound-control__pill::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  border: 1px solid rgb(200 162 76 / 70%);
+  animation: sound-wait 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes sound-wait { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.18, 1.6); opacity: 0; } }
+
+/* the panel: hidden until the pill is pressed */
+.sound-control__panel {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 8px); /* unfolds beside the pill, taking no room of its own */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 14px 0 8px;
+  border: 1px solid rgb(200 162 76 / 45%);
+  border-radius: 9999px;
+  background: rgb(250 248 244 / 96%);
+  box-shadow: 0 10px 30px rgb(22 36 60 / 16%);
+  opacity: 0;
+  transform: translateX(8px) scale(.96);
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+}
+html[dir="rtl"] .sound-control__panel { right: auto; left: calc(100% + 8px); transform: translateX(-8px) scale(.96); }
+.sound-control.is-open .sound-control__panel { opacity: 1; transform: none; pointer-events: auto; }
+.sound-control__mute {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.sound-control__mute:hover { background: rgb(200 162 76 / 14%); }
+.sound-control__value { min-width: 2ch; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; color: rgb(22 36 60 / 60%); text-align: right; }
+
+/* the slider: a hairline track that fills in gold up to the thumb */
+.sound-control__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.sound-control__slider::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #c8a24c var(--fill, 0%), rgb(22 36 60 / 18%) var(--fill, 0%));
+}
+.sound-control__slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgb(22 36 60 / 18%); }
+.sound-control__slider::-moz-range-progress { height: 2px; background: #c8a24c; }
+.sound-control__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border: 1px solid #8f7231;
+  border-radius: 9999px;
+  background: #faf8f4;
+  box-shadow: 0 2px 6px rgb(22 36 60 / 20%);
+}
+.sound-control__slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #8f7231;
+  border-radius: 9999px;
+  background: #faf8f4;
+  box-shadow: 0 2px 6px rgb(22 36 60 / 20%);
+}
+html[dir="rtl"] .sound-control__slider { direction: ltr; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-control.is-on .sound-control__bars i { animation: none; transform: scaleY(.7); }
+  .sound-control.is-waiting .sound-control__pill::before { animation: none; opacity: .6; }
+  .sound-control__panel { transition: none; }
+}
