@@ -29,7 +29,8 @@
     "sound.unmute": "تشغيل الصوت",
     "sound.on": "الصوت يعمل",
     "sound.off": "الصوت مكتوم",
-    "sound.tap": "المس لتشغيل الصوت"
+    "sound.tap": "المس لتشغيل الصوت",
+    "sound.volume": "مستوى الصوت"
   },
   "destination-wellness": {
     "navLabel": "العافية",
