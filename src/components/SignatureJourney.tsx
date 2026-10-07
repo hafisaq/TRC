@@ -8,7 +8,7 @@ import "./signature-journey.css";
 
 const number = (index: number) => String(index + 1).padStart(2, "0");
 
-export default function SignatureJourney({ days, country }: { days: CountryDay[]; country: string }) {
+export default function SignatureJourney({ days, country, intro }: { days: CountryDay[]; country: string; intro?: string }) {
   const runwayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -138,7 +138,7 @@ export default function SignatureJourney({ days, country }: { days: CountryDay[]
           <p className="signature-eyebrow">{t("page.theSignatures")}</p>
           <h2 id="signature-heading">{t("page.signatureBySignature", { country })}</h2>
         </div>
-        <p className="signature-intro-copy">{t("page.notItinerary")}</p>
+        <p className="signature-intro-copy">{intro ?? t("page.notItinerary")}</p>
       </header>
 
       <div ref={runwayRef} className="signature-runway" data-flight-hold={layout.pinned ? "" : undefined}>

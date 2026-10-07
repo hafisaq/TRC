@@ -1,147 +1,363 @@
 {
-  "order": ["lanserhof", "chenot-palace", "sha-wellness", "zem-altea", "zulal", "ananda", "tulah", "chiva-som"],
+  "order": [
+    "lanserhof",
+    "chenot-palace",
+    "sha-wellness",
+    "zem-altea",
+    "zulal",
+    "ananda",
+    "tulah",
+    "chiva-som"
+  ],
   "stays": {
     "lanserhof": {
       "name": "Lanserhof",
       "location": "Lans bei Innsbruck, Austria",
-      "description": ["@desc:1", "@desc:3"],
-      "highlights": ["World's Best Medical Spa", "Since 1984 in Tyrol", "Health begins in the gut"],
+      "description": [
+        "@desc:1",
+        "@desc:3"
+      ],
+      "highlights": [
+        "World's Best Medical Spa",
+        "Since 1984 in Tyrol",
+        "Health begins in the gut"
+      ],
       "facts": [
-        ["Opened", "Since 1984 in Tyrol"],
-        ["Houses", "Lans, Tegernsee, Sylt and Marbella"],
-        ["Classic Detox", "7 to 21 nights"],
-        ["Awards", "World's Best Medical Spa – International Spa Awards 2025"],
-        ["Medical Director", "Dr. med. Elke Benedetto-Reisch"]
+        [
+          "Opened",
+          "Since 1984 in Tyrol"
+        ],
+        [
+          "Houses",
+          "Lans, Tegernsee, Sylt and Marbella"
+        ],
+        [
+          "Classic Detox",
+          "7 to 21 nights"
+        ],
+        [
+          "Awards",
+          "World's Best Medical Spa – International Spa Awards 2025"
+        ],
+        [
+          "Medical Director",
+          "Dr. med. Elke Benedetto-Reisch"
+        ]
       ]
     },
     "chenot-palace": {
       "name": "Chenot Palace Weggis",
       "location": "Weggis, Switzerland",
       "coordinates": "47.0°N 8.4°E",
-      "description": ["@desc:1", "@desc:3"],
-      "highlights": ["The home of the Chenot Method®", "Lake Lucerne", "World’s Best Detox Programme 2026"],
+      "description": [
+        "@desc:1",
+        "@desc:3"
+      ],
+      "highlights": [
+        "The home of the Chenot Method®",
+        "Lake Lucerne",
+        "World’s Best Detox Programme 2026"
+      ],
       "facts": [
-        ["Opened", "June 2020"],
-        ["Medical spa", "5,000 sqm"],
-        ["Medical team", "over 100 medical wellness experts"],
-        ["Minimum stay", "7 nights"],
-        ["Airport", "50-minute drive from Zürich Airport"],
-        ["Diet", "850 Kcal per day"]
+        [
+          "Opened",
+          "June 2020"
+        ],
+        [
+          "Medical spa",
+          "5,000 sqm"
+        ],
+        [
+          "Medical team",
+          "over 100 medical wellness experts"
+        ],
+        [
+          "Minimum stay",
+          "7 nights"
+        ],
+        [
+          "Airport",
+          "50-minute drive from Zürich Airport"
+        ],
+        [
+          "Diet",
+          "850 Kcal per day"
+        ]
       ]
     },
     "sha-wellness": {
       "name": "SHA Wellness Clinic",
       "location": "L’Albir, Alicante, Spain",
       "coordinates": "38.6°N 0.1°W",
-      "description": ["@desc:1", "@desc:2"],
-      "highlights": ["Masters of Longevity", "Spain, Mexico and Emirates", "+50 integrative medical & wellness specialties"],
+      "description": [
+        "@desc:1",
+        "@desc:2"
+      ],
+      "highlights": [
+        "Masters of Longevity",
+        "Spain, Mexico and Emirates",
+        "+50 integrative medical & wellness specialties"
+      ],
       "facts": [
-        ["Experience", "+500 professionals and experts, backed by 20 years of pioneering work"],
-        ["Treatments", "+1000 evidence-based treatments"],
-        ["Awards", "+100 international awards"],
-        ["First stay", "Every first stay at SHA includes a health program"],
-        ["Transfers", "Included for stays of 4 days or more"],
-        ["Suites", "Deluxe 70 m² · Superior 100 m² · Grand 120 m² · Royal duplex"]
+        [
+          "Experience",
+          "+500 professionals and experts, backed by 20 years of pioneering work"
+        ],
+        [
+          "Treatments",
+          "+1000 evidence-based treatments"
+        ],
+        [
+          "Awards",
+          "+100 international awards"
+        ],
+        [
+          "First stay",
+          "Every first stay at SHA includes a health program"
+        ],
+        [
+          "Transfers",
+          "Included for stays of 4 days or more"
+        ],
+        [
+          "Suites",
+          "Deluxe 70 m² · Superior 100 m² · Grand 120 m² · Royal duplex"
+        ]
       ]
     },
     "zem-altea": {
       "name": "ZEM Wellness Clinic Altea",
       "location": "Altea, Alicante, Spain",
-      "description": ["@desc:1", "@desc:2"],
-      "highlights": ["Discover Mediterranean Longevity", "Programmes of 3, 7 and 14 nights", "More than 25 specialties"],
+      "description": [
+        "@desc:1",
+        "@desc:2"
+      ],
+      "highlights": [
+        "Discover Mediterranean Longevity",
+        "Programmes of 3, 7 and 14 nights",
+        "More than 25 specialties"
+      ],
       "facts": [
-        ["Hotel", "Five-Star Luxury in Altea, on the Mediterranean Coast"],
-        ["Programmes", "8 programmes, generally from 3 to 14 nights"],
-        ["Director of ZEM Clinic", "Dr. Carlos Gutiérrez — Specialist in Longevity Medicine and Family Medicine"],
-        ["Grounds", "more than 10,000 m² of natural spaces"],
-        ["Finca Althaya", "More than 200,000 m² of organic farmland, over 60 varieties of fruits and vegetables"],
-        ["Airport", "45 minutes from Alicante Airport"]
+        [
+          "Hotel",
+          "Five-Star Luxury in Altea, on the Mediterranean Coast"
+        ],
+        [
+          "Programmes",
+          "8 programmes, generally from 3 to 14 nights"
+        ],
+        [
+          "Director of ZEM Clinic",
+          "Dr. Carlos Gutiérrez — Specialist in Longevity Medicine and Family Medicine"
+        ],
+        [
+          "Grounds",
+          "more than 10,000 m² of natural spaces"
+        ],
+        [
+          "Finca Althaya",
+          "More than 200,000 m² of organic farmland, over 60 varieties of fruits and vegetables"
+        ],
+        [
+          "Airport",
+          "45 minutes from Alicante Airport"
+        ]
       ]
     },
     "zulal": {
       "name": "Zulal Wellness Resort by Chiva-Som",
       "location": "Al Ruwais, Qatar",
-      "description": ["@desc:0", "@desc:3"],
-      "highlights": ["Traditional Arabic and Islamic Medicine", "Qatar’s northernmost tip", "Middle East’s Best Wellness Retreat 2026"],
+      "description": [
+        "@desc:0",
+        "@desc:3"
+      ],
+      "highlights": [
+        "Traditional Arabic and Islamic Medicine",
+        "Qatar’s northernmost tip",
+        "Middle East’s Best Wellness Retreat 2026"
+      ],
       "facts": [
-        ["Distance from Doha", "110.3 km (73 mins) from the resort"],
-        ["Airport", "Hamad International Airport, 138.4 km (88 mins)"],
-        ["Minimum stay", "None — at least 3 nights recommended"],
-        ["Two experiences", "Zulal Serenity for adults · Zulal Discovery for families"],
-        ["Awards", "Qatar’s Best Wellness Retreat 2026 · Middle East’s Best Wellness Retreat 2026"]
+        [
+          "Distance from Doha",
+          "110.3 km (73 mins) from the resort"
+        ],
+        [
+          "Airport",
+          "Hamad International Airport, 138.4 km (88 mins)"
+        ],
+        [
+          "Minimum stay",
+          "None — at least 3 nights recommended"
+        ],
+        [
+          "Two experiences",
+          "Zulal Serenity for adults · Zulal Discovery for families"
+        ],
+        [
+          "Awards",
+          "Qatar’s Best Wellness Retreat 2026 · Middle East’s Best Wellness Retreat 2026"
+        ]
       ]
     },
     "ananda": {
       "name": "Ananda In The Himalayas",
       "location": "Narendra Nagar, Uttarakhand, India",
       "coordinates": "30.2°N 78.3°E",
-      "description": ["@desc:0", "@desc:1"],
-      "highlights": ["No. 1 Destination Spa in the World 2024", "The birthplace of Ayurveda, Yoga and meditation", "100-acre palace estate"],
+      "description": [
+        "@desc:0",
+        "@desc:1"
+      ],
+      "highlights": [
+        "No. 1 Destination Spa in the World 2024",
+        "The birthplace of Ayurveda, Yoga and meditation",
+        "100-acre palace estate"
+      ],
       "facts": [
-        ["Estate", "100-acre grounds, gardens and surrounding forests"],
-        ["Spa", "25,000 sq. ft. with 24 treatment rooms"],
-        ["Treatments", "more than 80 body and beauty experiences"],
-        ["Minimum stay", "Most wellness programmes have a 7 night minimum stay"],
-        ["Minimum age", "14 years or older"],
-        ["Getting there", "45 minutes by air from Delhi to Dehradun, then a 40 min drive"]
+        [
+          "Estate",
+          "100-acre grounds, gardens and surrounding forests"
+        ],
+        [
+          "Spa",
+          "25,000 sq. ft. with 24 treatment rooms"
+        ],
+        [
+          "Treatments",
+          "more than 80 body and beauty experiences"
+        ],
+        [
+          "Minimum stay",
+          "Most wellness programmes have a 7 night minimum stay"
+        ],
+        [
+          "Minimum age",
+          "14 years or older"
+        ],
+        [
+          "Getting there",
+          "45 minutes by air from Delhi to Dehradun, then a 40 min drive"
+        ]
       ]
     },
     "tulah": {
       "name": "tulåh",
       "location": "Calicut, Kerala, India",
-      "description": ["@desc:0", "@desc:3"],
-      "highlights": ["A clinical wellness sanctuary", "Doctor-Led Multidisciplinary Team", "Built to LEED and WELL standards"],
+      "description": [
+        "@desc:0",
+        "@desc:3"
+      ],
+      "highlights": [
+        "A clinical wellness sanctuary",
+        "Doctor-Led Multidisciplinary Team",
+        "Built to LEED and WELL standards"
+      ],
       "facts": [
-        ["Founder", "Faizal E. Kottikollon"],
-        ["Calicut International Airport", "20–25 minute drive"],
-        ["Transfers", "Chauffeur-driven transfers · private helicopter landing"],
-        ["Discover Clinical Wellness", "4 Nights"],
-        ["Journeys", "7, 14 or 21 Nights"],
-        ["Sister hospital", "Meitra Hospital, Calicut"]
+        [
+          "Founder",
+          "Faizal E. Kottikollon"
+        ],
+        [
+          "Calicut International Airport",
+          "20–25 minute drive"
+        ],
+        [
+          "Transfers",
+          "Chauffeur-driven transfers · private helicopter landing"
+        ],
+        [
+          "Discover Clinical Wellness",
+          "4 Nights"
+        ],
+        [
+          "Journeys",
+          "7, 14 or 21 Nights"
+        ],
+        [
+          "Sister hospital",
+          "Meitra Hospital, Calicut"
+        ]
       ]
     },
     "chiva-som": {
       "name": "Chiva-Som Hua Hin",
       "location": "Hua Hin, Thailand",
       "coordinates": "12.6°N 100.0°E",
-      "description": ["@desc:0", "@desc:3"],
-      "highlights": ["Asia’s first wellness resort", "16 Thai retreats", "Up to 12 daily classes"],
+      "description": [
+        "@desc:0",
+        "@desc:3"
+      ],
+      "highlights": [
+        "Asia’s first wellness resort",
+        "16 Thai retreats",
+        "Up to 12 daily classes"
+      ],
       "facts": [
-        ["Opened", "April 1995"],
-        ["Rooms", "54 rooms and suites"],
-        ["Retreats", "16 Thai retreats, from three nights to 14"],
-        ["Transfer from Bangkok", "approximately 3.5 hours by car"],
-        ["Guests", "a resort for adults"],
-        ["Check-in / Check-out", "15:00 / 12:00"]
+        [
+          "Opened",
+          "April 1995"
+        ],
+        [
+          "Rooms",
+          "54 rooms and suites"
+        ],
+        [
+          "Retreats",
+          "16 Thai retreats, from three nights to 14"
+        ],
+        [
+          "Transfer from Bangkok",
+          "approximately 3.5 hours by car"
+        ],
+        [
+          "Guests",
+          "a resort for adults"
+        ],
+        [
+          "Check-in / Check-out",
+          "15:00 / 12:00"
+        ]
       ]
     }
   },
   "destination": {
     "navLabel": "Wellness",
     "eyebrow": "Wellness & Health",
-    "title": ["Stillness", "& Science"],
-    "copy": "Medical cures in the Alps, Ayurveda above the Ganges, longevity clinics on the Spanish Mediterranean, a desert retreat on Qatar’s northern tip — eight houses where a week gives back more than it takes.",
+    "title": [
+      "Balance",
+      "& Being"
+    ],
+    "copy": "Medical cures in the Alps, Ayurveda above the Ganges, longevity clinics on the Spanish Mediterranean, a desert retreat on Qatar’s northern tip — places designed to restore what everyday life takes away.",
     "coords": "Eight retreats · six countries",
     "season": "Year-round",
-    "highlights": ["8 retreats", "Doctor-led", "Arranged directly"],
+    "highlights": [
+      "8 retreats",
+      "Doctor-led",
+      "Arranged directly"
+    ],
     "interest": "Wellness & Health",
     "gate": "W1",
     "statusLabel": "Wellness",
     "ctaLabel": "Enter the sanctuary →",
     "ctaHref": "/wellness",
-    "mapPos": { "x": 0.55, "y": 0.36 }
+    "mapPos": {
+      "x": 0.55,
+      "y": 0.36
+    }
   },
   "page": {
     "country": "Wellness",
     "tagline": "Eight retreats where medicine, tradition and rest share one address — from an Alpine cure to Ayurveda above the Ganges, arranged around the body you arrive with.",
     "priceLine": "Medical & holistic retreats · rates on request",
     "season": "Year-round",
-    "coords": "Eight retreats · six countries",
+    "coords": "",
     "chapters": [
       {
         "navLabel": "The Method",
         "eyebrow": "Medicine first",
-        "title": ["Measured, then", "mended"],
+        "title": [
+          "Measured, then",
+          "mended"
+        ],
         "media": "lanserhof",
         "light": false,
         "paragraphs": [
@@ -152,7 +368,10 @@
       {
         "navLabel": "The Tradition",
         "eyebrow": "Older medicine",
-        "title": ["Where the", "healing began"],
+        "title": [
+          "Where the",
+          "healing began"
+        ],
         "media": "ananda",
         "light": true,
         "paragraphs": [
@@ -163,7 +382,10 @@
       {
         "navLabel": "The Arranging",
         "eyebrow": "How we work",
-        "title": ["The right retreat,", "not the nearest"],
+        "title": [
+          "The right retreat,",
+          "not the nearest"
+        ],
         "media": "tulah",
         "light": false,
         "paragraphs": [
@@ -172,38 +394,84 @@
         ]
       }
     ],
-    "quote": { "text": "Rest is not the absence of a plan. On this route, it is the plan.", "attribution": "Field notes — The Retreat Collection" },
+    "quote": {
+      "text": "Rest is not the absence of a plan. On this route, it is the plan.",
+      "attribution": "Field notes — The Retreat Collection"
+    },
     "days": [
-      { "stay": "lanserhof", "copy": "@desc:3", "details": ["Lans, Austria", "7 to 21 nights", "World's Best Medical Spa"] },
-      { "stay": "chenot-palace", "copy": "@desc:1", "details": ["Weggis, Switzerland", "7-night minimum", "The Chenot Method®"] },
-      { "stay": "sha-wellness", "copy": "@desc:2", "details": ["L’Albir, Spain", "Programmes from 4 nights", "Masters of Longevity"] },
-      { "stay": "zem-altea", "copy": "@desc:1", "details": ["Altea, Spain", "3 to 14 nights", "More than 25 specialties"] },
-      { "stay": "zulal", "copy": "@desc:0", "details": ["Al Ruwais, Qatar", "From 3 nights", "Serenity & Discovery"] },
-      { "stay": "ananda", "copy": "@desc:0", "details": ["Uttarakhand, India", "7-night minimum", "No. 1 Destination Spa 2024"] },
-      { "stay": "tulah", "copy": "@desc:0", "details": ["Kerala, India", "4 to 21 nights", "Clinical wellness"] },
-      { "stay": "chiva-som", "copy": "@desc:0", "details": ["Hua Hin, Thailand", "3 to 14 nights", "Asia’s first wellness resort"] }
-    ],
-    "essentials": [
       {
-        "title": "Choosing a retreat",
-        "copy": "Two families on one route. The medical houses — Lanserhof, Chenot, SHA, ZEM — begin with diagnostics and run on protocols; the traditional houses — Ananda, tulåh, Zulal, Chiva-Som — begin with Ayurveda, Thai or Arabic medicine and build the clinic around it. Tell us what you want to change and we will tell you which door.",
-        "points": [["Medical", "Lanserhof · Chenot · SHA · ZEM"], ["Traditional", "Ananda · tulåh · Zulal · Chiva-Som"], ["Both", "Most of them, in practice"]]
+        "stay": "lanserhof",
+        "copy": "@desc:3",
+        "details": [
+          "Lans, Austria",
+          "7 to 21 nights",
+          "World's Best Medical Spa"
+        ]
       },
       {
-        "title": "How long to stay",
-        "copy": "Shorter than a week rarely works. Chenot asks for seven nights; most of Ananda’s programmes need seven and Panchakarma fourteen; Lanserhof’s Classic Detox runs seven to twenty-one; tulåh’s journeys run seven, fourteen or twenty-one, with a four-night clinical check as the exception. Chiva-Som, Zulal, SHA and ZEM will take you from three or four.",
-        "points": [["Shortest", "3–4 nights"], ["Typical", "7 nights"], ["Deepest", "14–21 nights"]]
+        "stay": "chenot-palace",
+        "copy": "@desc:1",
+        "details": [
+          "Weggis, Switzerland",
+          "7-night minimum",
+          "The Chenot Method®"
+        ]
       },
       {
-        "title": "Before you go",
-        "copy": "Every house begins with a consultation, and several begin before you land. tulåh prepares the journey ahead of arrival; Chenot takes you in at three and sends you off at noon; Ananda welcomes guests of fourteen and over; Chiva-Som Hua Hin and Zulal Serenity are for adults.",
-        "points": [["Consultation", "First, always"], ["Minimum age", "14 at Ananda · adults at Chiva-Som"], ["Check-in", "Afternoon, as a rule"]]
+        "stay": "sha-wellness",
+        "copy": "@desc:2",
+        "details": [
+          "L’Albir, Spain",
+          "Programmes from 4 nights",
+          "Masters of Longevity"
+        ]
       },
       {
-        "title": "Getting there",
-        "copy": "Lanserhof Lans sits above Innsbruck; Chenot is fifty minutes from Zürich; ZEM is forty-five minutes from Alicante’s airport; Zulal is ninety minutes north of Doha’s; Ananda is a forty-five-minute flight from Delhi and a forty-minute drive; tulåh is twenty-five minutes from Calicut or forty-five by helicopter from Cochin; Chiva-Som is three and a half hours by road from Bangkok. We route every leg.",
-        "points": [["Europe", "Innsbruck · Zürich · Alicante"], ["Gulf", "Doha, ninety minutes"], ["Asia", "Dehradun · Calicut · Bangkok"]]
+        "stay": "zem-altea",
+        "copy": "@desc:1",
+        "details": [
+          "Altea, Spain",
+          "3 to 14 nights",
+          "More than 25 specialties"
+        ]
+      },
+      {
+        "stay": "zulal",
+        "copy": "@desc:0",
+        "details": [
+          "Al Ruwais, Qatar",
+          "From 3 nights",
+          "Serenity & Discovery"
+        ]
+      },
+      {
+        "stay": "ananda",
+        "copy": "@desc:0",
+        "details": [
+          "Uttarakhand, India",
+          "7-night minimum",
+          "No. 1 Destination Spa 2024"
+        ]
+      },
+      {
+        "stay": "tulah",
+        "copy": "@desc:0",
+        "details": [
+          "Kerala, India",
+          "4 to 21 nights",
+          "Clinical wellness"
+        ]
+      },
+      {
+        "stay": "chiva-som",
+        "copy": "@desc:0",
+        "details": [
+          "Hua Hin, Thailand",
+          "3 to 14 nights",
+          "Asia’s first wellness resort"
+        ]
       }
-    ]
+    ],
+    "essentials": []
   }
 }

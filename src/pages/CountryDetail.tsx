@@ -258,7 +258,7 @@ function CountryDetailInner({
     page.days.forEach((_, i) => {
       s.push({ id: `cd-day-${i}`, mapPos: jitter(n++), theme: "white", coords: stop.coords });
     });
-    s.push({ id: "cd-essentials", mapPos: jitter(n++), theme: "white", coords: stop.coords });
+    if (page.essentials.length) s.push({ id: "cd-essentials", mapPos: jitter(n++), theme: "white", coords: stop.coords });
     s.push({ id: "cd-gallery", mapPos: jitter(n++), theme: "white", coords: stop.coords });
     s.push({ id: "cd-stays", mapPos: jitter(n++), theme: "white", coords: stop.coords });
     return s;
@@ -283,7 +283,7 @@ function CountryDetailInner({
       { id: heroId, label: t("page.overview") },
       ...page.chapters.map((ch, i) => ({ id: `cd-ch-${i}`, label: ch.navLabel })),
       ...(page.days.length ? [{ id: "cd-day-0", label: t("page.signatures") }] : []),
-      { id: "cd-essentials", label: t("page.essentials") },
+      ...(page.essentials.length ? [{ id: "cd-essentials", label: t("page.essentials") }] : []),
       { id: "cd-gallery", label: t("page.gallery") },
       { id: "cd-stays", label: t("page.theStays") }
     ],
@@ -671,10 +671,10 @@ function CountryDetailInner({
             the surface, and sends its rings out */}
         {wellness && <StillInterlude />}
 
-        <SignatureJourney days={page.days} country={page.country} />
+        <SignatureJourney days={page.days} country={page.country} intro={wellness ? t("wellness.signaturesLine") : undefined} />
 
         {/* THE ESSENTIALS — information deck, dealt card over card */}
-        <EssentialsStack cards={page.essentials} country={page.country} />
+        {page.essentials.length > 0 && <EssentialsStack cards={page.essentials} country={page.country} />}
 
         {/* THE GALLERY — every image the country's data holds, in one wall */}
         <GallerySection page={page} group={group} />
