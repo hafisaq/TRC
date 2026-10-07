@@ -17,7 +17,7 @@ const VOLUME_KEY = "trc-sound-vol"; // remembered
 export default function SoundControl() {
   const ambient = useRef<ReturnType<typeof createAmbient> | null>(null);
   const [muted, setMuted] = useState(() => { try { return sessionStorage.getItem(MUTE_KEY) === "off"; } catch { return false; } });
-  const [volume, setVolume] = useState(() => { try { const v = Number(localStorage.getItem(VOLUME_KEY)); return v >= 0 && v <= 1 && localStorage.getItem(VOLUME_KEY) !== null ? v : 0.75; } catch { return 0.75; } });
+  const [volume, setVolume] = useState(() => { try { const v = Number(localStorage.getItem(VOLUME_KEY)); return v >= 0 && v <= 1 && localStorage.getItem(VOLUME_KEY) !== null ? v : 0.5; } catch { return 0.5; } });
   const [playing, setPlaying] = useState(false);
   const [open, setOpen] = useState(false);
   const mutedRef = useRef(muted);

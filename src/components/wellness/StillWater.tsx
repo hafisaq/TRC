@@ -114,24 +114,14 @@ export function HeroBreath() {
   );
 }
 
-// Still water, scroll-driven — and the route at a glance. A pinned moment
-// where a single drop falls as you scroll, meets the water line and sends
-// rings out across it; with each ring, one line of the route's facts
-// surfaces. The heading is there from the start, so the screen never
-// waits empty for the drop.
-const GLANCE = [
-  ["wellness.glance1Label", "wellness.glance1Value"],
-  ["wellness.glance2Label", "wellness.glance2Value"],
-  ["wellness.glance3Label", "wellness.glance3Value"],
-  ["wellness.glance4Label", "wellness.glance4Value"]
-] as const;
-
+// Still water, scroll-driven: a pinned moment where a single drop falls as
+// you scroll, meets the water line and sends rings out across it. The
+// heading is there from the start, so the screen never waits empty.
 export function StillInterlude() {
   const ref = useRef<HTMLElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const ringsRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
-  const factsRef = useRef<HTMLDivElement>(null);
   const [seen, setSeen] = useState(false);
 
   useEffect(() => {
@@ -148,7 +138,7 @@ export function StillInterlude() {
       if (rect.top < window.innerHeight && rect.bottom > 0) setSeen(true);
       if (Math.abs(p - last) < 0.002) return;
       last = p;
-      // the fall: 0–.3 · the touch: .3 · the rings and the facts: .3–1
+      // the fall: 0–.3 · the touch: .3 · the rings: .3–1
       const fall = clamp(p / 0.3, 0, 1);
       const spread = clamp((p - 0.3) / 0.7, 0, 1);
       const eased = 1 - Math.pow(1 - spread, 2.2);
@@ -170,13 +160,6 @@ export function StillInterlude() {
       if (lineRef.current) {
         const dip = p > 0.3 ? Math.sin(Math.min(1, spread * 3) * Math.PI) * 10 : 0;
         lineRef.current.style.setProperty("--dip", `${dip.toFixed(1)}px`);
-      }
-      if (factsRef.current) {
-        factsRef.current.querySelectorAll<HTMLElement>("[data-fact]").forEach((fact, i) => {
-          const at = clamp((spread - (0.08 + i * 0.2)) / 0.16, 0, 1);
-          fact.style.opacity = String(at);
-          fact.style.transform = `translateY(${(1 - at) * 14}px)`;
-        });
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(apply); };
@@ -229,15 +212,6 @@ export function StillInterlude() {
           </div>
         </div>
 
-        {/* the route's facts, surfacing one ring at a time */}
-        <div ref={factsRef} className="mt-4 grid w-full max-w-[920px] grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 sm:gap-y-6">
-          {GLANCE.map(([label, value], i) => (
-            <div key={label} data-fact className={`border-t border-gold/40 pt-3 ${i % 2 ? "sm:text-right" : ""}`} style={{ opacity: 0 }}>
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-gold-deep">{t(label)}</div>
-              <div className="mt-1.5 font-serif text-[clamp(18px,2.2vw,26px)] font-light leading-[1.2] text-navy">{t(value)}</div>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
