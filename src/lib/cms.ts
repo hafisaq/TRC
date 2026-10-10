@@ -72,7 +72,8 @@ const QUERY = `{
     showLanguageSwitch, footerEyebrow, footerHeadline, footerLine, footerStamp,
     contacts[]{_key, type, value, show}, socials[]{_key, network, url, show},
     showSignature, signatureName, signatureUrl,
-    analyticsEnabled, ga4Id, clarityId, askConsent, analyticsDomain
+    analyticsEnabled, ga4Id, clarityId, askConsent, analyticsDomain,
+    "soundTrack": soundTrack.asset->url
   }
 }`;
 
@@ -80,6 +81,9 @@ const QUERY = `{
 // everything else). Defaults apply when Sanity is unreachable.
 export const SETTINGS = {
   showLanguageSwitch: false,
+  // the site's music (a licensed track uploaded in the Studio); empty
+  // means the generated tones play instead
+  soundTrack: "",
   analytics: { enabled: false, ga4Id: "", clarityId: "", askConsent: true, domain: "" }
 };
 
@@ -153,6 +157,7 @@ export async function hydrateFromCms(): Promise<boolean> {
       socials?: Array<{ _key?: string; network?: string; url?: string; show?: boolean }>;
       showSignature?: boolean; signatureName?: string; signatureUrl?: string;
       analyticsEnabled?: boolean; ga4Id?: string; clarityId?: string; askConsent?: boolean; analyticsDomain?: string;
+      soundTrack?: string | null;
     } | null;
   };
   // Reuse this route's last published response when the network is slow;
@@ -247,6 +252,7 @@ export async function hydrateFromCms(): Promise<boolean> {
 
   // ---- site settings ----
   SETTINGS.showLanguageSwitch = data.settings?.showLanguageSwitch ?? false;
+  SETTINGS.soundTrack = (data.settings?.soundTrack ?? "").trim();
   SETTINGS.analytics = {
     enabled: data.settings?.analyticsEnabled === true,
     ga4Id: (data.settings?.ga4Id ?? "").trim(),
