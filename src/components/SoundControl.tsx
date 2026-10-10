@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { createAmbient } from "../lib/ambient";
+import { createAmbient, createTrackAmbient, type Ambient } from "../lib/ambient";
+import { SETTINGS } from "../lib/cms";
 import { t } from "../lib/i18n";
 import "./sound-control.css";
 
@@ -15,7 +16,7 @@ const VOLUME_KEY = "trc-sound-vol"; // remembered
 // scroll). Sound is ON by default on every visit; a mute lasts for the
 // browsing session, the volume is remembered.
 export default function SoundControl() {
-  const ambient = useRef<ReturnType<typeof createAmbient> | null>(null);
+  const ambient = useRef<Ambient | null>(null);
   const [muted, setMuted] = useState(() => { try { return sessionStorage.getItem(MUTE_KEY) === "off"; } catch { return false; } });
   const [volume, setVolume] = useState(() => { try { const v = Number(localStorage.getItem(VOLUME_KEY)); return v >= 0 && v <= 1 && localStorage.getItem(VOLUME_KEY) !== null ? v : 0.5; } catch { return 0.5; } });
   const [playing, setPlaying] = useState(false);
@@ -27,7 +28,8 @@ export default function SoundControl() {
   useEffect(() => { setSlot(document.querySelector<HTMLElement>(".sound-slot")); }, []);
 
   useEffect(() => {
-    const a = (ambient.current = createAmbient());
+    // the licensed track from the Studio when there is one, else the tones
+    const a = (ambient.current = SETTINGS.soundTrack ? createTrackAmbient(SETTINGS.soundTrack) : createAmbient());
     a.setMuted(mutedRef.current);
     a.setVolume(volume);
     const begin = (e: Event) => {

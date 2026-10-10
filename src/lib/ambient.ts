@@ -13,7 +13,7 @@
 // real <audio> element is playing, so a silent one is started with the
 // first touch (see unlockSession).
 
-type Ambient = {
+export type Ambient = {
   start: () => Promise<boolean>;
   setMuted: (muted: boolean) => void;
   setVolume: (v: number) => void; // 0..1
@@ -211,6 +211,89 @@ export function createAmbient(): Ambient {
       disposed = true;
       clearTimeout(bowlTimer);
       document.removeEventListener("visibilitychange", onVisibility);
+      ctx?.close().catch(() => undefined);
+      ctx = null;
+    }
+  };
+}
+
+// The same controls over a licensed music track (an mp3 uploaded in the
+// Studio): an <audio> element looping through the same master gain, so
+// the slider, the mute, the fades and the background-tab pause behave
+// exactly as they do for the generated tones. The element is itself the
+// iPhone silent-switch fix, and the loop gap is hidden by the file's own
+// gentle fades at either end.
+export function createTrackAmbient(url: string): Ambient {
+  let ctx: AudioContext | null = null;
+  let master: GainNode | null = null;
+  let el: HTMLAudioElement | null = null;
+  let muted = false;
+  let volume = 1;
+  let disposed = false;
+
+  const build = () => {
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return false;
+    el = new Audio();
+    el.crossOrigin = "anonymous";
+    el.loop = true;
+    el.preload = "auto";
+    el.setAttribute("playsinline", "");
+    el.src = url;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+    ctx.createMediaElementSource(el).connect(master);
+    return true;
+  };
+  const target = () => (muted ? 0 : LEVEL * volume);
+  const fade = (to: number, seconds: number) => {
+    if (!ctx || !master) return;
+    const now = ctx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value, now);
+    master.gain.linearRampToValueAtTime(to, now + seconds);
+  };
+  const onVisibility = () => {
+    if (!ctx || !el) return;
+    if (document.hidden) { fade(0, 0.4); setTimeout(() => { if (document.hidden) el?.pause(); }, 450); }
+    else if (!muted) { ctx.resume().catch(() => undefined); el.play().catch(() => undefined); fade(target(), 1.5); }
+  };
+
+  return {
+    async start() {
+      if (disposed) return false;
+      if (!ctx && !build()) return false;
+      try {
+        // both must be asked inside the gesture; neither is awaited alone,
+        // since a refused one would hang the other
+        const resumed = ctx!.resume();
+        const played = el!.play();
+        await Promise.race([Promise.all([resumed, played]), new Promise((r) => setTimeout(r, 400))]);
+      } catch { return false; }
+      if (ctx!.state !== "running" || el!.paused) return false;
+      document.removeEventListener("visibilitychange", onVisibility);
+      document.addEventListener("visibilitychange", onVisibility);
+      if (!muted) fade(target(), 3);
+      return true;
+    },
+    setMuted(next) {
+      muted = next;
+      if (!ctx || !el) return;
+      if (next) { fade(0, 0.6); setTimeout(() => { if (muted) el?.pause(); }, 700); }
+      else { ctx.resume().catch(() => undefined); el.play().catch(() => undefined); fade(target(), 1.2); }
+    },
+    setVolume(v) {
+      volume = Math.min(1, Math.max(0, v));
+      if (ctx && ctx.state === "running" && !muted) fade(target(), 0.15);
+    },
+    running: () => !!ctx && ctx.state === "running" && !!el && !el.paused && !muted,
+    dispose() {
+      disposed = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      el?.pause();
+      if (el) el.src = "";
       ctx?.close().catch(() => undefined);
       ctx = null;
     }

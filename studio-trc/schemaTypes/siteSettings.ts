@@ -10,6 +10,7 @@ export const siteSettings = defineType({
     { name: 'footerContact', title: 'Footer — contact details', options: { collapsible: true, collapsed: false } },
     { name: 'signature', title: 'Footer — signature', options: { collapsible: true, collapsed: true } },
     { name: 'analytics', title: 'Analytics', options: { collapsible: true, collapsed: true } },
+    { name: 'sound', title: 'Site sound', options: { collapsible: true, collapsed: true } },
   ],
   fields: [
     defineField({
@@ -18,6 +19,12 @@ export const siteSettings = defineType({
       type: 'boolean',
       initialValue: true,
     }),
+    defineField({
+      name: 'soundTrack', title: 'Music track (mp3)', type: 'file', fieldset: 'sound',
+      options: { accept: 'audio/mpeg,audio/mp4,audio/aac' },
+      description: 'Plays quietly on every page, looping, behind the sound switch in the header. Leave empty and the site plays its own generated tones instead. Keep the licence certificate for whatever is uploaded here.',
+    }),
+    defineField({ name: 'soundTrackName', title: 'Track credit (optional)', type: 'string', fieldset: 'sound', description: 'For your own records, e.g. "Jupiter Sands — Rising Sun (Artlist)"' }),
     defineField({ name: 'footerEyebrow', title: 'Eyebrow', type: 'string', fieldset: 'footerCopy', description: 'Small line above the headline, e.g. "The arrival lounge"' }),
     defineField({ name: 'footerHeadline', title: 'Headline', type: 'titlePair', fieldset: 'footerCopy', description: 'Two lines; the second is set in gold' }),
     defineField({ name: 'footerLine', title: 'Line under the headline', type: 'text', rows: 2, fieldset: 'footerCopy' }),
