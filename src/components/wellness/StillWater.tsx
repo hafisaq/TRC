@@ -114,14 +114,19 @@ export function HeroBreath() {
   );
 }
 
-// Still water, scroll-driven: a pinned moment where a single drop falls as
-// you scroll, meets the water line and sends rings out across it. The
-// heading is there from the start, so the screen never waits empty.
+// Still water, scroll-driven — and how a stay unfolds. A pinned moment
+// where a drop falls as you scroll and meets the water line; with each
+// ring, one stage of a stay lights up along the line: arrive, assess,
+// restore, return. Shorter and quicker than it was: the drop lands in the
+// first fifth of the scroll and the stages follow close behind.
+const STAGES = ["arrive", "assess", "restore", "return"] as const;
+
 export function StillInterlude() {
   const ref = useRef<HTMLElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const ringsRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
+  const stagesRef = useRef<HTMLDivElement>(null);
   const [seen, setSeen] = useState(false);
 
   useEffect(() => {
@@ -138,9 +143,9 @@ export function StillInterlude() {
       if (rect.top < window.innerHeight && rect.bottom > 0) setSeen(true);
       if (Math.abs(p - last) < 0.002) return;
       last = p;
-      // the fall: 0–.3 · the touch: .3 · the rings: .3–1
-      const fall = clamp(p / 0.3, 0, 1);
-      const spread = clamp((p - 0.3) / 0.7, 0, 1);
+      // the fall: 0–.18 · the touch: .18 · the rings and the stages: .18–1
+      const fall = clamp(p / 0.18, 0, 1);
+      const spread = clamp((p - 0.18) / 0.82, 0, 1);
       const eased = 1 - Math.pow(1 - spread, 2.2);
       if (dropRef.current) {
         // the fall starts just inside the top of the water box, whatever
@@ -148,18 +153,26 @@ export function StillInterlude() {
         const box = dropRef.current.parentElement;
         const from = box ? box.offsetHeight / 2 - 6 : 120;
         dropRef.current.style.transform = `translate(-50%, ${-from + fall * from}px) scaleY(${1 + fall * 0.3})`;
-        dropRef.current.style.opacity = String(p < 0.3 ? 0.9 : clamp(1 - spread * 8, 0, 1));
+        dropRef.current.style.opacity = String(p < 0.18 ? 0.9 : clamp(1 - spread * 8, 0, 1));
       }
       if (ringsRef.current) {
         ringsRef.current.querySelectorAll<HTMLElement>("[data-ring]").forEach((ring, i) => {
           const lag = clamp((eased - i * 0.14) / (1 - i * 0.14), 0, 1);
           ring.style.transform = `translate(-50%, -50%) scale(${0.08 + lag * (1.1 + i * 0.35)})`;
-          ring.style.opacity = String(p > 0.3 ? 1 - lag * 0.75 : 0);
+          ring.style.opacity = String(p > 0.18 ? 1 - lag * 0.75 : 0);
         });
       }
       if (lineRef.current) {
-        const dip = p > 0.3 ? Math.sin(Math.min(1, spread * 3) * Math.PI) * 10 : 0;
+        const dip = p > 0.18 ? Math.sin(Math.min(1, spread * 3) * Math.PI) * 10 : 0;
         lineRef.current.style.setProperty("--dip", `${dip.toFixed(1)}px`);
+      }
+      if (stagesRef.current) {
+        stagesRef.current.querySelectorAll<HTMLElement>("[data-stage]").forEach((stage, i) => {
+          const at = clamp((spread - (0.04 + i * 0.17)) / 0.14, 0, 1);
+          stage.style.opacity = String(at);
+          stage.style.transform = `translateY(${(1 - at) * 12}px)`;
+          stage.classList.toggle("is-lit", at > 0.5);
+        });
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(apply); };
@@ -174,7 +187,7 @@ export function StillInterlude() {
   }, []);
 
   return (
-    <section ref={ref} id="cd-breath" className="relative h-[190svh] w-full sm:h-[220svh]">
+    <section ref={ref} id="cd-breath" className="relative h-[150svh] w-full sm:h-[170svh]">
       <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center overflow-hidden px-5 pt-20 pb-[calc(env(safe-area-inset-bottom)+96px)] sm:pb-10">
         <div className="text-center">
           <div className="font-mono text-[8.5px] uppercase tracking-[0.34em] text-gold-deep">{t("wellness.glanceEyebrow")}</div>
@@ -212,6 +225,16 @@ export function StillInterlude() {
           </div>
         </div>
 
+        {/* how a stay unfolds: four stages, lit one ring at a time */}
+        <div ref={stagesRef} className="still-stages mt-2 grid w-full max-w-[960px] grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4 sm:gap-x-8">
+          {STAGES.map((key, i) => (
+            <div key={key} data-stage className="still-stage" style={{ opacity: 0 }}>
+              <div className="still-stage__mark" aria-hidden="true"><span>{String(i + 1).padStart(2, "0")}</span></div>
+              <div className="mt-3 font-serif text-[clamp(20px,2.4vw,28px)] font-light leading-[1.1] text-navy">{t(`wellness.stage.${key}`)}</div>
+              <p className="mt-1.5 text-[12px] font-light leading-[1.65] text-navy/60 sm:text-[12.5px]">{t(`wellness.stage.${key}Line`)}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
