@@ -41,7 +41,16 @@ export default function SoundControl() {
     const stop = () => events.forEach((ev) => window.removeEventListener(ev, begin, true));
     events.forEach((ev) => window.addEventListener(ev, begin, { passive: true, capture: true }));
     if (!mutedRef.current) a.start().then((ok) => { if (ok) { setPlaying(true); stop(); } });
-    return () => { stop(); a.dispose(); ambient.current = null; };
+    // the loader's "continue in silence": a mute for the session, before
+    // any sound has started
+    const silence = () => {
+      mutedRef.current = true;
+      setMuted(true);
+      try { sessionStorage.setItem(MUTE_KEY, "off"); } catch { /* fine */ }
+      a.setMuted(true);
+    };
+    window.addEventListener("trc-sound:mute", silence);
+    return () => { stop(); window.removeEventListener("trc-sound:mute", silence); a.dispose(); ambient.current = null; };
     // volume is applied through its own effect below
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

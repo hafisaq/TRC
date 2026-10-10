@@ -44,6 +44,11 @@ export default function Tier2() {
   const [activeStopId, setActiveStopId] = useState(DESTINATIONS[0].id);
   const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // The first time in a session the loader does not fade on its own: it
+  // ends on "Begin the journey", one tap that both opens the site and is
+  // the touch every browser needs before it will play sound. Later home
+  // loads in the same session fade through as before.
+  const [gate, setGate] = useState(false);
 
   const activeDestination = useMemo(
     () => DESTINATIONS.find((s) => s.id === activeStopId) ?? DESTINATIONS[0],
@@ -56,9 +61,17 @@ export default function Tier2() {
     // just long enough for the plane's orbit and one shooting star to read
     // (the star launches at 0.25s and crosses in ~0.45s; the fade-out
     // overlaps the tail). Below ~1s neither animation registers at all.
-    const timer = window.setTimeout(() => setIsLoading(false), 1250);
+    let entered = false;
+    try { entered = sessionStorage.getItem("trc-entered") === "1"; } catch { /* storage blocked: no gate */ entered = true; }
+    const timer = window.setTimeout(() => (entered ? setIsLoading(false) : setGate(true)), 1250);
     return () => window.clearTimeout(timer);
   }, []);
+  const enter = (silent: boolean) => {
+    try { sessionStorage.setItem("trc-entered", "1"); } catch { /* fine */ }
+    if (silent) window.dispatchEvent(new Event("trc-sound:mute"));
+    setGate(false);
+    setIsLoading(false);
+  };
 
   // DESTINATIONS plus the country strip's hold waypoint — passive, so the
   // plane pulses a landing and wears a visible gold accent through the
@@ -141,7 +154,17 @@ export default function Tier2() {
             </span>
           </div>
         </div>
-        <div className="premium-loader__text">{t("loader.preparing")}</div>
+        <div className={`premium-loader__text ${gate ? "is-hidden" : ""}`}>{t("loader.preparing")}</div>
+        {/* the door: shown once the beat has played, on the first visit of a session */}
+        <div className={`premium-loader__gate ${gate ? "is-open" : ""}`} aria-hidden={!gate}>
+          <button type="button" className="premium-loader__begin" onClick={() => enter(false)} tabIndex={gate ? 0 : -1}>
+            <span className="premium-loader__begin-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+            <span>{t("loader.begin")}</span>
+          </button>
+          <button type="button" data-sound-control className="premium-loader__silent" onClick={() => enter(true)} tabIndex={gate ? 0 : -1}>
+            {t("loader.beginSilent")}
+          </button>
+        </div>
       </div>
       <Tier2Nav
         destinations={DESTINATIONS}

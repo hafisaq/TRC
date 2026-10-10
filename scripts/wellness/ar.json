@@ -22,7 +22,9 @@
     "sound.volume": "مستوى الصوت",
     "wellness.glanceEyebrow": "الوقفة",
     "wellness.glanceTitle": "اوصل، واستقرّ.",
-    "wellness.signaturesLine": "وقتٌ بعيداً، ومعه شيءٌ يدوم لتأخذه إلى البيت."
+    "wellness.signaturesLine": "وقتٌ بعيداً، ومعه شيءٌ يدوم لتأخذه إلى البيت.",
+    "loader.begin": "ابدأ الرحلة",
+    "loader.beginSilent": "تابع بصمت"
   },
   "destination-wellness": {
     "navLabel": "العافية",
