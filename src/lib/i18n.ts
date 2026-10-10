@@ -26,6 +26,8 @@ const EN: Record<string, string> = {
   "hero.scroll": "Scroll",
   "hero.scrollRoute": "Scroll to fly the route",
   "loader.preparing": "Preparing route",
+  "loader.begin": "Begin the journey",
+  "loader.beginSilent": "Continue in silence",
   "status.approaching": "Approaching",
   "stop.bestSeason": "Best season",
   "stop.enquireRoute": "Enquire about this route",

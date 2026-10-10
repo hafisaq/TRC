@@ -380,6 +380,65 @@ html[data-display-mode="fullscreen"] body {
   animation: loader-text-breathe 2.2s ease-in-out infinite;
 }
 
+.premium-loader__text.is-hidden { opacity: 0; animation: none; transition: opacity .4s; }
+
+/* the door at the end of the loader: a gold hairline pill that rises in,
+   and a quiet second way through for anyone who would rather not hear */
+.premium-loader__gate {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 18vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+  transition: opacity .7s ease, transform .7s cubic-bezier(.22, .7, .25, 1);
+}
+.premium-loader__gate.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.premium-loader__begin {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: 52px;
+  padding: 0 30px 0 24px;
+  border: 1px solid rgba(227, 198, 130, .7);
+  border-radius: 9999px;
+  background: rgba(227, 198, 130, .06);
+  color: #e3c682;
+  font-size: 10px;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .3s, border-color .3s, transform .3s;
+  animation: route-glow 3.2s ease-in-out infinite;
+}
+.premium-loader__begin:hover { background: rgba(227, 198, 130, .14); border-color: #e3c682; transform: translateY(-1px); }
+.premium-loader__begin:focus-visible, .premium-loader__silent:focus-visible { outline: 2px solid #e3c682; outline-offset: 4px; }
+.premium-loader__begin-bars { display: flex; align-items: center; gap: 3px; height: 14px; }
+.premium-loader__begin-bars i { display: block; width: 1.5px; height: 14px; border-radius: 1px; background: currentColor; transform-origin: 50% 50%; animation: sound-bar 1.6s ease-in-out infinite; }
+.premium-loader__begin-bars i:nth-child(2) { animation-delay: -.5s; animation-duration: 1.9s; }
+.premium-loader__begin-bars i:nth-child(3) { animation-delay: -1s; animation-duration: 1.4s; }
+.premium-loader__begin-bars i:nth-child(4) { animation-delay: -.2s; animation-duration: 2.1s; }
+.premium-loader__silent {
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, .42);
+  font-size: 8.5px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color .3s;
+}
+.premium-loader__silent:hover { color: rgba(255, 255, 255, .75); }
+@media (prefers-reduced-motion: reduce) {
+  .premium-loader__gate { transition: none; }
+  .premium-loader__begin, .premium-loader__begin-bars i { animation: none; }
+}
+
 @keyframes loader-text-breathe {
   0%, 100% { opacity: 0.45; }
   50% { opacity: 0.95; }
