@@ -58,3 +58,9 @@
   background: linear-gradient(180deg, #f3efe7, #f3efe7);
   margin-top: -1px;
 }
+
+/* how a stay unfolds: a hairline above each stage, its number in a small
+   ring; the ring fills gold as the stage is lit */
+.still-stage { border-top: 1px solid rgb(200 162 76 / 35%); padding-top: 14px; transition: opacity .3s, transform .3s; }
+.still-stage__mark { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid rgb(143 114 49 / 55%); border-radius: 9999px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .1em; color: #8f7231; transition: background .5s, color .5s; }
+.still-stage.is-lit .still-stage__mark { background: #c8a24c; border-color: #c8a24c; color: #faf8f4; }

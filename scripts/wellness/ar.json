@@ -20,11 +20,19 @@
     "sound.off": "الصوت مكتوم",
     "sound.tap": "المس لتشغيل الصوت",
     "sound.volume": "مستوى الصوت",
-    "wellness.glanceEyebrow": "الوقفة",
+    "wellness.glanceEyebrow": "كيف تمضي الإقامة",
     "wellness.glanceTitle": "اوصل، واستقرّ.",
     "wellness.signaturesLine": "وقتٌ بعيداً، ومعه شيءٌ يدوم لتأخذه إلى البيت.",
     "loader.begin": "ابدأ الرحلة",
-    "loader.beginSilent": "تابع بصمت"
+    "loader.beginSilent": "تابع بصمت",
+    "wellness.stage.arrive": "الوصول",
+    "wellness.stage.arriveLine": "استشارةٌ قبل أي شيء، ليُبنى البرنامج حولك.",
+    "wellness.stage.assess": "التقييم",
+    "wellness.stage.assessLine": "فحوصٌ وحديثٌ عمّا تريد تغييره.",
+    "wellness.stage.restore": "الاستعادة",
+    "wellness.stage.restoreLine": "علاجاتٌ وحركةٌ وتغذيةٌ وراحة، بإيقاعٍ مرسومٍ لك.",
+    "wellness.stage.return": "العودة",
+    "wellness.stage.returnLine": "خطةٌ تأخذها إلى البيت، ومن تتصل به حين تحتاج."
   },
   "destination-wellness": {
     "navLabel": "العافية",
