@@ -14,6 +14,7 @@ import { registerMedia } from "./media";
 import { isAr, setUiStrings, applyTranslation } from "./i18n";
 import { FOOTER, contactHref } from "../data/footer";
 import { ABOUT } from "../data/about";
+import { applySeo, countryTitle, wellnessTitle } from "./seo";
 
 const PROJECT_ID = import.meta.env.VITE_SANITY_PROJECT_ID || "nvmppjc2";
 const DATASET = import.meta.env.VITE_SANITY_DATASET || "production";
@@ -480,6 +481,18 @@ export async function hydrateFromCms(): Promise<boolean> {
         }))
       };
       setCountryPage(slug, page);
+    }
+    // the tab title and description for this route, from the content
+    if (route) {
+      const regionDoc = (data.regions ?? []).find((r) => (r as { slug?: string }).slug === route[1]) as { title?: string | TitlePair } | undefined;
+      const regionTitle = typeof regionDoc?.title === "string" ? regionDoc.title : `${regionDoc?.title?.line1 ?? ""} ${regionDoc?.title?.line2 ?? ""}`.trim();
+      const pageDoc = (data.pages ?? [])[0] as { country?: string; tagline?: string } | undefined;
+      if (pageDoc?.country) {
+        applySeo({
+          title: route[1] === "wellness" ? wellnessTitle(regionTitle || pageDoc.country) : countryTitle(pageDoc.country, regionTitle || route[1]),
+          description: pageDoc.tagline
+        });
+      }
     }
     console.info("[cms] hydrated from Sanity");
     return true;

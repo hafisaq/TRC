@@ -8,6 +8,7 @@ import Tier2Enquire from "../components/tier2/Tier2Enquire";
 import JourneyFooter from "../components/JourneyFooter";
 import { useTier2Animations } from "../hooks/useTier2Animations";
 import { scrollToHash } from "../lib/scroll";
+import { track } from "../lib/analytics";
 import { t } from "../lib/i18n";
 import { DESTINATIONS, flightPathStops } from "../data/tier2Destinations";
 import CountryStrip from "../components/tier2/CountryStrip";
@@ -67,6 +68,7 @@ export default function Tier2() {
     return () => window.clearTimeout(timer);
   }, []);
   const enter = (silent: boolean) => {
+    track("begin_journey", { sound: silent ? "off" : "on" });
     try { sessionStorage.setItem("trc-entered", "1"); } catch { /* fine */ }
     if (silent) window.dispatchEvent(new Event("trc-sound:mute"));
     setGate(false);

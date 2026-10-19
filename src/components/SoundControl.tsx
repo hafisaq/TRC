@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createAmbient, createTrackAmbient, type Ambient } from "../lib/ambient";
 import { SETTINGS } from "../lib/cms";
+import { track } from "../lib/analytics";
 import { t } from "../lib/i18n";
 import "./sound-control.css";
 
@@ -75,6 +76,7 @@ export default function SoundControl() {
     const a = ambient.current;
     if (!a) return;
     const next = !muted;
+    track("sound_toggle", { state: next ? "off" : "on", source: SETTINGS.soundTrack ? "track" : "tones" });
     setMuted(next);
     mutedRef.current = next;
     try { sessionStorage.setItem(MUTE_KEY, next ? "off" : "on"); } catch { /* private mode */ }
