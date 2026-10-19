@@ -102,7 +102,7 @@ export function track(name: string, params: Params = {}) {
   if (allowed()) window.clarity?.("event", name);
 }
 
-const pageType = () => (/^\/(asia|alpine|coast|desert|cities)\//.test(location.pathname) || location.pathname.startsWith("/wellness") ? "country" : location.pathname.startsWith("/about") ? "about" : "home");
+const pageType = () => (/^\/(asia|alpine|coast|desert|cities)\//.test(location.pathname) ? "country" : location.pathname.startsWith("/wellness") ? "wellness" : location.pathname.startsWith("/about") ? "about" : "home");
 const sectionOf = (el: Element | null) => el?.closest("[data-tier2-stop], section[id], footer[id]")?.id || "";
 
 export function initAnalytics(next: AnalyticsSettings) {
