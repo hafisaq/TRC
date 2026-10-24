@@ -67,6 +67,28 @@ export default function Tier2() {
     const timer = window.setTimeout(() => (entered ? setIsLoading(false) : setGate(true)), 1250);
     return () => window.clearTimeout(timer);
   }, []);
+  // While the loader is up the page beneath must not move: a swipe or a
+  // wheel turn during the door would otherwise scroll the journey behind
+  // it, and "Begin" would land mid-route. Scroll is locked at the root and
+  // touch/wheel on the loader are swallowed; entering releases the lock
+  // from the top.
+  useEffect(() => {
+    if (!isLoading) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+    const swallow = (e: Event) => { e.preventDefault(); };
+    window.addEventListener("wheel", swallow, { passive: false });
+    window.addEventListener("touchmove", swallow, { passive: false });
+    return () => {
+      root.style.overflow = prev;
+      window.removeEventListener("wheel", swallow);
+      window.removeEventListener("touchmove", swallow);
+      window.scrollTo(0, 0);
+    };
+  }, [isLoading]);
+
   const enter = (silent: boolean) => {
     track("begin_journey", { sound: silent ? "off" : "on" });
     try { sessionStorage.setItem("trc-entered", "1"); } catch { /* fine */ }
