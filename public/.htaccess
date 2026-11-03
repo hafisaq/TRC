@@ -1,3 +1,21 @@
+# One address for every page: https, without www. The host applies these
+# on the real domain (LiteSpeed honours .htaccess there); on the staging
+# subdomain they may be ignored, which is harmless.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# The region roots are not pages of their own: they land on that region's
+# country selector on the home page (the same thing the app does when it
+# boots at one of these paths)
+<IfModule mod_alias.c>
+  RedirectMatch 301 ^/(asia|alpine|coast|desert|cities)/?$ /#tier2-$1-countries
+</IfModule>
+
 # Caching contract for a hashed-asset SPA:
 # - HTML and the service worker must always revalidate (a stale index.html
 #   references hashed bundles that no longer exist after the next deploy —
